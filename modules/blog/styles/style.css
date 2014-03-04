@@ -1,0 +1,190 @@
+.blog {
+}
+
+.blogpost {
+	display: block;
+	margin: 10px 0px 10px 0px;
+	padding: 0px;
+
+	font-size: 12px;
+	text-align: left;
+	
+	background-color: #888888;
+	border-radius: 10px;
+	border: 3px solid #ffffff;
+	box-shadow: 0px 0px 8px 2px rgba(0,0,0,0.2);
+}
+
+.blogpost .top {
+	position: relative;
+	height: 20px;
+	color: #ffffff;
+}
+
+.blogpost .center {
+	padding: 10px;
+	color: #000000;
+	background-color: #dddddd;
+	border: 3px solid #ffffff;
+	border-left: 0px;
+	border-right: 0px;
+}
+
+.blogpost .bottom {
+	height: 20px;
+	font-size: 8px;
+	font-weight: bold;
+}
+
+.blogpost .title {
+	display: block;
+	float: left;
+	margin: 2px 0px 0px 5px;
+	padding: 0px;
+
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.blogpost .timestamp {
+	display: block;
+	position: relative;
+	top: 4px;
+	right: 5px;
+	display: block;
+
+	font-size: 10px;
+	font-weight: bold;
+	text-align: right;
+}
+
+.blogpost .timestamp:first-letter {
+	text-transform: uppercase;
+}
+
+.blogpost .text {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+}
+
+.blogpost .readmore {
+	display: block;
+	margin: 0px;
+	padding: 0px;
+	text-align: right;
+}
+
+.blogpost .readmore a {
+	color: #000000;
+	text-decoration: none;
+}
+
+.blogpost .bottom a {
+	display: block;
+	float: left;
+	margin: 3px 0px 3px 3px;
+	padding: 2px 5px 2px 5px;
+	color: #888888;
+	text-decoration: none;
+	background-color: #ffffff;
+	border-radius: 3px;
+}
+
+.blogpost .bottom a:hover {
+	color: #666666;
+	box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.5);
+}
+
+.blogcategories a, .blogtags a {
+	text-decoration: none;
+}
+
+.blogcategories, .blogtags {
+	display: block;
+	width: 144px;
+	margin: 0px;
+	padding: 0px;
+	
+	list-style: none;
+}
+
+.blogcategories {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.blogcategories li {
+	margin-bottom: 5px;
+}
+
+.blogcategories a {
+	color: #ffffff;
+}
+
+.blogcategories a:hover {
+	text-shadow: 2px 2px rgba(0,0,0,0.5);
+}
+
+.blogtags {
+	font-size: 8px;
+	font-weight: bold;
+}
+
+.blogtags li {
+	display: inline-block;
+}
+
+.blogtags a {
+	display: block;
+	margin: 0px 1px 4px 1px;
+	padding: 2px 5px 2px 5px;
+	
+	background-color: #ffffff;
+	border-radius: 3px;
+	
+	color: #aaaaaa;
+}
+
+.blogtags a:hover {
+	color: #888888;
+	box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.5);
+}
+
+.pagination {
+}
+
+.paginationtop {
+}
+
+.paginationbottom {
+}
+
+.pagination {
+	margin: 0px;
+	padding: 5px 0px 5px 0px;
+	
+	font-size: 10px;
+}
+
+.pagination .current {
+	font-size: 12px;
+	font-weight: bold;
+}
+
+.pagination li {
+	display: inline-block;
+	width: 20px;
+}
+
+.pagination a {
+	display: block;
+	
+	color: #888888;
+	text-decoration: none;
+}
+
+.pagination a:hover {
+	color: #000000;
+	text-decoration: underline;
+}

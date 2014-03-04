@@ -1,0 +1,14 @@
+php_value post_max_size 50M
+php_value upload_max_filesize 50M
+php_value max_execution_time 500 
+
+RewriteEngine On
+ RewriteBase /
+ RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_URI} !gallery/
+ RewriteCond %{REQUEST_URI} !(.*)/$
+ RewriteRule ^(.*)$ /$1/ [L,R=301]
+ 
+ RewriteRule ^/$ index.php
+ RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
+ RewriteRule ^([a-zA-Z]+)/(.+)/$ index.php?page=$1&args=$2
