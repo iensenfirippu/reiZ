@@ -57,7 +57,7 @@ class GalleryFolder
 				}
 			}
 		}
-		elseif ($infofile != null) { $this->_hideid = MakeHideId(); }
+		elseif ($infofile != null) { $this->_hideid = reiZ::MakeHideId(); }
 	}
 	
 	public function GetHideId()		{ return $this->_hideid;		}

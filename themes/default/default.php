@@ -4,7 +4,7 @@
  * Copyright 2013 Iensen Firippu <philip@marugawalite>
  */
 
-if (WasAccessedDirectly()) { BackToDisneyland(); }
+if (reiZ::WasAccessedDirectly()) { reiZ::BackToDisneyland(); }
 else
 {
 	include_once(FOLDERTHEMES.'/'.DEFAULTTHEME.'/'.FOLDERMASTER.'/wide.php');

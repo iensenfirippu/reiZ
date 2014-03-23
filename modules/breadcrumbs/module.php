@@ -28,7 +28,7 @@ class BreadcrumbsModule extends Module
 		$this->_stylesheets = array('modules/'.$this->_name.'/styles/style.css');
 		//$this->_javascripts = array('modules/'.$this->_name.'/js/hider.js');
 		
-		$args = GetSafeArgument(GETARGS);
+		$args = reiZ::GetSafeArgument(GETARGS);
 		if ($args != '')
 		{
 			$parts = explode('/', $args);
@@ -59,7 +59,7 @@ class BreadcrumbsModule extends Module
 		$this->_html = new HtmlElement('ul');
 		$first = true;
 		
-		$page = GetSafeArgument(GETPAGE);
+		$page = reiZ::GetSafeArgument(GETPAGE);
 		if (BREADCRUMBINDEX != '' && BREADCRUMBINDEX != $page)
 		{
 			$first = false;

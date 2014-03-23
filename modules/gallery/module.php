@@ -63,7 +63,7 @@ class GalleryModule extends Module
 	
 	private function GenerateHtml()
 	{
-		$url = GetSafeArgument(GETARGS);
+		$url = reiZ::GetSafeArgument(GETARGS);
 		
 		$this->_html = new HtmlElement('div', 'class="gallery"');
 		$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
