@@ -4,8 +4,7 @@
  * Copyright 2013 Iensen Firippu <philip@marugawalite>
  */
 
-if (WasAccessedDirectly()) { BackToDisneyland(); }
-else
+if (defined('reiZ') or exit(1))
 {
 	$HTML = new SimpleLayout('Iensenfirippu.dk');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/wide.css');

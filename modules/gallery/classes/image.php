@@ -27,7 +27,7 @@ class GalleryImage
 		if (file_exists($infofile))
 		{
 			$infofile = file($infofile);
-			$this->_hideid = MakeHideId();
+			$this->_hideid = reiZ::MakeHideId();
 			$this->_title = trim(preg_replace('/\s\s+/', ' ', $infofile[0]));
 			$this->_text = trim(preg_replace('/\s\s+/', ' ', $infofile[1]));
 		}

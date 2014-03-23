@@ -102,8 +102,8 @@ class BlogModule extends Module
 	{
 		if ($this->_html == null)
 		{
-			$p = GetSafeArgument(GETPAGE);
-			$url = GetSafeArgument(GETARGS);
+			$p = reiZ::GetSafeArgument(GETPAGE);
+			$url = reiZ::GetSafeArgument(GETARGS);
 			$dir = explode('/', $url);
 			$catortag = '';
 			$cat = '';
@@ -123,7 +123,7 @@ class BlogModule extends Module
 			if (isset($dir[0]) && !empty($dir[0]))
 			{
 				// First letter uppercase = Category
-				if (StartsWithUpper($dir[0])) { $cat = strtolower($dir[0]); }
+				if (reiZ::StartsWithUpper($dir[0])) { $cat = strtolower($dir[0]); }
 				$catortag = $dir[0];
 			} else { $cat = BLOGDEFAULTCATEGORY; }
 			if (isset($dir[1]) && !empty($dir[1])) { $page = $dir[1]; } else { $page = 1; }
@@ -143,7 +143,7 @@ class BlogModule extends Module
 			// Print the fetched posts
 			foreach ($countandposts[1] as $blogpost)
 			{
-				$this->_html->AddChild($this->GenerateHtmlForPost($blogpost, $post, $countandposts, $p, $catortag));
+				$this->_html->AddChild($this->GenerateHtmlForPost($blogpost, $post, $countandposts, $p, $catortag, $page));
 			}
 			
 			if ($post == 0) { $this->_html->AddChild($pagination->GetHtml()); }
@@ -171,14 +171,14 @@ class BlogModule extends Module
 		return $this->_html;
 	}
 	
-	private function GenerateHtmlForPost($blogpost, $post = 0, $countandposts = null, $p = null, $catortag = null)
+	private function GenerateHtmlForPost($blogpost, $post = 0, $countandposts = null, $p = null, $catortag = null, $page = null)
 	{
 		$posthtml = new HtmlElement('div', 'class="blogpost"', '',
 			array(
 				new HtmlElement('div', 'class="top"', '',
 					array(
 						new HtmlElement('h3', 'class="title"', $blogpost->GetTitle()),
-						new HtmlElement('span', 'class="timestamp"', TimestampToHumanTime($blogpost->GetTimestamp()))
+						new HtmlElement('span', 'class="timestamp"', reiZ::TimestampToHumanTime($blogpost->GetTimestamp()))
 					)
 				)
 			)
