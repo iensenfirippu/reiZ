@@ -1,7 +1,7 @@
-AddHandler application/x-httpd-php .inc
-php_value post_max_size 50M
-php_value upload_max_filesize 50M
-php_value max_execution_time 500 
+#AddHandler application/x-httpd-php .inc
+#php_value post_max_size 50M
+#php_value upload_max_filesize 50M
+#php_value max_execution_time 500 
 
 RewriteEngine On
  RewriteBase /

@@ -29,6 +29,16 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
+		public static function GetSafePost($id, $keephtml = false)
+		{
+			$return = '';
+			if (isset($_POST[$id]) && !empty($_POST[$id]))
+			{
+				$return = reiZ::Sanitize($_POST[$id], $keephtml);
+			}
+			return $return;
+		}
+		
 		public static function Sanitize($string, $keephtml = false)
 		{
 			$return = addslashes($string);

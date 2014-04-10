@@ -4,7 +4,7 @@ html, body {
 	background-color: #ffffff;
 }
 
-div, h1, h2, h3, h4, h5, a, span, p, hr {
+div, h1, h2, h3, h4, h5, a, span, p, hr, ul, li, img {
 	margin: 0px;
 	padding: 0px;
 }
@@ -112,7 +112,8 @@ ul.menu a:hover {
 	color: #000000;
 }
 
-/* ###############
+/*
+ * ###############
  * Options
  * ###############
  */
@@ -146,12 +147,10 @@ ul.options li {
 
 ul.options a {
 	display: block;
-	
-	height: 16px;
-	vertical-align: middle;
+	height: 22px;
 	
 	margin-right:5px;
-	padding:2px 7px;
+	padding:0px;
 	
 	background-color:#cccccc;
 	border:1px solid #bbbbbb;
@@ -161,17 +160,27 @@ ul.options a {
 	text-decoration: none;
 }
 
-ul.options a span, ul.options a img {
-	display: inline-block;
-	
-	height: 16px;
+ul.options a img, ul.options a span {
+	display:inline-block;
+	height:16px;
 	
 	color: #888888;
 	font-size: 12px;
 	font-weight: bold;
 	text-transform: Capitalize;
-	
-	border: 1px solid green;
+}
+
+ul.options a img {
+	margin-left:5px;
+	vertical-align: middle;
+}
+
+ul.options a span {
+	margin-right:8px;
+}
+
+ul.options a span.noicon {
+	margin:0px 8px;
 }
 
 ul.options a.selected {
