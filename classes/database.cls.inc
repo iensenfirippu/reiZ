@@ -11,6 +11,7 @@ if (defined('reiZ') or exit(1))
 	{
 		private $_querycount = 0;
 		private $_link = null;
+		private $_connected = false;
 		
 		public function GetQueryCount() { return $this->_querycount; }
 		//public function GetLink() { return $this->_link; }
@@ -25,26 +26,37 @@ if (defined('reiZ') or exit(1))
 			$this->disconnect();
 		}*/
 	
+		public function IsConnected()
+		{
+			return $this->_link != null;
+		}
+	
 		public function RunQuery(/*query*/ $query)
 		{
-			//$this->connect();
-			$value = mysqli_query($this->_link, $query);
-			//$this->disconnect();
-			
-			$this->_querycount++;
+			$value = false;
+			if ($this->IsConnected())
+			{
+				//$this->connect();
+				$value = mysqli_query($this->_link, $query);
+				//$this->disconnect();
+				
+				$this->_querycount++;
+			}
 			return $value;
 		}
 	
 		public function RunNonQuery(/*query*/ $query)
 		{
 			$value = false;
-			
-			//$this->connect();
-			$result = mysqli_query($this->_link, $query);
-			if ($result != false) { $value = true; }
-			//$this->disconnect();
-			
-			$this->_querycount++;
+			if ($this->IsConnected())
+			{
+				//$this->connect();
+				$result = mysqli_query($this->_link, $query);
+				if ($result != false) { $value = true; }
+				//$this->disconnect();
+				
+				$this->_querycount++;
+			}
 			return $value;
 		}
 		
@@ -64,18 +76,49 @@ if (defined('reiZ') or exit(1))
 		{
 			return mysqli_error($this->_link);
 		}
-	
+		
 		private function Connect()
 		{
-			$this->_link = new mysqli(DBSERVER, DBUSERNAME, DBPASSWORD, DBDATABASE) or die(0);
+			$this->_link = new mysqli(DBSERVER, DBUSERNAME, DBPASSWORD, DBDATABASE);
+			if (!$this->_link->connect_errno)
+			{
+				mysqli_set_charset($this->_link, DBENCODING);
+			}
+			else
+			{
+				//if (DEBUG) { echo $this->_link->connect_error; }
+				$this->_link = null;
+			}
+			
 			//$this->_link = mysqli_connect(DBSERVER, DBUSERNAME, DBPASSWORD) or die(0);
-			mysqli_set_charset($this->_link, DBENCODING);
 			//mysqli_select_db($this->_link, DBDATABASE);
 		}
-	
+		
 		public function Disconnect()
 		{
 			mysqli_close($this->_link);
+		}
+		
+		public function CanConnect($server = DBSERVER, $username = DBUSERNAME, $password = DBPASSWORD, $database = DBDATABASE)
+		{
+			$value = false;
+			$link = new mysqli($server, $username, $password, $database);
+			if (!$link->connect_errno || $link->connect_errno == 1049) { $value = true; }
+			return $value;
+		}
+		
+		public function TableExists($tablename)
+		{
+			$value = false;
+			if ($this->IsConnected())
+			{
+				$query = "SELECT count(*) AS count FROM information_schema.tables WHERE table_schema='".DBDATABASE."' AND table_name='".DBPREFIX.$tablename."'";
+				$count = $this->GetArray($this->RunQuery($query))['count'];
+				if ($count > 0) { $value = true; }
+				
+				$this->_querycount++;
+			}
+			return $value;
 		}
 	}
 }

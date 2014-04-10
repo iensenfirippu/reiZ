@@ -13,7 +13,7 @@ if (defined('reiZ') or exit(1))
 		$query = new Query();
 		$query->SetType('select');
 		$query->AddField('u_id');
-		$query->AddTable('user');
+		$query->AddTable(DBPREFIX.'user');
 		$query->AddCondition('username', '=', reiZ::Sanitize($_POST['username']));
 		$query->AddCondition('password', '=', reiZ::Sanitize($_POST['password']));
 		$result = $GLOBALS['DB']->RunQuery($query);
@@ -28,7 +28,7 @@ if (defined('reiZ') or exit(1))
 		
 		$query = new Query();
 		$query->SetType('insert');
-		$query->AddTable('login');
+		$query->AddTable(DBPREFIX.'login');
 		$query->AddField('occured', time());
 		$query->AddField('ip', reiZ::Sanitize($_SERVER['REMOTE_ADDR']));
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))

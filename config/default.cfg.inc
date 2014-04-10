@@ -14,8 +14,9 @@ if (defined('reiZ') or exit(1))
 	
 	if (!defined("URLROOT"))			define("URLROOT",			"http://localhost");
 	if (!defined("INDEXPAGE"))			define("INDEXPAGE",			"home");
-	if (!defined("LOGINPAGE"))			define("LOGINPAGE",			"inlog");
-	if (!defined("ADMINPAGE"))			define("ADMINPAGE",			"nimba");
+	if (!defined("LOGINPAGE"))			define("LOGINPAGE",			"login");
+	if (!defined("ADMINPAGE"))			define("ADMINPAGE",			"admin");
+	if (!defined("INSTALLPAGE"))		define("INSTALLPAGE",		"install");
 	
 	if (!defined("DEFAULTTHEME"))		define("DEFAULTTHEME",		"default");
 	if (!defined("DEFAULTMASTER"))		define("DEFAULTMASTER",		"default");
