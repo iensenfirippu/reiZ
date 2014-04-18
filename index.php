@@ -51,7 +51,7 @@ else
 		{
 			include_once(FOLDERADMIN.'/admin.php');
 		}
-		elseif ($input_p == LOGINPAGE)
+		elseif ($input_p == ADMINPAGE || $input_p == LOGINPAGE)
 		{	
 			if (isset($_SESSION["verysecureuserid"])) { reiZ::BackToDisneyland(true); }
 			else
