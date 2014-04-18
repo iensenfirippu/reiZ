@@ -74,6 +74,7 @@ if (defined('reiZ') or exit(1))
 			//else { $file = $name; }
 			
 			$query = new Query();
+			
 			$query->SetType('select');
 			$query->AddFields(array('page.id', 'masterpage.id as mp_id', 'masterpage.name as mp_name', 'page.name', 'page.content', 'page.inmenu', 'page.weight'));
 			$query->AddTable('page');

@@ -169,6 +169,43 @@ if (defined('reiZ') or exit(1))
 			$chr = mb_substr($str, 0, 1, "UTF-8");
 			return mb_strtolower($chr, "UTF-8") != $chr;
 		}
+		
+		public static function Login($username, $password)
+		{
+			$success = false;
+			
+			$query = new Query();
+			$query->SetType('select');
+			$query->AddField('u_id');
+			$query->AddTable(DBPREFIX.'user');
+			$query->AddCondition('username', '=', reiZ::Sanitize($_POST['username']));
+			$query->AddCondition('password', '=', reiZ::Sanitize($_POST['password']));
+			$result = $GLOBALS['DB']->RunQuery($query);
+			//var_dump($query);
+			$row = $GLOBALS['DB']->GetArray($result);
+			
+			if ($row['u_id'] != 0)
+			{
+				$success = true;
+				$_SESSION["verysecureuserid"] = $row['u_id'];
+			}
+			
+			$query = new Query();
+			$query->SetType('insert');
+			$query->AddTable(DBPREFIX.'login');
+			$query->AddField('occured', time());
+			$query->AddField('ip', reiZ::Sanitize($_SERVER['REMOTE_ADDR']));
+			if (isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+			{ $query->AddField('altip', reiZ::Sanitize($_SERVER['HTTP_X_FORWARDED_FOR'])); }
+			$query->AddField('username', reiZ::Sanitize($_POST['username']));
+			if (!$success)
+			{ $query->AddField('password', reiZ::Sanitize($_POST['password'])); }
+			$query->AddField('success', $success);
+			//var_dump($query);
+			$GLOBALS['DB']->RunNonQuery($query);
+			
+			if ($success) { reiZ::BackToDisneyland(); }
+		}
 	}
 }
 ?>
