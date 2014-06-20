@@ -26,15 +26,15 @@ if (defined('reiZ') or exit(1))
 		public function GetTop()		{ return $this->_top; }
 		public function GetLeft()		{ return $this->_left; }
 		public function GetRight()		{ return $this->_right; }
-		public function GetBottom()	{ return $this->_bottom; }
+		public function GetBottom()		{ return $this->_bottom; }
 		
 		public function SetTop($HtmlElement)		{ $this->_top = $HtmlElement; }
 		public function SetLeft($HtmlElement)		{ $this->_left = $HtmlElement; }
 		public function SetRight($HtmlElement)		{ $this->_right = $HtmlElement; }
-		public function SetBottom($HtmlElement)	{ $this->_bottom = $HtmlElement; }
+		public function SetBottom($HtmlElement)		{ $this->_bottom = $HtmlElement; }
 		
 		public function AddToTop($HtmlElement)		{ $this->_top->AddChild($HtmlElement); }
-		public function AddToLeft($HtmlElement)	{ $this->_left->AddChild($HtmlElement); }
+		public function AddToLeft($HtmlElement)		{ $this->_left->AddChild($HtmlElement); }
 		public function AddToRight($HtmlElement)	{ $this->_right->AddChild($HtmlElement); }
 		public function AddToBottom($HtmlElement)	{ $this->_bottom->AddChild($HtmlElement); }
 		
