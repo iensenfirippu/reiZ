@@ -206,6 +206,30 @@ if (defined('reiZ') or exit(1))
 			
 			if ($success) { reiZ::BackToDisneyland(); }
 		}
+		
+		/*function IPv4To6($ip)
+		{
+			if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false)
+			{
+				if (strpos($ip, '.') > 0)
+				{
+					$ip = substr($ip, strrpos($ip, ':')+1);
+				}
+				else
+				{
+					//native ipv6
+					return $ip;
+				}
+			}
+			
+			$is_v4 = filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
+			if (!$is_v4) { return false; }
+			
+			$iparr = array_pad(explode('.', $ip), 4, 0);
+			$Part7 = base_convert(($iparr[0] * 256) + $iparr[1], 10, 16);
+			$Part8 = base_convert(($iparr[2] * 256) + $iparr[3], 10, 16);
+			return '::ffff:'.$Part7.':'.$Part8;
+		}*/
 	}
 }
 ?>

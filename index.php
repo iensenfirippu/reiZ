@@ -1,7 +1,7 @@
 <?php
 /*#######################################################
 # reiZ php OOP CMS (initially created for iensenfrippu.dk)
-# Copyright 2013 Philip Jensen <me@iensenfrippu.dk>
+# Copyright 2014 Philip Jensen <me@iensenfrippu.dk>
 #######################################################*/
 
 define("STARTTIME", microtime(true));
@@ -20,11 +20,12 @@ $HIDDENINDEX = 0;
 
 foreach (glob(FOLDERCLASSES."/*.cls.inc") as $classfile) { include_once($classfile); }
 foreach (glob(FOLDERCLASSES."/*/*.cls.inc") as $classfile) { include_once($classfile); }
-
+	
 if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 {
-	$HTML = new DirectionalLayout('Maintenance');
-	$HTML->AddContent(new HtmlElement('span', '', 'This site is currently undergoing maintenance, please check back later.'));
+	$HTML = new HtmlPage('Maintenance');
+	$HTML->AddElement(new HtmlElement('span', '', 'This site is currently undergoing maintenance, please check back later.'));
+	$HTML->GetReference('TITLE')->SetContent('test');
 }
 else
 {
@@ -40,7 +41,7 @@ else
 		}
 		else
 		{
-			$HTML = new DirectionalLayout('No database');
+			$HTML = new HtmlPage('No database');
 			$HTML->AddContent(new HtmlElement('span', '', 'Couldn&apos;t connect to database "'.DBDATABASE.'".'));
 		}
 	}
@@ -49,6 +50,8 @@ else
 		if ($input_p == EMPTYSTRING) { reiZ::Redirect('/'.INDEXPAGE.'/'); }
 		elseif ($input_p == ADMINPAGE && isset($_SESSION["verysecureuserid"]) && $_SESSION["verysecureuserid"] > 0)
 		{
+			$THEME = new Theme(DEFAULTTHEME, 'admin');
+			$PAGE = Page::LoadByName($input_p);
 			include_once(FOLDERADMIN.'/admin.php');
 		}
 		elseif ($input_p == ADMINPAGE || $input_p == LOGINPAGE)
@@ -56,17 +59,16 @@ else
 			if (isset($_SESSION["verysecureuserid"])) { reiZ::BackToDisneyland(true); }
 			else
 			{
-				$THEME = new Theme(DEFAULTTHEME);
+				$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
 				$PAGE = Page::LoadByName($input_p);
 				include_once($THEME->GetDirectory().'/login.php');
 			}
 		}
 		else
 		{
-			$THEME = new Theme(DEFAULTTHEME);
+			$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
 			$PAGE = Page::LoadByName($input_p);
-			include_once($THEME->GetDirectory().'/'.FOLDERMASTER.'/'.$PAGE->GetMasterPage().'.php');
-			//include_once($THEME->GetDirectory().'/'.$PAGE->GetFilename());
+			include_once($THEME->GetDirectory().'/'.FOLDERMASTER.'/'.$PAGE->GetFilenameMaster());
 		}
 		
 		if (DEBUG)
