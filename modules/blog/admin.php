@@ -4,79 +4,82 @@
  * Copyright 2013 Iensen Firippu <philip@marugawalite>
  */
 
-if (WasAccessedDirectly()) { BackToDisneyland(); }
-else
+class CustomAdmininistrationPage
 {
-	foreach (glob(FOLDERMODULES.'/blog/'.FOLDERCLASSES.'/*.php') as $classfile) { include_once($classfile); }
-	
-	// Handle form input
-	if (isset($_POST['title']) && !empty($_POST['title']))
+	public function __construct()
 	{
-		$post = new BlogPost(0, time(), $_POST['category'], $_POST['title'], $_POST['text']);
-		
-		$tags = explode(',', $_POST['tags']);
-		foreach ($tags as $tag)
+		// include all blog related classes
+		foreach (glob(FOLDERMODULES.'/blog/'.FOLDERCLASSES.'/*.php') as $classfile) { include_once($classfile); }
+	}
+	
+	private function HandleFormInput()
+	{
+		// Handle input for: blog posts
+		if (isset($_POST['title']) && !empty($_POST['title']))
 		{
-			if ($tag != '')
+			$post = new BlogPost(0, time(), $_POST['category'], $_POST['title'], $_POST['text']);
+			
+			$tags = explode(',', $_POST['tags']);
+			foreach ($tags as $tag)
 			{
-				$tag = new BlogTag(0, strtolower(trim($tag))); $post->AddTag($tag);
+				if ($tag != '')
+				{
+					$tag = new BlogTag(0, strtolower(trim($tag))); $post->AddTag($tag);
+				}
 			}
+			
+			$post->Save();
+			$GLOBALS['HTML']->AddContent(new HtmlElement('span', '', 'Blogpost added with id: '));
 		}
-		
-		$post->Save();
-		$HTML->AddContent(new HtmlElement('span', '', 'Blogpost added with id: '));
 	}
 	
-	$argcount = sizeof($ARGS);
-	if ($argcount == 1)
+	public function MakeHtml($admin, $args)
 	{
-		$HTML->AddContent(new HtmlElement('h1', '', 'Edit blog...'));
-		$HTML->AddContent(new HtmlElement('span', '', 'Are you almost ready to edit your blog?'));
-		$HTML->AddContent(new HtmlElement('a', 'href="/'.ADMINPAGE.'/'.$ARGS[0].'/write/"', 'write'));
-	}
-	elseif ($ARGS[1] == 'write')
-	{
-		$categories = BlogCategory::LoadAll();
-		$selectcat = new HtmlElement('select', 'name="category"', '');
-		foreach ($categories as $c)
-		{ $selectcat->AddChild(new HtmlElement('option', 'value="'.$c->GetId().'"', $c->GetTitle())); }
+		$this->HandleFormInput();
 		
-		$HTML->AddContent(new HtmlElement('h1', '', 'Write a blog post'));
-		$HTML->AddContent(new HtmlElement('span', '', 'Whats&apos;s on your mind?'));
+		$argcount = sizeof($GLOBALS['ARGS']);
+		if ($argcount == 1) { $this->MakeHtml_HOME($admin, $args); }
+		elseif ($GLOBALS['ARGS'][1] == 'write') { $this->MakeHtml_NewPost($admin, $args); }
+	}
+	
+	public function MakeHtml_Options($admin, $args)
+	{
+		$options = $admin->GetOptions();
+		
+	}
+	
+	private function MakeHtml_Home($admin, $args)
+	{
+		$html = $admin->GetContent();
+		
+		$box = new AdminBox('Edit Blog...');
+		$box->AddContent(new HtmlElement('span', '', 'Are you almost ready to edit your blog?'));
+		$box->AddContent(new HtmlElement('a', 'href="/'.ADMINPAGE.'/'.$args[0].'/write/"', 'write'));
+		
+		$html->AddChild($box);
+	}
+	
+	private function MakeHtml_NewPost($admin, $args)
+	{
+		$html = $admin->GetContent();
+		
+		$options = array();
+		$categories = BlogCategory::LoadAll();
+		foreach ($categories as $c) { array_push($options, array($c->GetId(), $c->GetTitle())); }
+		
 		//	new HtmlElement('form', 'name="add" action="/'.ADMINPAGE.'/'.$ARGS[0].'/" method="post"', '',
-		$HTML->AddContent(
-			new HtmlElement('form', 'name="add" action="" method="post"', '',
-				array(
-					new HtmlElement('div', 'class="formline"', '',
-						array(
-							new HtmlElement('label', 'for="category"', 'Category:'),
-							$selectcat
-						)
-					),
-					new HtmlElement('div', 'class="formline"', '',
-						array(
-							new HtmlElement('label', 'for="title"', 'Title:'),
-							new HtmlElement('input', 'type="text" name="title"')
-						)
-					),
-					new HtmlElement('div', 'class="formline"', '',
-						array(
-							new HtmlElement('label', 'for="text"', 'Text:'),
-							new HtmlElement('textarea', 'name="text" rows="5"')
-						)
-					),
-					new HtmlElement('div', 'class="formline"', '',
-						array(
-							new HtmlElement('label', 'for="tags"', 'Tags:'),
-							new HtmlElement('input', 'type="text" name="tags"')
-						)
-					),
-					new HtmlElement('div', 'class="formline"', '',
-						new HtmlElement('input', 'type="submit" name="submit" value="Post it"')
-					)
-				)
-			)
-		);
+		$form = new HtmlForm('blogpost_form');
+		
+		$form->AddContainer(new AdminBox('Blogpost options'), 'box1');
+		$form->AddTextField('title', 'Title: ');
+		$form->AddDropDown('category', 'Cotegory: ', $options);
+		$form->AddTextField('tags', 'Tags: ');
+		
+		$form->AddContainer(new AdminBox('What&apos;s on your mind?'), 'box2');
+		$form->AddTextField('text', 'Text: ', 5);
+		$form->AddButton('submit', 'Post it!');
+		
+		$html->AddChild($form);
 	}
 }
 ?>

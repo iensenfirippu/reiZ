@@ -3,6 +3,7 @@
  * Page class, for containing display theme
  * Copyright 2013 Iensen Firippu <philip@marugawalite>
  */
+// TODO: Convert to DBO subclass
 
 if (defined('reiZ') or exit(1))
 {

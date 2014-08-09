@@ -66,7 +66,7 @@ if (defined('reiZ') or exit(1))
 		public static function LoadFromID($id)
 		{
 			$object = null;
-			$row = parent::Load(array('uuid' => $id));
+			$row = parent::Load(array(array('uuid', Value::Is, $id)));
 			if ($row != null)
 			{
 				$object = new testobject($row);

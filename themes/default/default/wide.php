@@ -6,10 +6,12 @@
 
 if (defined('reiZ') or exit(1))
 {
-	$HTML = new SimpleLayout('Iensenfirippu.dk');
+	$HTML = new HtmlPage('Iensenfirippu.dk');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/wide.css');
-	include_once($THEME->GetDirectory().'/'.FOLDERMASTER.'/'.FOLDERCOMMON.'/common.php');
-	$HTML->AddContent(new HtmlElement('div', '', $PAGE->GetText()));
+	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/default.php');
+	
+	$HTML->SetPointer('content');
+	$HTML->AddElement(new HtmlElement('div', '', $PAGE->GetContent()));
 		
 	foreach ($PAGE->GetModules() as $module)
 	{
@@ -18,7 +20,7 @@ if (defined('reiZ') or exit(1))
 		foreach ($MODULE->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
 		foreach ($MODULE->GetJavascripts() as $js) { $HTML->AddJavascript($js); }
 		
-		$HTML->AddContent($MODULE->GetHtml($module[1]));
+		$HTML->AddElement($MODULE->GetHtml($module[1]));
 	}
 }
 ?>

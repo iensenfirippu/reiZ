@@ -11,12 +11,17 @@ if (defined('reiZ') or exit(1))
 		include_once(FOLDERMODULES.'/'.$module.'/module.php');
 	}*/
 	
-	$HTML = new DirectionalLayout('Iensenfirippu.dk');
+	$HTML = new HtmlPage('Iensenfirippu.dk');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
-	include_once($THEME->GetDirectory().'/'.FOLDERMASTER.'/'.FOLDERCOMMON.'/common.php');
-	$HTML->AddContent(new HtmlElement('div', '', $PAGE->GetText()));
-	$HTML->AddToRight(new HtmlElement('div', 'id="right-fixed"', '',
-		new HtmlElement('a', 'class="toplink-right" href="#top"', 'To top')));
+	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/default.php');
+	
+	// - right
+	$HTML->AddElement(new HtmlElement('div', 'id="right"'), 'main', 'right', 3);
+	$HTML->AddElement(new HtmlElement('div', 'id="right-fixed"', '',
+		new HtmlElement('a', 'class="toplink-right" href="#top"', 'To top')), 'right', 'right-fixed');
+	
+	$HTML->SetPointer('content');
+	$HTML->AddElement(new HtmlElement('div', '', $PAGE->GetContent()), 'content');
 		
 	foreach ($PAGE->GetModules() as $module)
 	{
@@ -25,8 +30,8 @@ if (defined('reiZ') or exit(1))
 		foreach ($MODULE->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
 		foreach ($MODULE->GetJavascripts() as $js) { $HTML->AddJavascript($js); }
 		
-		$HTML->AddContent($MODULE->GetHtml($module[1]));
-		$HTML->GetRight()->GetChildren()[0]->AddChild($MODULE->GetHtml_RightPane());
+		$HTML->AddElement($MODULE->GetHtml($module[1]));
+		$HTML->AddElement($MODULE->GetHtml_RightPane(), 'right-fixed');
 	}
 }
 ?>

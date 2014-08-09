@@ -12,7 +12,7 @@ include_once("../classes/constants.inc");
 include_once('../'.FOLDERCONFIG.'/config.cfg.inc');
 include_once('../'.FOLDERCONFIG.'/default.cfg.inc');
 include_once('../'.FOLDERCLASSES.'/database.cls.inc');
-include_once('../'.FOLDERCLASSES.'/query.cls.inc');
+include_once('../'.FOLDERCLASSES.'/query.clphps.inc');
 include_once('../'.FOLDERCLASSES.'/functions.cls.inc');
 
 if ($_SERVER['REMOTE_ADDR'] == MAINTENANCEIP or exit(1))
@@ -26,14 +26,14 @@ if ($_SERVER['REMOTE_ADDR'] == MAINTENANCEIP or exit(1))
 
 	$DB = new Database();
 	
-	if (!$DB->CanConnect()) // Step 1
+	if (!$DB->CanConnect()) // Step 1 // TODO: should be !CompletedStep1
 	{
 		$stepnumber = 1;
 		$title = "Database";
 		$footer = "Please enter your database login";
 		include('step1.htm.inc');
 	}
-	elseif (!$DB->TableExists('page')) // Step 2
+	elseif (!$DB->TableExists('page')) // Step 2 // TODO: should be !CompletedStep2
 	{
 		$stepnumber = 2;
 		$title = "Tables";

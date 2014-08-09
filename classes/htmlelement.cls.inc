@@ -20,7 +20,7 @@ if (defined('reiZ') or exit(1))
 		protected $_children = array();
 		//protected $_container = null;
 		
-		public function __construct($tag, $attributes=EMPTYSTRING, $content=EMPTYSTRING, $child=null)
+		public function __construct($tag=EMPTYSTRING, $attributes=EMPTYSTRING, $content=EMPTYSTRING, $child=null)
 		{
 			if ($tag == 'comment' || $tag == '!--')
 			{
@@ -46,66 +46,94 @@ if (defined('reiZ') or exit(1))
 		public function GetAttributes()		{ return $this->_attributes; }
 		public function GetContent()		{ return $this->_content; }
 		public function GetChildren()		{ return $this->_children; }
-		//public function GetContainer()		{ return $this->_container; }
+		public function HasChildren()		{ return sizeof($this->_children) > 0; }
 		
 		//public function SetIndent($int)	{ $this->_indent = $int; UpdateChildren(); }
 		public function SetContent($content) { $this->_content = $content; }
 		
-		public function AddChild($child)
+		public function AddChild($child, $index=null)
 		{
 			$child->_indent = $this->_indent + 1;
 			$child->UpdateChildren();
-			array_push($this->_children, $child);
+			
+			if ($index !== null && $index >= 0 && $index < sizeof($this->_children))
+			{
+				array_splice($this->_children, $index, 0, array($child));
+			}
+			else
+			{
+				array_push($this->_children, $child);
+			}
 		}
 		
 		private function UpdateChildren()
 		{
 			foreach ($this->_children as $c)
 			{
-				$c->_indent = $this->_indent + 1;
-				$c->updatechildren();
+				//if (is_a($c, 'HtmlElement'))
+				//{
+					$c->_indent = $this->_indent + 1;
+					if ($this->_tag == EMPTYSTRING) { $c->_indent = $this->_indent; }
+					$c->Updatechildren();
+				//}
 			}
 		}
 		
 		public function __tostring()
 		{
-			$return = str_repeat(INDENT, $this->_indent);
-			$return .= "<".$this->_tag;
-			if ($this->_attributes != EMPTYSTRING) { $return .= " ".$this->_attributes; }
-			if ($this->_endtag != EMPTYSTRING) { $return .= $this->_endtag.">"; }
-			else
+			$return = EMPTYSTRING;
+			if ($this->_tag != EMPTYSTRING)
 			{
-				if (sizeof($this->_children) == 0)
-				{
-					if ($this->_content != EMPTYSTRING)
-					{
-						if (strstr($this->_content, "\n"))
-						{
-							$return .= ">".
-								NEWLINE.str_repeat(INDENT, $this->_indent + 1).
-								preg_replace(
-									array('/[^>]\n/',	'/>\n/'),
-									array('<br />'.NEWLINE,
-									'>'.NEWLINE.str_repeat(INDENT, $this->_indent + 1)),
-								$this->_content).
-							NEWLINE.str_repeat(INDENT, $this->_indent)."</".$this->_tag.">";
-						}
-						else { $return .= ">".$this->_content."</".$this->_tag.">"; }
-					}
-					elseif (strstr(NONCLOSINGELEMENTS, $this->_tag)) { $return .= ">"; }
-					elseif (strstr(NONVOIDELEMENTS, $this->_tag)) { $return .= "></".$this->_tag.">"; }
-					else { $return .= " />"; }
-				}
+				$return = str_repeat(INDENT, $this->_indent);
+				$return .= "<".$this->_tag;
+				if ($this->_attributes != EMPTYSTRING) { $return .= " ".$this->_attributes; }
+				if ($this->_endtag != EMPTYSTRING) { $return .= $this->_endtag.">"; }
 				else
 				{
-					$return .= ">".NEWLINE;
-					if ($this->_content != EMPTYSTRING) { $return .= str_repeat(INDENT, $this->_indent + 1).str_replace("\n", "<brlol />".NEWLINE.str_repeat(INDENT, $this->_indent), $this->_content).NEWLINE; }
-					foreach ($this->_children as $c) { $return .= $c.NEWLINE; }
-					$return .= str_repeat(INDENT, $this->_indent)."</".$this->_tag.">";
+					if (sizeof($this->_children) == 0)
+					{
+						if ($this->_content != EMPTYSTRING)
+						{
+							if (strstr($this->_content, "\n"))
+							{
+								$return .= ">".
+									NEWLINE.str_repeat(INDENT, $this->_indent + 1).
+									preg_replace(
+										array('/[^>]\n/',	'/>\n/'),
+										array('<br />'.NEWLINE,
+										'>'.NEWLINE.str_repeat(INDENT, $this->_indent + 1)),
+									$this->_content).
+								NEWLINE.str_repeat(INDENT, $this->_indent)."</".$this->_tag.">";
+							}
+							else { $return .= ">".$this->_content."</".$this->_tag.">"; }
+						}
+						elseif (strstr(NONCLOSINGELEMENTS, $this->_tag)) { $return .= ">"; }
+						elseif (strstr(NONVOIDELEMENTS, $this->_tag)) { $return .= "></".$this->_tag.">"; }
+						else { $return .= " />"; }
+					}
+					else
+					{
+						$return .= ">".NEWLINE;
+						if ($this->_content != EMPTYSTRING) { $return .= str_repeat(INDENT, $this->_indent + 1).str_replace("\n", "<brlol />".NEWLINE.str_repeat(INDENT, $this->_indent), $this->_content).NEWLINE; }
+						foreach ($this->_children as $c) { $return .= $c.NEWLINE; }
+						$return .= str_repeat(INDENT, $this->_indent)."</".$this->_tag.">";
+					}
+				}
+			}
+			else
+			{
+				$sizeofchildren = sizeof($this->_children);
+				for ($i = 0; $i < $sizeofchildren; $i++)
+				{
+					$return .= $this->_children[$i];
+					if ($i != $sizeofchildren -1) { $return .= NEWLINE; }
 				}
 			}
 			return $return;
 		}
 	}
+	
+	// Include all predefined elements (for shorthand inclusion in theming)
+	foreach(glob(FOLDERCLASSES.'/elements/*.inc') as $classfile) { include_once($classfile); }
 }
 ?>

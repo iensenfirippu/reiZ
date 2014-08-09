@@ -7,6 +7,7 @@
 	{
 		$prefix = reiZ::GetSafePost('step2-prefix');
 		
+		// TODO: Obsolete as soon as the config class has been created
 		$oldfile = file_get_contents('../config/config.cfg.inc');
 		$newfile = $oldfile;
 		$haschanges = false;
@@ -15,11 +16,8 @@
 			$newline = EMPTYSTRING;
 			if (strstr($line, 'DBPREFIX')) { $newline = str_replace('"'.DBPREFIX.'"', '"'.$prefix.'"', $line); }
 			
-			
-			
 			if ($newline != EMPTYSTRING) { $newfile = str_replace($line, $newline, $newfile); $haschanges = true; }
 		}
-		
 		if ($haschanges)
 		{
 			if (file_put_contents('../config/config.cfg.inc', $newfile) == 0)
@@ -27,20 +25,18 @@
 				$footer = 'Can&apos;t overwrite config file';
 				$created = false;
 			}
-			else
-			{
-				$sql = str_replace('<[!PREFIX!]>', $prefix, file_get_contents('sql/structure.sql'));
-				
-				if ($DB->RunNonQuery($sql))
-				{
-					$footer = 'Database created successfully';
-					$created = true;
-				}
-				else
-				{
-					echo $sql;
-				}
-			}
+		}
+		
+		$sql = str_replace('<[!PREFIX!]>', $prefix, file_get_contents('sql/structure.sql'));
+		
+		if ($DB->RunNonQuery($sql))
+		{
+			$footer = 'Database created successfully';
+			$created = true;
+		}
+		else
+		{
+			echo $sql;
 		}
 	}
 	

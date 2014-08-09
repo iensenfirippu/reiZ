@@ -112,6 +112,7 @@ class BlogPost
 		
 		$query = new Query();
 		$query->SetType('select');
+		$query->AddFields(array('blogpost.p_id','blogpost.posted','blogpost.category','blogpost.title','blogpost.shorttext','blogpost.content'));
 		$query->AddTable('blogpost');
 		$query->AddCondition('p_id', '=', $postid);
 		$result = $GLOBALS['DB']->RunQuery($query);
@@ -128,15 +129,16 @@ class BlogPost
 		
 		$query = new Query();
 		$query->SetType('select');
-		$query->AddField('count(p_id) AS id');
+		$query->AddField('COUNT(blogpost.p_id)', null, 'id');
 		$query->AddTable('blogpost');
 		$amount = $GLOBALS['DB']->GetArray($GLOBALS['DB']->RunQuery($query))['id'];
 		$query->ClearFields();
 		
-		$query->AddField('blogpost.*');
+		$query->AddFields(array('blogpost.p_id','blogpost.posted','blogpost.category','blogpost.title','blogpost.shorttext','blogpost.content'));
 		$query->SetLimit($limit_lo, $limit_hi);
 		$query->SetOrderBy('posted', 'desc');
 		$result = $GLOBALS['DB']->RunQuery($query);
+		
 		while ($row = $GLOBALS['DB']->GetArray($result))
 		{
 			array_push($posts, new BlogPost($row['p_id'], $row['posted'], $row['category'], $row['title'], $row['shorttext'], $row['content'], true));
@@ -152,14 +154,14 @@ class BlogPost
 		
 		$query = new Query();
 		$query->SetType('select');
-		$query->AddField('count(blogpost.p_id) AS id');
+		$query->AddField('COUNT(blogpost.p_id)', null, 'id');
 		$query->AddTable('blogpost');
 		$query->AddInnerJoin('', 'blogcategory', 'category', 'c_id');
 		$query->AddCondition('blogcategory.name', '=', $categoryname);
 		$amount = $GLOBALS['DB']->GetArray($GLOBALS['DB']->RunQuery($query))['id'];
 		$query->ClearFields();
 		
-		$query->AddField('blogpost.*');
+		$query->AddFields(array('blogpost.p_id','blogpost.posted','blogpost.category','blogpost.title','blogpost.shorttext','blogpost.content'));
 		$query->SetLimit($limit_lo, $limit_hi);
 		$query->SetOrderBy('posted', 'desc');
 		$result = $GLOBALS['DB']->RunQuery($query);
@@ -178,7 +180,7 @@ class BlogPost
 		
 		$query = new Query();
 		$query->SetType('select');
-		$query->AddField('count(blogpost.p_id) AS id');
+		$query->AddField('COUNT(blogpost.p_id)', null, 'id');
 		$query->AddTable('blogpost');
 		$query->AddInnerJoin('', 'blogposttag', 'p_id', 'p_id');
 		$query->AddInnerJoin('blogposttag', 'blogtag', 't_id', 't_id');
@@ -186,7 +188,7 @@ class BlogPost
 		$amount = $GLOBALS['DB']->GetArray($GLOBALS['DB']->RunQuery($query))['id'];
 		$query->ClearFields();
 		
-		$query->AddField('blogpost.*');
+		$query->AddFields(array('blogpost.p_id','blogpost.posted','blogpost.category','blogpost.title','blogpost.shorttext','blogpost.content'));
 		$query->SetLimit($limit_lo, $limit_hi);
 		$query->SetOrderBy('posted', 'desc');
 		$result = $GLOBALS['DB']->RunQuery($query);

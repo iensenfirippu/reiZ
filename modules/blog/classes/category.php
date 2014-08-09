@@ -24,6 +24,7 @@ class BlogCategory
 		
 		$query = new Query();
 		$query->SetType('select');
+		$query->AddFields(array('blogcategory.c_id','blogcategory.name','blogcategory.title'));
 		$query->AddTable('blogcategory');
 		$query->AddCondition('id', '=', $id);
 		$result = $GLOBALS['DB']->RunQuery($query);
@@ -42,6 +43,7 @@ class BlogCategory
 		
 		$query = new Query();
 		$query->SetType('select');
+		$query->AddFields(array('blogcategory.c_id','blogcategory.name','blogcategory.title'));
 		$query->AddTable('blogcategory');
 		$query->AddCondition('name', '=', $name);
 		$result = $GLOBALS['DB']->RunQuery($query);
@@ -60,6 +62,7 @@ class BlogCategory
 		
 		$query = new Query();
 		$query->SetType('select');
+		$query->AddFields(array('blogcategory.c_id','blogcategory.name','blogcategory.title'));
 		$query->AddTable('blogcategory');
 		$query->SetOrderby('c_id', 'asc');
 		$result = $GLOBALS['DB']->RunQuery($query);
