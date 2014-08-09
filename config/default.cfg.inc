@@ -28,7 +28,7 @@ if (defined('reiZ') or exit(1))
 	if (!defined("TIMEZONE"))			define("TIMEZONE",			"Asia/Tokyo");
 	if (!defined("ITEMSPERPAGE"))		define("ITEMSPERPAGE",		25);
 	
-	if (!defined("DBVENDOR")) 			define("DBVENDOR",			"mysql");
+	if (!defined("DBVENDOR")) 			define("DBVENDOR",			"mysqli");
 	if (!defined("DBPREFIX")) 			define("DBPREFIX",			"reiZ_");
 	if (!defined("DBSERVER")) 			define("DBSERVER",			"localhost");
 	if (!defined("DBDATABASE"))			define("DBDATABASE",		"reiZ");

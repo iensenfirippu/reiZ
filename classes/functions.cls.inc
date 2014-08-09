@@ -105,6 +105,14 @@ if (defined('reiZ') or exit(1))
 			return $value;
 		}
 		
+		public static function FlipBoolean(&$boolean)
+		{
+			if (is_bool($boolean))
+			{
+				$boolean = !$boolean;
+			}
+		}
+		
 		public static function MakeHideId()
 		{
 			// TODO: research possibility for
@@ -118,7 +126,7 @@ if (defined('reiZ') or exit(1))
 			return $classname.$hiddenindex;
 		}
 		
-		public static function GUID($stripcurlies = false, $stripdashes = false)
+		/*public static function GUID($stripcurlies = false, $stripdashes = false)
 		{
 			$value = '';
 			if (function_exists('com_create_guid'))
@@ -144,7 +152,7 @@ if (defined('reiZ') or exit(1))
 			if ($stripdashes) { $value = str_replace('-', '', $value); }
 			
 			return $value;
-		}
+		}*/
 		
 		public static function GetFileSize($bytes)
 		{
@@ -164,13 +172,40 @@ if (defined('reiZ') or exit(1))
 			return $value;
 		}
 		
+		public static function SetAndNotNull($variable)
+		{
+			return isset($variable) && $variable != null;
+		}
+		
+		public static function SetAndNotEmpty($variable)
+		{
+			return isset($variable) && !empty($variable);
+		}
+		
+		public static function IsArrayLongerThan($variable, $size)
+		{
+			return is_array($variable) && sizeof($variable) > $size;
+		}
+		
+		/* String methods */
+		
 		public static function StartsWithUpper($str)
 		{
 			$chr = mb_substr($str, 0, 1, "UTF-8");
 			return mb_strtolower($chr, "UTF-8") != $chr;
 		}
 		
-		public static function Login($username, $password)
+		public static function CheckLogin()
+		{
+			if (isset($_POST['username']) && !empty($_POST['username']))
+			{
+				$redirect = null;
+				if (reiZ::SetAndNotNull($GLOBALS['ARGS'][0])) { $redirect = $GLOBALS['ARGS'][0]; }
+				reiZ::Login($_POST['username'], $_POST['password'], $redirect);
+			}
+		}
+		
+		public static function Login($username, $password, $redirect=null)
 		{
 			$success = false;
 			
@@ -178,8 +213,8 @@ if (defined('reiZ') or exit(1))
 			$query->SetType('select');
 			$query->AddField('u_id');
 			$query->AddTable(DBPREFIX.'user');
-			$query->AddCondition('username', '=', reiZ::Sanitize($_POST['username']));
-			$query->AddCondition('password', '=', reiZ::Sanitize($_POST['password']));
+			$query->AddCondition('username', DBOP::Is, reiZ::Sanitize($_POST['username']));
+			$query->AddCondition('password', DBOP::Is, reiZ::Sanitize($_POST['password']));
 			$result = $GLOBALS['DB']->RunQuery($query);
 			//var_dump($query);
 			$row = $GLOBALS['DB']->GetArray($result);
@@ -204,7 +239,11 @@ if (defined('reiZ') or exit(1))
 			//var_dump($query);
 			$GLOBALS['DB']->RunNonQuery($query);
 			
-			if ($success) { reiZ::BackToDisneyland(); }
+			if ($success)
+			{
+				if ($redirect == null) { reiZ::BackToDisneyland(); }
+				else { reiZ::Redirect('/'.$redirect); }
+			}
 		}
 		
 		/*function IPv4To6($ip)
@@ -230,6 +269,50 @@ if (defined('reiZ') or exit(1))
 			$Part8 = base_convert(($iparr[2] * 256) + $iparr[3], 10, 16);
 			return '::ffff:'.$Part7.':'.$Part8;
 		}*/
+		
+		public static function string_is_one_of($array, $string)
+		{
+			if (is_array($array)) { return in_array($string, $array); }
+			else { return false; }
+		}
+		
+		public static function string_contains($haystack, $needle, $match=-1, $out=null)
+		{
+			$value = false;
+			
+			if (is_array($needle))
+			{
+				$matches = 0;
+				foreach ($needle as $n)
+				{
+					if (strpos($haystack, $n) !== false) $matches++;
+				}
+				
+				// IF match=-1(all), and all needles matched...
+				if ($match == -1 && $matches == sizeof($needle)) $value = true;
+				// OR match=0(none), and no matches...
+				elseif ($match == 0 && $matches == 0) $value = true;
+				// OR match=x(at least x), and more than x matches...
+				elseif ($match == 0 && $matches == 0) $value = true;
+				// ...return true
+			}
+			else
+			{
+				$value = ($out = strpos($haystack, $needle)) !== false;
+			}
+			
+			return $value;
+		}
+		
+		public static function string_beginswith($haystack, $needle)
+		{
+			return strpos($haystack, $needle) === 0;
+		}
+		
+		public static function string_endswith($haystack, $needle)
+		{
+			return strpos($haystack, $needle) === sizeof($haystack-1);
+		}
 	}
 }
 ?>

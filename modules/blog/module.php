@@ -1,4 +1,6 @@
 <?php
+// TODO: Add support for direct blogpost linking (no category og page, just like: /blog/$ID )
+
 define("BLOGPOSTPRPAGE", 10);
 define("BLOGDEFAULTCATEGORY", 'All');
 define("BLOGPAGINATIONLINKS", 3);
@@ -116,6 +118,7 @@ class BlogModule extends Module
 			
 			$categories = BlogCategory::LoadAll();
 			$tags = BlogTag::LoadByPopularity();
+			
 			$countandposts = null;
 			$pagination = null;
 			
@@ -129,11 +132,10 @@ class BlogModule extends Module
 			if (isset($dir[1]) && !empty($dir[1])) { $page = $dir[1]; } else { $page = 1; }
 			if (isset($dir[2]) && !empty($dir[2])) { $post = $dir[2]; }
 			
-			
 			// Fetch the relevant blog post (newest X posts of the selected category or tag)
 			if ($post != 0)	{ $countandposts = BlogPost::LoadById($post); }
-			elseif ($cat != '') { $countandposts = BlogPost::LoadNewestByCategory($cat, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); }
-			elseif ($catortag != '') { $countandposts = BlogPost::LoadNewestByTag($catortag, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); }
+			elseif ($cat != EMPTYSTRING) { $countandposts = BlogPost::LoadNewestByCategory($cat, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); }
+			elseif ($catortag != EMPTYSTRING) { $countandposts = BlogPost::LoadNewestByTag($catortag, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); }
 			//else { $countandposts = BlogPost::LoadNewest($page); $catortag = BLOGDEFAULTCATEGORY; }
 			if ($countandposts[0] == 0) { $countandposts = BlogPost::LoadNewest((BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); $catortag = BLOGDEFAULTCATEGORY; }
 			$pagination = new BlogPagination($p, $countandposts[0], $catortag, $page);

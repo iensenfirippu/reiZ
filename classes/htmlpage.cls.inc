@@ -45,9 +45,9 @@ if (defined('reiZ') or exit(1))
 		//public function AddToHead($HtmlElement)		{ $this->_head->AddChild($HtmlElement); }
 		//public function AddToBody($HtmlElement)		{ $this->_body->AddChild($HtmlElement); }
 		//public function AddContent($HtmlElement)	{ $this->_content->AddChild($HtmlElement); }
-		public function SetPointer($name)			{ $this->_pointer = $_references[$name]; }
+		public function SetPointer($name)			{ $this->_pointer = $this->_references[$name]; }
 		
-		public function AddElement($HtmlElement, $inelement=null, $registeras=null)
+		public function AddElement($HtmlElement, $inelement=null, $registeras=null, $index=null)
 		{
 			if ($HtmlElement != null && is_a($HtmlElement, 'HtmlElement'))
 			{
@@ -55,7 +55,7 @@ if (defined('reiZ') or exit(1))
 				{
 					if (isset($this->_references[$inelement]) && is_a($this->_references[$inelement], 'HtmlElement'))
 					{
-						$this->_references[$inelement]->AddChild($HtmlElement);
+						$this->_references[$inelement]->AddChild($HtmlElement, $index);
 					}
 					else
 					{
@@ -75,7 +75,7 @@ if (defined('reiZ') or exit(1))
 				{
 					if (!isset($this->_references[$registeras]))
 					{
-						$this->_references[$registeras] = $HtmlElement;
+						$this->_pointer = $this->_references[$registeras] = $HtmlElement;
 					}
 					else
 					{
@@ -119,15 +119,16 @@ if (defined('reiZ') or exit(1))
 		public function __tostring()
 		{
 			$html = EMPTYSTRING;
+			$headprocessed = false;
 			
+			foreach ($this->_stylesheets as $stylesheet) { $this->_references['HEAD']->AddChild($stylesheet); }
+			foreach ($this->_javascripts as $javascript) { $this->_references['HEAD']->AddChild($javascript); }
+			$this->_stylesheets = array();
+			$this->_javascripts = array();
+				
 			foreach ($this->_elements as $HtmlElement)
 			{
 				$html .= $HtmlElement.NEWLINE;
-				if ($HtmlElement == $this->_references['HEAD'])
-				{
-					foreach ($this->_stylesheets as $stylesheet) { $html .= $stylesheet; }
-					foreach ($this->_javascripts as $javascript) { $html .= $javascript; }
-				}
 			}
 			
 			return $html;

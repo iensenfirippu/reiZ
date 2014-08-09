@@ -2,6 +2,8 @@ html, body {
 	margin: 0px;
 	padding: 0px;
 	background-color: #555555;
+	
+	font-family: sans; 
 }
 
 div, h1, h2, h3, h4, h5, a, span, p, hr, ul, li, img {
@@ -278,4 +280,48 @@ ul.options a:hover {
 
 .box_main .content {
 	margin: 10px;
+}
+
+/* Tables */
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+/* table.row */
+
+.table_row {
+	background-color: #f5f5f5;
+	border-bottom: 1px solid #aaaaaa;
+}
+
+.table_alternate_row {
+	background-color: #eeeeee;
+}
+
+/* table.cell */
+
+.table_cell {
+	border-left: 1px solid #aaaaaa;
+}
+
+.table_last_cell {
+	width: 50px;
+	border-right: 1px solid #aaaaaa;
+}
+
+/* table.header */
+
+.table_header_cell {
+	background-color: #cccccc;
+	font-weight: bold;
+}
+
+.table_alternate_header_cell {
+	background-color: #c0c0c0;
+}
+
+.table_header_row {
+	border: 1px solid #aaaaaa;
 }

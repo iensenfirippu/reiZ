@@ -2,15 +2,15 @@
 # Drop old tables      #
 # #################### #
 
-DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS login;
-#DROP TABLE IF EXISTS ban;
+DROP TABLE IF EXISTS <[!PREFIX!]>user;
+DROP TABLE IF EXISTS <[!PREFIX!]>login;
+#DROP TABLE IF EXISTS <[!PREFIX!]>ban;
 
 # #################### #
 # Create new tables    #
 # #################### #
 
-CREATE TABLE IF NOT EXISTS user
+CREATE TABLE IF NOT EXISTS <[!PREFIX!]>user
 (
 	u_id INT(11) NOT NULL AUTO_INCREMENT,
 	username VARCHAR(48) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS user
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS login
+CREATE TABLE IF NOT EXISTS <[!PREFIX!]>login
 (
 	l_id INT(11) NOT NULL AUTO_INCREMENT,
 	occured INT(11) NOT NULL,
@@ -36,4 +36,4 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8;
 # Insert test data     #
 # #################### #
 
-INSERT INTO user (username, password) VALUES ('philip','ikesmit');
+INSERT INTO <[!PREFIX!]>user (username, password) VALUES ('philip','ikesmit');

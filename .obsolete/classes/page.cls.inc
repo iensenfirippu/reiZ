@@ -76,7 +76,7 @@ if (defined('reiZ') or exit(1))
 			$query = new Query();
 			
 			$query->SetType('select');
-			$query->AddFields(array('page.id', 'masterpage.id as mp_id', 'masterpage.name as mp_name', 'page.name', 'page.content', 'page.inmenu', 'page.weight'));
+			$query->AddFields(array('page.id', array('masterpage.id', 'mp_id'), array('masterpage.name', 'mp_name'), 'page.name', 'page.content', 'page.inmenu', 'page.weight'));
 			$query->AddTable('page');
 			$query->AddInnerJoin('', 'masterpage', 'masterpage', 'id');
 			$query->AddCondition('page.name', '=', $name);

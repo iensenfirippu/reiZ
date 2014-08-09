@@ -104,11 +104,10 @@ class BlogTag
 	public static function LoadByPopularity()
 	{
 		$tags =  array();
-
+		
 		$query = new Query();
 		$query->SetType('select');
-		$query->AddField('blogtag.*');
-		$query->AddField('COUNT(blogposttag.t_id) AS popularity');
+		$query->AddFields(array('blogtag.t_id', 'blogtag.name', array('COUNT(blogposttag.t_id)', 'popularity')));
 		$query->AddTable('blogtag');
 		$query->AddInnerJoin('', 'blogposttag', 't_id', 't_id');
 		$query->SetGroupBy('t_id');

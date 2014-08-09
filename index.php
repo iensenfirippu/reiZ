@@ -19,10 +19,10 @@ $ARGS = null;
 $HIDDENINDEX = 0;
 
 foreach (glob(FOLDERCLASSES."/*.cls.inc") as $classfile) { include_once($classfile); }
-foreach (glob(FOLDERCLASSES."/*/*.cls.inc") as $classfile) { include_once($classfile); }
 	
 if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 {
+	// TODO: Change to maintenance mode specific theme
 	$HTML = new HtmlPage('Maintenance');
 	$HTML->AddElement(new HtmlElement('span', '', 'This site is currently undergoing maintenance, please check back later.'));
 	$HTML->GetReference('TITLE')->SetContent('test');
@@ -31,9 +31,9 @@ else
 {
 	$input_p = reiZ::GetSafeArgument(GETPAGE);
 	$ARGS = explode('/', reiZ::GetSafeArgument(GETARGS));
-	$DB = new Database();
+	if (class_exists('Database') && class_exists('Query')) { $DB = new Database(); }
 	
-	if (!$DB->IsConnected())
+	if ($DB == null || !$DB->IsConnected())
 	{
 		if ($input_p == INSTALLPAGE && $_SERVER['REMOTE_ADDR'] == MAINTENANCEIP && file_exists(FOLDERINSTALL))
 		{
@@ -48,17 +48,26 @@ else
 	else
 	{
 		if ($input_p == EMPTYSTRING) { reiZ::Redirect('/'.INDEXPAGE.'/'); }
-		elseif ($input_p == ADMINPAGE && isset($_SESSION["verysecureuserid"]) && $_SESSION["verysecureuserid"] > 0)
+		elseif ($input_p == ADMINPAGE)
 		{
-			$THEME = new Theme(DEFAULTTHEME, 'admin');
-			$PAGE = Page::LoadByName($input_p);
-			include_once(FOLDERADMIN.'/admin.php');
+			if (isset($_SESSION["verysecureuserid"]) && $_SESSION["verysecureuserid"] > 0)
+			{
+				include_once(FOLDERCLASSES.'/administration.inc');
+				$THEME = new Theme(DEFAULTTHEME, 'admin');
+				$PAGE = new Administration();
+				include_once($THEME->GetDirectory().'/default.php');
+			}
+			else
+			{
+				reiZ::Redirect('/'.LOGINPAGE.'/'.ADMINPAGE.'/');
+			}
 		}
 		elseif ($input_p == ADMINPAGE || $input_p == LOGINPAGE)
 		{	
 			if (isset($_SESSION["verysecureuserid"])) { reiZ::BackToDisneyland(true); }
 			else
 			{
+				// TODO: Allow login to be on ny page
 				$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
 				$PAGE = Page::LoadByName($input_p);
 				include_once($THEME->GetDirectory().'/login.php');
@@ -68,7 +77,7 @@ else
 		{
 			$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
 			$PAGE = Page::LoadByName($input_p);
-			include_once($THEME->GetDirectory().'/'.FOLDERMASTER.'/'.$PAGE->GetFilenameMaster());
+			include_once($THEME->GetDirectory().'/'.$PAGE->GetFilenameMaster());
 		}
 		
 		if (DEBUG)

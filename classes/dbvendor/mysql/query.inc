@@ -2,11 +2,12 @@
 /**************************************************** /
 / Query class for containing a Sql query              /
 / Created by Philip Rune Jensen (me@iensenfirippu.dk) /
-/ Version: 1.0.2        Date: 2013/09/13              /
-/ Latest additions: GroupBy support                   /
+/ Version: 1.0.4        Date: 2014/07/24              /
+/ Latest additions: Added DBQT and DBOP Enums         /
+/                   Added DBPREFIX support            /
+/                   GroupBy support                   /
 /                   InnerJoin support                 /
 /                   SetTable() readded                /
-/                   Condition support                 /
 / ****************************************************/
 
 if (defined('reiZ') or exit(1))
@@ -45,8 +46,9 @@ if (defined('reiZ') or exit(1))
 						for ($i = 0; $i <= $numberOfFields; $i++)
 						{
 							$name = $this->fieldnames[$i];
-	
-							$this->query .= $name;
+							
+							$this->query .= $name[0].' as '.$name[1];
+							
 							if ($i != $numberOfFields)
 							{
 								$this->query .= ', ';
@@ -145,8 +147,8 @@ if (defined('reiZ') or exit(1))
 						$numberOfFields = sizeof($this->fieldnames) - 1;
 						for ($i = 0; $i <= $numberOfFields; $i++)
 						{
-							$name = $this->fieldnames[$i];
-	
+							$name = $this->fieldnames[$i][0].' as '.$this->fieldnames[$i][1];
+							
 							$this->query .= $name;
 							if ($i != $numberOfFields)
 							{
@@ -200,7 +202,7 @@ if (defined('reiZ') or exit(1))
 						$numberOfFields = sizeof($this->fieldnames) - 1;
 						for ($i = 0; $i <= $numberOfFields; $i++)
 						{
-							$name = $this->fieldnames[$i];
+							$name = $this->fieldnames[$i][0];
 							$value = $this->fieldvalues[$i];
 							
 							if (is_string($value))
@@ -321,18 +323,23 @@ if (defined('reiZ') or exit(1))
 			$this->type = $string;
 		}
 	
-		public function SetTable(/*string*/$string)
+		public function SetTable(/*string*/$name)
 		{
-			$this->tables = array($string);
+			$name = $this->PrefixTableName($name);
+			$this->tables = array($name);
 		}
 	
-		public function AddTable(/*string*/$string)
+		public function AddTable(/*string*/$name)
 		{
-			array_push($this->tables, $string);
+			$name = $this->PrefixTableName($name);
+			array_push($this->tables, $name);
 		}
 	
-		public function AddField(/*string*/$name, /*string*/$value = null)
+		public function AddField(/*string*/$name, /*string*/$value=null, /*string*/$as=null)
 		{
+			$name = array($this->PrefixFieldName($name), $as);
+			if ($name[1] == null) $name[1] = $this->TrimFieldName($name[0]);
+			
 			array_push($this->fieldnames, $name);
 			if ($value != null)
 			{
@@ -350,6 +357,11 @@ if (defined('reiZ') or exit(1))
 		{
 			foreach ($names as $name)
 			{
+				if (is_array($name))
+					$name[0] = $this->PrefixFieldName($name[0]);
+				else
+					$name = array($this->PrefixFieldName($name), $this->TrimFieldName($name));
+				
 				array_push($this->fieldnames, $name);
 				array_push($this->fieldvalues, '');
 			}
@@ -364,6 +376,8 @@ if (defined('reiZ') or exit(1))
 		public function AddInnerJoin(/*string*/$table1, /*string*/$table2, /*string*/$field1, /*string*/$field2)
 		{
 			if ($table1 == '') { $table1 = $this->tables[0]; }
+			$table1 = $this->PrefixTableName($table1);
+			$table2 = $this->PrefixTableName($table2);
 			array_push($this->innerjoins, array($table1, $table2, $field1, $field2));
 		}
 		
@@ -375,7 +389,7 @@ if (defined('reiZ') or exit(1))
 		public function AddCondition(/*string*/$fieldname, /*string*/$operator, /*string*/$value, /*boolean*/$valueneedsquotes = true)
 		{
 			//if ($valueneedsquotes) { $value = '"'.$value.'"'; }
-			$condition = array($fieldname, $operator, $value);
+			$condition = array($this->PrefixFieldName($fieldname), $operator, $value);
 			array_push($this->conditions, $condition);
 		}
 		
@@ -414,6 +428,80 @@ if (defined('reiZ') or exit(1))
 		{
 			$this->limit = 'LIMIT '.$int1.', '.$int2;
 		}
+		
+		private function PrefixTableName($name)
+		{
+			if (!reiZ::string_beginswith($name, DBPREFIX)) $name = DBPREFIX.$name;
+			return $name;
+		}
+		
+		private function PrefixFieldName($name)
+		{
+			if (reiZ::string_contains($name, '.')
+				&& !reiZ::string_contains($name, DBPREFIX))
+					if (($pos = strrpos($name, '(') + 1) > 1)
+						$name = substr($name, 0, $pos).DBPREFIX.substr($name, $pos);
+					else
+						$name = DBPREFIX.$name;
+			return $name;
+			
+			/*if (!reiZ::string_contains($name, DBPREFIX))
+			{
+				$pos = 0;
+				if (reiZ::string_contains($name, '(', -1, $pos)) {
+					$name = substr($name, 0, $pos+1).DBPREFIX.substr($name, $pos+1);
+				} else {
+					$name = DBPREFIX.$name;
+				}
+			}
+			return $name;*/
+			
+			/*if (reiZ::string_contains($name, '.')
+				&& !reiZ::string_contains($name, DBPREFIX))
+					if (reiZ::string_contains($name, '(')) {
+						$insertat = strpos($name, '(') + 1;
+						$name = substr($name, 0, $insertat).DBPREFIX.substr($name, $insertat);
+					} else { $name = DBPREFIX.$name; }
+			return $name;*/
+		}
+		
+		private function TrimFieldName($name)
+		{
+			$pos = strrpos($name, '.');
+			if ($pos !== false)
+				return substr($name, $pos + 1);
+			else
+				return $name;
+		}
 	}
+	
+	abstract class DB_QueryType
+	{
+		const Select = 'SELECT';
+		const Insert = 'INSERT';
+		const Update = 'UPDATE';
+		const Delete = 'DELETE';
+	}
+	abstract class DBQT extends DB_QueryType {}
+	
+	abstract class DB_Operator
+	{
+		const Is = '=';
+		const LessThan = '<';
+		const MoreThan = '>';
+		const IsNot = '!=';
+		const LessThanOrEqual = '<=';
+		const MoreThanOrEqual = '>=';
+	}
+	abstract class DBOP extends DB_Operator {}
+	
+	abstract class DB_OrderDirection
+	{
+		const Asc			= DB_OrderDirection::Ascending;
+		const Ascending		= 'ASC';
+		const Desc			= DB_OrderDirection::Descending;
+		const Descending	= 'DESC';
+	}
+	abstract class DBOD extends DB_OrderDirection {}
 }
 ?>
