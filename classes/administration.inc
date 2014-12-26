@@ -63,26 +63,29 @@ class Administration
 		$this->_content = new HtmlElement();
 		$this->_options = new AdminOptions();
 		
-		if ($args[0] == 'pages') { $this->MakeHtml_Pages($args); }
-		elseif ($args[0] == 'modules') { $this->MakeHtml_Modules($args); }
-		elseif ($args[0] == 'themes') { $this->MakeHtml_Themes($args); }
-		elseif ($args[0] == 'settings') { $this->MakeHtml_Settings($args); }
-		else
+		if (sizeof($args) > 0)
 		{
-			$modulefile = FOLDERMODULES.'/'.$args[0].'/admin.php';
-			if (file_exists($modulefile))
+			if ($args[0] == 'pages') { $this->MakeHtml_Pages($args); }
+			elseif ($args[0] == 'modules') { $this->MakeHtml_Modules($args); }
+			elseif ($args[0] == 'themes') { $this->MakeHtml_Themes($args); }
+			elseif ($args[0] == 'settings') { $this->MakeHtml_Settings($args); }
+			else
 			{
-				include_once($modulefile);
-				$classname = 'CustomAdmininistrationPage';
-				if (class_exists($classname))
+				$modulefile = FOLDERMODULES.'/'.$args[0].'/admin.php';
+				if (file_exists($modulefile))
 				{
-					$ref = new ReflectionClass($classname);
-					$adminpage = $ref->newInstance();
-					$adminpage->MakeHtml($this, $args);
+					include_once($modulefile);
+					$classname = 'CustomAdmininistrationPage';
+					if (class_exists($classname))
+					{
+						$ref = new ReflectionClass($classname);
+						$adminpage = $ref->newInstance();
+						$adminpage->MakeHtml($this, $args);
+					}
+					else { $this->MakeHtml_Home($args); } 
 				}
 				else { $this->MakeHtml_Home($args); } 
 			}
-			else { $this->MakeHtml_Home($args); } 
 		}
 	}
 	
@@ -93,6 +96,31 @@ class Administration
 	
 	private function MakeHtml_Pages($args)
 	{
+		$showlist = false;
+		
+		if (sizeof($args) > 1 && $args[1] == 'add')
+		{
+			$this->MakeHtml_EditPage($args, Page::CreateNew());
+		}
+		elseif (sizeof($args) > 2 && $args[2] != null)
+		{
+			$page = Page::LoadFromID($args[2]);
+			
+			if ($page != null)
+			{
+				if ($args[1] == 'delete') { $this->MakeHtml_DeletePage($args, $page); }
+				elseif ($page != null && $args[1] == 'edit') { $this->MakeHtml_EditPage($args, $page); }
+				else { $showlist = true; }
+			}
+			else { $showlist = true; }
+		}
+		else { $showlist = true; }
+		
+		if ($showlist) { $this->MakeHtml_ListPages($args); }
+	}
+	
+	private function MakeHtml_ListPages($args)
+	{
 		$this->_options->AddOption('list');
 		$this->_options->AddOption('add');
 		
@@ -100,18 +128,97 @@ class Administration
 		
 		$admin = new AdminBox('List');
 		
-		$list = new HtmlList(array('Name', 'In menu', 'Weight', EMPTYSTRING));
+		$list = new HtmlList(array('Name', 'Title', 'In menu', 'Weight', EMPTYSTRING));
 		foreach ($pages as $page)
 		{
+			$inmenu = $page->GetInMenu() ? 'true' : 'false';
 			$options = new HtmlElement();
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'V'));
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'E'));
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'D'));
-			$list->AddRow(array($page->GetName(), $page->GetInMenu(), $page->GetWeight(), $options));
+			$options->AddChild(new HtmlElement('a', 'href="/'.$page->GetName().'/"', 'V'));
+			$options->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/pages/edit/'.$page->GetId().'/"', 'E'));
+			$options->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/pages/delete/'.$page->GetId().'/"', 'D'));
+			$list->AddRow(array($page->GetName(), $page->GetTitle(true), $inmenu, $page->GetWeight(), $options));
 		}
 		$admin->AddContent($list);
 		
 		$this->_content->AddChild($admin);
+	}
+	
+	private function MakeHtml_EditPage($args, $page)
+	{
+		// TODO: Make a nice way of selecting before/after certain other page
+		// TODO: Allow the user to add Modules to the page, and their position (leave to another page/form if too difficult)
+		
+		if ($page != null)
+		{
+			if (isset($_POST['submit']) && $_POST['submit'] != null)
+			{
+				$valid = true;
+				
+				if (isset($_POST['masterpage'])) { $page->SetMasterpage(MasterPage::Load($_POST['masterpage'])); }
+				if (isset($_POST['name'])) { $page->SetName($_POST['name']); }
+				if (isset($_POST['title'])) { $page->SetTitle($_POST['title']); }
+				if (isset($_POST['content'])) { $page->SetContent($_POST['content']); }
+				if (isset($_POST['inmenu'])) { $page->SetInMenu(true); } else { $page->SetInMenu(false); }
+				if (isset($_POST['weight'])) { $page->SetWeight($_POST['weight']); }
+				
+				if ($valid)
+				{
+					$saved = $page->Save();
+					
+					if ($args[1] == 'add' && $saved)
+					{
+						reiZ::Redirect('/'.ADMINPAGE.'/pages/');
+						//reiZ::Redirect('/'.ADMINPAGE.'/pages/edit/'.$page->GetId());
+					}
+				}
+			}
+			
+			$this->_options->AddOption('home', '/'.ADMINPAGE.'/pages/', 'Back');
+			
+			$options = array();
+			$masterpages = Masterpage::LoadAll();
+			foreach ($masterpages as $m) { array_push($options, array($m->GetId(), $m->GetName())); }
+			
+			$form = new HtmlForm('page_form');
+			
+			$form->AddContainer(new AdminBox('Meta'), 'box1');
+			$form->AddTextField('name', 'Name:', $page->GetName());
+			$form->AddTextField('title', 'Title:', $page->GetTitle());
+			$form->AddCheckBox('inmenu', 'In menu:', $page->GetInMenu());
+			$form->AddTextField('weight', 'Weight:', $page->GetWeight());
+			
+			$selectedid = $page->GetMasterPage() != null ? $page->GetMasterPage()->GetId() : null;
+			$form->AddDropDown('masterpage', 'MasterPage:', $options, $selectedid);
+			
+			$form->AddContainer(new AdminBox('Content'), 'box2');
+			$form->AddTextField('content', 'Text:', $page->GetContent(), 20);
+			$form->AddButton('submit', 'Save changes');
+			
+			$this->_content->AddChild($form);
+		}
+	}
+	
+	private function MakeHtml_DeletePage($args, $page)
+	{
+		if ($page != null)
+		{
+			if (isset($_POST['submit']) && $_POST['submit'] != null)
+			{
+				$page->Delete();
+				reiZ::Redirect('/'.ADMINPAGE.'/pages/');
+			}
+			
+			$this->_options->AddOption('home', '/'.ADMINPAGE.'/pages/', 'Back');
+			
+			$form = new HtmlForm('page_delete');
+			
+			$form->AddContainer(new AdminBox('Delete Page'), 'box1');
+			$form->AddText('Are you sure you want to delete this page object?<br />'.
+				'(this action can be undone by visiting the recycle center)<br /><br />');
+			$form->AddButton('submit', 'Yes, I am sure I want to delete it.');
+			
+			$this->_content->AddChild($form);
+		}
 	}
 	
 	private function MakeHtml_Modules($args)
@@ -125,9 +232,8 @@ class Administration
 		foreach ($modules as $module)
 		{
 			$options = new HtmlElement();
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'V'));
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'E'));
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'D'));
+			$options->AddChild(new HtmlElement('a', 'href="#"', 'S')); //settings
+			$options->AddChild(new HtmlElement('a', 'href="#"', 'E/D')); //enable/disable
 			$list->AddRow(array($module, $options));
 		}
 		$admin->AddContent($list);
@@ -137,7 +243,7 @@ class Administration
 	
 	private function MakeHtml_Themes($args)
 	{
-		$this->_options->AddChild();
+		$this->_options->AddOption('list');
 		
 		$search = FOLDERTHEMES.'/';
 		$themes = str_replace(array($search, '/'), EMPTYSTRING, glob($search.'*/'));
@@ -148,9 +254,8 @@ class Administration
 		foreach ($themes as $theme)
 		{
 			$options = new HtmlElement();
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'V'));
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'E'));
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'D'));
+			$options->AddChild(new HtmlElement('a', 'href="#"', 'V')); //view
+			$options->AddChild(new HtmlElement('a', 'href="#"', 'S')); //settings
 			$list->AddRow(array($theme, $options));
 		}
 		$admin->AddContent($list);

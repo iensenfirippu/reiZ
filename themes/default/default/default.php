@@ -11,9 +11,9 @@ if (defined('reiZ') or exit(1))
 		include_once(FOLDERMODULES.'/'.$module.'/module.php');
 	}*/
 	
-	$HTML = new HtmlPage('Iensenfirippu.dk');
-	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
+	//$HTML = new HtmlDocument('Iensenfirippu.dk');
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/default.php');
+	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
 	
 	// - right
 	$HTML->AddElement(new HtmlElement('div', 'id="right"'), 'main', 'right', 3);

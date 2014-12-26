@@ -46,6 +46,33 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
+		/*public static function StripMarkupFromTextArea($text)
+		{
+			$text = explode(NEWLINE, $text);
+			foreach ($text as $line) { $line = trim($line); }
+			return implode(NEWLINE, $text);
+		}*/
+		
+		public static function ConvertTextToHtml($text)
+		{
+			return str_replace(array('\n', '\t'), array(NEWLINE, INDENT), htmlspecialchars_decode($text));
+		}
+		
+		public static function ConvertHtmlToText($html)
+		{
+			return htmlspecialchars(str_replace(array(NEWLINE, INDENT), array('\n', '\t'), $html));
+		}
+		
+		public static function Unserialize($text)
+		{
+			return unserialize(gzuncompress(base64_decode($text)));
+		}
+		
+		public static function Serialize($object)
+		{
+			return base64_encode(gzcompress(serialize($object)));
+		}
+		
 		/** Toolbox **/
 		
 		public static function ERRORLOG($message) // Logs an error message to the log file
@@ -56,41 +83,45 @@ if (defined('reiZ') or exit(1))
 			fclose($fp);
 		}
 		
-		public static function TimestampToHumanTime($timestamp, $truetime = false)
+		public static function TimestampToHumanTime($timestamp, $format = false)
 		{
 			// TODO: ineffective, enhance using halfing technique. (N becomes N/2)
 			
-			$string = '';
-			$diff = STARTTIME - $timestamp;
+			$string = EMPTYSTRING;
 			
-			if ($truetime != '') { $string .= date('H:i', $timestamp); }
-			elseif ($diff > (ONEDAY + TODAYSTIME)) { $string .= date('\t\h\e dS \o\f F, Y \a\t H:i', $timestamp); }
-			elseif ($diff > TODAYSTIME) { $string .= 'yesterday at '.date('H:i', $timestamp); }
-			elseif ($diff > ONEHOUR) { $string .= 'today at '.date('H:i', $timestamp); }
-			elseif ($diff > ONEMINUTE) {
-				$plural = ''; if(intval($diff / ONEMINUTE) != 1) { $plural = 's';}
-				$string .= intval($diff / ONEMINUTE).' minute'.$plural.' ago';
-			}
-			elseif ($diff > 0) {
-				$plural = ''; if($diff != 1) { $plural = 's';}
-				$string .= round($diff).' second'.$plural.' ago';
-			}
-			elseif ($diff == 0) { $string .= 'just now!'; }
-			elseif ($diff > -ONEMINUTE) {
-				$plural = ''; if($diff != -1) { $plural = 's';}
-				$string .= 'in '.abs($diff).' second'.$plural;
-			}
-			elseif ($diff > -ONEHOUR) {
-				$plural = ''; if(abs(intval($diff / ONEMINUTE)) != 1) { $plural = 's';}
-				$string .= 'in '.abs(intval($diff / ONEMINUTE)).' minute'.$plural;
-			}
-			elseif ($diff > -ONEDAY) {
-				$plural = ''; if(abs(intval($diff / ONEHOUR)) != 1) { $plural = 's';}
-				$string .= 'in '.abs(intval($diff / ONEHOUR)).' hour'.$plural;
-			}
-			else {
-				$plural = ''; if(abs(intval($diff / ONEDAY)) != 1) { $plural = 's';}
-				$string .= 'in '.abs(intval($diff / ONEDAY)).' day'.$plural;
+			if ($timestamp != null)
+			{
+				$diff = STARTTIME - $timestamp;
+				
+				if (is_string($format) !== false) { $string .= date($format, $timestamp); }
+				elseif ($diff > (ONEDAY + TODAYSTIME)) { $string .= date('\t\h\e dS \o\f F, Y \a\t H:i', $timestamp); }
+				elseif ($diff > TODAYSTIME) { $string .= 'yesterday at '.date('H:i', $timestamp); }
+				elseif ($diff > ONEHOUR) { $string .= 'today at '.date('H:i', $timestamp); }
+				elseif ($diff > ONEMINUTE) {
+					$plural = ''; if(intval($diff / ONEMINUTE) != 1) { $plural = 's';}
+					$string .= intval($diff / ONEMINUTE).' minute'.$plural.' ago';
+				}
+				elseif ($diff > 0) {
+					$plural = ''; if($diff != 1) { $plural = 's';}
+					$string .= round($diff).' second'.$plural.' ago';
+				}
+				elseif ($diff == 0) { $string .= 'just now!'; }
+				elseif ($diff > -ONEMINUTE) {
+					$plural = ''; if($diff != -1) { $plural = 's';}
+					$string .= 'in '.abs($diff).' second'.$plural;
+				}
+				elseif ($diff > -ONEHOUR) {
+					$plural = ''; if(abs(intval($diff / ONEMINUTE)) != 1) { $plural = 's';}
+					$string .= 'in '.abs(intval($diff / ONEMINUTE)).' minute'.$plural;
+				}
+				elseif ($diff > -ONEDAY) {
+					$plural = ''; if(abs(intval($diff / ONEHOUR)) != 1) { $plural = 's';}
+					$string .= 'in '.abs(intval($diff / ONEHOUR)).' hour'.$plural;
+				}
+				else {
+					$plural = ''; if(abs(intval($diff / ONEDAY)) != 1) { $plural = 's';}
+					$string .= 'in '.abs(intval($diff / ONEDAY)).' day'.$plural;
+				}
 			}
 			
 			return $string;
@@ -115,7 +146,7 @@ if (defined('reiZ') or exit(1))
 		
 		public static function MakeHideId()
 		{
-			// TODO: research possibility for
+			// TODO: research possibility for "later addition: '...WTF Past-Philip, finish your comments!'"
 			
 			$GLOBALS['HIDDENINDEX']++;
 			$hiddenindex = $GLOBALS['HIDDENINDEX'];
@@ -189,19 +220,37 @@ if (defined('reiZ') or exit(1))
 		
 		/* String methods */
 		
+		public static function strstr(/*string*/ $haystack, /*string or string[]*/ $needles)
+		{
+			$result = false;
+			
+			if (is_string($needles)) { $result = strstr($haystack, $needles); }
+			elseif (is_array($needles))
+			{
+				$i = 0;
+				while ($result == false && $i < sizeof($needles))
+				{
+					if (is_string($needles[$i]) && strstr($haystack, $needles[$i])) { $result = true; }
+					$i++;
+				}
+			}
+			
+			return $result;
+		}
+		
 		public static function StartsWithUpper($str)
 		{
 			$chr = mb_substr($str, 0, 1, "UTF-8");
 			return mb_strtolower($chr, "UTF-8") != $chr;
 		}
 		
-		public static function CheckLogin()
+		public static function CheckLogin($username=null, $password=null)
 		{
-			if (isset($_POST['username']) && !empty($_POST['username']))
+			if (isset($username) && !empty($username))
 			{
 				$redirect = null;
 				if (reiZ::SetAndNotNull($GLOBALS['ARGS'][0])) { $redirect = $GLOBALS['ARGS'][0]; }
-				reiZ::Login($_POST['username'], $_POST['password'], $redirect);
+				reiZ::Login($username, $password, $redirect);
 			}
 		}
 		
@@ -216,7 +265,6 @@ if (defined('reiZ') or exit(1))
 			$query->AddCondition('username', DBOP::Is, reiZ::Sanitize($_POST['username']));
 			$query->AddCondition('password', DBOP::Is, reiZ::Sanitize($_POST['password']));
 			$result = $GLOBALS['DB']->RunQuery($query);
-			//var_dump($query);
 			$row = $GLOBALS['DB']->GetArray($result);
 			
 			if ($row['u_id'] != 0)
@@ -270,13 +318,20 @@ if (defined('reiZ') or exit(1))
 			return '::ffff:'.$Part7.':'.$Part8;
 		}*/
 		
-		public static function string_is_one_of($array, $string)
+		public static function string_is_one_of($array, $string, &$out=null)
 		{
-			if (is_array($array)) { return in_array($string, $array); }
-			else { return false; }
+			$result = false;
+			
+			if (is_array($array))
+			{
+				$result = in_array($string, $array);
+				if ($out !== null) { $out = array_search($string, $array); }
+			}
+			
+			return $result;
 		}
 		
-		public static function string_contains($haystack, $needle, $match=-1, $out=null)
+		public static function string_contains($haystack, $needle, $match=-1, &$out=null)
 		{
 			$value = false;
 			
@@ -314,5 +369,14 @@ if (defined('reiZ') or exit(1))
 			return strpos($haystack, $needle) === sizeof($haystack-1);
 		}
 	}
+	
+	abstract class TimeFormat
+	{
+		const HumanTime		= false;
+		const Date			= 'D-M-Y';
+		const DateTime		= 'd-m-y H:i';
+		const Time			= 'H:i';
+	}
+	abstract class TF extends TimeFormat {}
 }
 ?>

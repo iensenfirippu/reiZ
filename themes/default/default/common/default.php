@@ -6,19 +6,21 @@
 
 if (defined('reiZ') or exit(1))
 {
+	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/common.php');
+	
 	include_once(FOLDERMODULES.'/menu/module.php');
 	include_once(FOLDERMODULES.'/breadcrumbs/module.php');
 	$menu = new MenuModule();
 	$breadcrumbs = new BreadcrumbsModule();
 	
 	// HEAD
-	$HTML->SetPointer('HEAD');
+	/*$HTML->SetPointer('HEAD');
 	$HTML->AddElement(new HtmlElement('meta', 'charset="UTF-8"'));
 	$HTML->AddElement(new HtmlElement('link',
 		'rel="icon" type="image/png" href="'.URLROOT.'/'.FOLDERCOMMON.'/'.FOLDERIMAGES.'/favicon.png"'));
 		//'rel="icon" type="image/png" href="'.URLROOT.'/'.$THEME->GetDirectory().'/'.FOLDERIMAGES.'/favicon.png"'));
 	$HTML->AddStylesheet(FOLDERCOMMON.'/'.FOLDERSTYLES.'/common.css');
-	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/common.css');
+	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/common.css');*/
 	foreach ($menu->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
 	foreach ($breadcrumbs->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
 	

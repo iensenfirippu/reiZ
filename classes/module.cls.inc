@@ -8,11 +8,11 @@ if (defined('reiZ') or exit(1))
 {
 	class Module
 	{
-		protected $_name = '';
-		protected $_title = '';
+		protected $_name = EMPTYSTRING;
+		protected $_title = EMPTYSTRING;
 		protected $_author = 0;
 		protected $_version = 0;
-		protected $_description = '';
+		protected $_description = EMPTYSTRING;
 		protected $_html = null;
 		protected $_htmlextra = array();
 		protected $_stylesheets = array();

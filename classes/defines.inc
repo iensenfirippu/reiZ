@@ -34,13 +34,5 @@ if (defined('reiZ') or exit(1))
 		define("URLPAGE",		"?page=");
 		define("URLARGS",		"&amp;args=");
 	}
-	
-	if (ONELINEOUTPUT) {
-		define("NEWLINE",		EMPTYSTRING);
-		define("INDENT",		EMPTYSTRING);
-	} else {
-		define("NEWLINE",		"\n");
-		define("INDENT",		"\t");
-	}
 }
 ?>

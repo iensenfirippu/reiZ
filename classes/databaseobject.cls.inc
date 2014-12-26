@@ -5,6 +5,7 @@ Class to easily map a database table to a class.
 ###################################################### */
 // TODO: Enable excluding fields from loadall
 // TODO: Fix the way innerjoins are handled, to allow for automatic inclusion of table-names, rather than the current static always-on solution.
+// TODO: Include timestamps as proper fields
 
 if (defined('reiZ') or exit(1))
 {
@@ -14,6 +15,7 @@ if (defined('reiZ') or exit(1))
 	{
 		protected static $_key = 'uuid';
 		protected static $_fields = array('');
+		protected static $_fields_dbo = array('added', 'updated', 'deleted');
 		//protected static $_keyindex = 0;
 		protected static $_orderindex = -1;
 		protected static $_orderdirection = 'ASC';
@@ -21,19 +23,29 @@ if (defined('reiZ') or exit(1))
 		protected static $_type = EMPTYSTRING;
 		protected static $_dbtable = EMPTYSTRING;
 		protected static $_dbtable_dbo = 'dbo';
+		protected static $_cache = array();
+		
+		public static function GetCachedObject($id)	{ if (isset(static::$_cache[$id])) { return static::$_cache[$id]; } else { return false; } }
+		public static function CacheObject($object)	{ if (!isset(static::$_cache[$object->GetID()])) { static::$_cache[$object->GetID()] = $object; } }
 		
 		protected $_id = null;
+		protected $_added = 0;
+		protected $_updated = 0;
+		protected $_deleted = 0;
 		protected $_values = array();
 		protected $_indb = false;
 		
-		public function GetID()				{ return $this->_id; }
-		//protected function SetID($value)	{ $this->_id = $value; }
+		public function GetID()					{ return $this->_id; }
+		//protected function SetID($value)		{ $this->_id = $value; }
 		
 		protected function __construct($values)
 		{
 			if (is_array($values))
 			{
-				if (isset($values[static::$_key]))	{ $this->_id = $values[static::$_key]; }
+				if (isset($values[static::$_key]))			{ $this->_id = $values[static::$_key]; }
+				if (isset($values[self::$_fields_dbo[0]]))	{ $this->_added = intval($values[self::$_fields_dbo[0]]); }
+				if (isset($values[self::$_fields_dbo[1]]))	{ $this->_updated = intval($values[self::$_fields_dbo[1]]); }
+				if (isset($values[self::$_fields_dbo[2]]))	{ $this->_deleted = intval($values[self::$_fields_dbo[2]]); }
 			}
 			
 			if ($this->_id == null)
@@ -41,6 +53,8 @@ if (defined('reiZ') or exit(1))
 				$this->_id = UUID::Create();
 				//$this->_created = time();
 			}
+			
+			static::CacheObject($this);
 		}
 		
 		public function __tostring()
@@ -64,19 +78,21 @@ if (defined('reiZ') or exit(1))
 			$result = false;
 			
 			$query = new Query();
-			$query->AddTable(DBPREFIX.$this::$_dbtable);
-			$query->AddInnerJoin('', static::$_dbtable_dbo, 'id', static::$_dbtable_dbo.'.id');
 			
 			if (!$this->_indb)
 			{
 				$this->EnsureUniqueId();
 				
-				$query->ClearFields();
-				$query->ClearConditions();
-				$query->SetType(DB_QueryType::Insert);
+				$query->SetType(DBQT::Insert);
+				$query->SetTable(static::$_dbtable_dbo);
 				$query->AddField($this::$_key, $this->_id);
 				$query->AddField(static::$_dbtable_dbo.'.added', time());
-				$query->AddField(static::$_dbtable_dbo.'.type', static::$_dbtable);
+				$query->AddField(static::$_dbtable_dbo.'.type', static::$_type);
+				$GLOBALS['DB']->RunNonQuery($query);
+				
+				$query->ClearFields();
+				$query->SetTable(DBPREFIX.$this::$_dbtable);
+				$query->AddField($this::$_key, $this->_id);
 				for ($i = 0; $i < sizeof($this->_values); $i++)
 				{
 					$field = each($this->_values);
@@ -85,14 +101,16 @@ if (defined('reiZ') or exit(1))
 			}
 			else
 			{
-				$query->SetType(DB_QueryType::Update);
+				$query->SetType(DBQT::Update);
+				$query->SetTable(DBPREFIX.$this::$_dbtable);
+				$query->AddInnerJoin(EMPTYSTRING, static::$_dbtable_dbo, static::$_key, self::$_key);
 				$query->AddField(static::$_dbtable_dbo.'.updated', time());
 				for ($i = 0; $i < sizeof($this->_values); $i++)
 				{
 					$field = each($this->_values);
 					$query->AddField($field[0], $field[1]);
 				}
-				$query->AddCondition($this::$_key, DBOP::Is, $this->_id);
+				$query->AddCondition(static::$_dbtable_dbo.'.'.$this::$_key, DBOP::Is, $this->_id);
 			}
 			
 			$result = $GLOBALS['DB']->RunNonQuery($query);
@@ -104,36 +122,45 @@ if (defined('reiZ') or exit(1))
 		
 		protected static function Load($conditions)
 		{
-			return self::RunLoadQuery(self::PrepareLoadQuery($conditions));			
+			return self::RunLoadQuery(self::PrepareLoadQuery($conditions));
 		}
 		
-		protected static function PrepareLoadQuery($conditions)
+		protected static function PrepareLoadQuery($conditions=null)
 		{
 			$query = new Query();
 			$query->SetType('select');
 			$query->AddField(static::$_dbtable.'.'.static::$_key);
-			/*for ($i = 0; $i < sizeof(static::$_fields); $i++)
+			foreach (static::$_fields_dbo as $field)
 			{
-				$query->AddField(static::$_fields[$i]);
-			}*/
+				$query->AddField(static::$_dbtable_dbo.'.'.$field);
+			}
 			foreach (static::$_fields as $field)
 			{
 				$query->AddField(static::$_dbtable.'.'.$field);
 			}
 			$query->AddTable(DBPREFIX.static::$_dbtable);
-			//for ($i = 0; $i < sizeof($conditions); $i++)
-			foreach ($conditions as $condition)
+			$query->AddInnerJoin('', static::$_dbtable_dbo, static::$_key, self::$_key);
+			
+			if (is_array($conditions))
 			{
-			//	$condition = each($conditions);
-				$query->AddCondition(static::$_dbtable.'.'.$condition[0], $condition[1], $condition[2]);
-				//if ($condition[0] == static::$_key) { $query->RemoveField($condition[0]); }
+				foreach ($conditions as $condition)
+				{
+					if (sizeof($condition) == 3) {
+						$query->AddCondition($condition[0], $condition[1], $condition[2]);
+					} else {
+						$query->AddCondition($condition[0], DBOP::Is, $condition[1]);
+					}
+				}
 			}
+			
 			return $query;
 		}
 		
 		protected static function RunLoadQuery($query)
 		{
 			//$object = null;
+			
+			//echo $query."\n\n";
 			
 			$result = $GLOBALS['DB']->RunQuery($query);
 			return $GLOBALS['DB']->GetArray($result);
@@ -142,33 +169,69 @@ if (defined('reiZ') or exit(1))
 			//return $object;
 		}
 		
-		protected static function LoadAll($conditions = null, $limit_start = null, $limit_amount = null, $order_by = null, $order_direction = null)
+		protected static function LoadAll($conditions=null, $limit_start=null, $limit_amount=null, $order_by=null, $order_direction=null, &$count=null)
+		{
+			return self::RunLoadAllQuery(self::PrepareLoadAllQuery($conditions), $limit_start, $limit_amount, $order_by, $order_direction, $count);
+		}
+		
+		protected static function PrepareLoadAllQuery($conditions=null)
+		{
+			$query = new Query();
+			$query->SetType('select');
+			$query->AddTable(DBPREFIX.static::$_dbtable);
+			$query->AddInnerJoin('', static::$_dbtable_dbo, static::$_key, self::$_key);
+			
+			if (is_array($conditions))
+			{
+				foreach ($conditions as $condition)
+				{
+					if (sizeof($condition) == 3) {
+						$query->AddCondition($condition[0], $condition[1], $condition[2]);
+					} else {
+						$query->AddCondition($condition[0], DBOP::Is, $condition[1]);
+					}
+				}
+			}
+			
+			return $query;
+		}
+		
+		protected static function RunLoadAllQuery($query, $limit_start=null, $limit_amount=null, $order_by=null, $order_direction=null, &$count=null)
 		{
 			if ($limit_start == null) { $limit_start = 0; }
 			if ($limit_amount == null) { $limit_amount = static::$_itemsperpage; }
 			if ($order_by == null) { $order_by = static::GetOrderBy(); }
 			if ($order_direction == null) { $order_direction = static::$_orderdirection; }
 			
-			$array = array();
+			// Finalize Query
 			
-			$query = new Query();
-			$query->SetType('select');
-			for ($i = 0; $i < sizeof(static::$_fields); $i++)
+			// if count variable set, fetch the amount of relevant entries in the database
+			if (is_int($count))
 			{
-				$query->AddField(static::$_fields[$i]);
+				$query->AddField('COUNT('.static::$_dbtable.'.'.static::$_key.')', null, 'count');
+				$result = $GLOBALS['DB']->RunQuery($query);
+				$count = $GLOBALS['DB']->GetArray($result)['count'];
+				$query->ClearFields();
 			}
-			$query->AddTable(DBPREFIX.static::$_dbtable);
-			for ($i = 0; $i < sizeof($conditions); $i++)
+			// Add the fields to fetch
+			$query->AddField(static::$_dbtable.'.'.static::$_key);
+			foreach (static::$_fields_dbo as $field)
 			{
-				$condition = each($conditions);
-				$query->AddCondition($condition[0], '=', $condition[1]);
+				$query->AddField(static::$_dbtable_dbo.'.'.$field);
+			}
+			foreach (static::$_fields as $field)
+			{
+				$query->AddField(static::$_dbtable.'.'.$field);
 			}
 			$query->SetOrderBy($order_by, $order_direction);
 			$query->SetLimit($limit_start, $limit_amount);
 			
+			// Get results
+			$array = array();
+			
+			//if (static::$_type == "dbo_blogpost") { echo $query."\n\n"; } //else { echo "[".static::$_type."]\n\n"; }
+			
 			$result = $GLOBALS['DB']->RunQuery($query);
-			//var_dump($query->__tostring());
-			echo $GLOBALS['DB']->GetError();
 			while ($row = $GLOBALS['DB']->GetArray($result))
 			{
 				array_push($array, $row);
@@ -177,7 +240,7 @@ if (defined('reiZ') or exit(1))
 			return $array;
 		}
 		
-		protected function Delete($final = true)
+		protected function Delete($final=false)
 		{
 			$result = false;
 			$query = new Query();
@@ -198,7 +261,7 @@ if (defined('reiZ') or exit(1))
 			$query->SetTable(DBPREFIX.static::$_dbtable_dbo);
 			if ($final)
 			{
-				$query->SetType(DB_QueryType::Delete);
+				$query->SetType(DBQT::Delete);
 			}
 			else
 			{
@@ -207,7 +270,8 @@ if (defined('reiZ') or exit(1))
 				$query->SetTable(DBPREFIX.static::$_dbtable_dbo);
 				$query->AddField('deleted', time());
 				$query->AddField('note', $this->__tostring());
-				$query->AddField('object', serialize($this));
+				$query->AddField('object', reiZ::Serialize($this));
+				$query->SetPrint(true);
 			}
 			$GLOBALS['DB']->RunNonQuery($query);
 			
@@ -221,7 +285,7 @@ if (defined('reiZ') or exit(1))
 			
 			$query->SetType(DBQT::Select);
 			$query->AddField('object', null);
-			$query->AddTable(DBPREFIX.static::$_dbtable_dbo);
+			$query->SetTable(DBPREFIX.static::$_dbtable_dbo);
 			$query->AddCondition(self::$_key, DBOP::Is, $this->_id);
 			$result = $GLOBALS['DB']->RunQuery($query);
 			if ($result)
@@ -229,7 +293,7 @@ if (defined('reiZ') or exit(1))
 				$row = $GLOBALS['DB']->GetArray($result);
 				if ($result = (isset($row['object']) && $row['object'] != null))
 				{
-					$object = unserialize($row['object']);
+					$object = reiZ::Unserialize($row['object']);
 					
 					if ($result = $object->Save())
 					{
@@ -251,14 +315,18 @@ if (defined('reiZ') or exit(1))
 			
 			if (!$this->_indb) // If object was loaded from database, return false
 			{
+				$query = new Query();
+				$query->SetType(DBQT::Select);
+				$query->AddField('COUNT('.self::$_key.') AS count');
+				$query->AddTable(DBPREFIX.static::$_dbtable_dbo);
+				
 				while (!$isunique)
 				{
-					$query->SetType('select');
-					$query->AddField('COUNT('.self::$_key.') AS count');
-					$query->AddTable(DBPREFIX.static::$_dbtable_dbo);
+					$query->ClearConditions();
 					$query->AddCondition(self::$_key, DBOP::Is, $this->_id);
+					
 					$row = $GLOBALS['DB']->GetArray($GLOBALS['DB']->RunQuery($query));
-					if ($row['count'] == 0) { $result = $isunique; }
+					if ($row['count'] == 0) { $isunique = true; }
 					else { $this->_id = UUID::Create(); }
 				}
 			}

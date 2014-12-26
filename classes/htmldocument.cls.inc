@@ -6,7 +6,7 @@
 
 if (defined('reiZ') or exit(1))
 {
-	class HtmlPage
+	class HtmlDocument
 	{
 		//protected $_doctype = '';
 		//protected $_head = null;

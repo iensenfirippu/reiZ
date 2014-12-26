@@ -3,13 +3,23 @@
  * HtmlElement class, for containing a nested structure of HTML elements
  * Copyright 2013 Iensen Firippu <philip@marugawalite>
  */
+// TODO: Find a way to preserve the neat markup with textareas
 
 if (defined('reiZ') or exit(1))
 {
 	// Tags to be protected from single tag closing (<tag />)
-	define("NONCLOSINGELEMENTS", "!doctype");
-	define("NONVOIDELEMENTS", "script|a|div|textarea");
-	 
+	define("NONCLOSINGELEMENTS", "!doctype");			// Tags that must not be closed in any way
+	define("NONVOIDELEMENTS", "script|a|div|textarea");	// Tags that must not be closed by "/>"
+	define("PRESERVECONTENTS", "textarea");				// Tags which contents must not be altered (i.e. indented)
+	
+	if (ONELINEOUTPUT) {
+		define("OUTPUTNEWLINE",	EMPTYSTRING);
+		define("OUTPUTINDENT",	EMPTYSTRING);
+	} else {
+		define("OUTPUTNEWLINE",	NEWLINE);
+		define("OUTPUTINDENT",	INDENT);
+	}
+
 	class HtmlElement
 	{
 		protected $_indent = 0;
@@ -84,7 +94,7 @@ if (defined('reiZ') or exit(1))
 			$return = EMPTYSTRING;
 			if ($this->_tag != EMPTYSTRING)
 			{
-				$return = str_repeat(INDENT, $this->_indent);
+				$return = str_repeat(OUTPUTINDENT, $this->_indent);
 				$return .= "<".$this->_tag;
 				if ($this->_attributes != EMPTYSTRING) { $return .= " ".$this->_attributes; }
 				if ($this->_endtag != EMPTYSTRING) { $return .= $this->_endtag.">"; }
@@ -94,16 +104,14 @@ if (defined('reiZ') or exit(1))
 					{
 						if ($this->_content != EMPTYSTRING)
 						{
-							if (strstr($this->_content, "\n"))
+							if (strstr($this->_content, NEWLINE) || !strstr(NONVOIDELEMENTS, $this->_tag))
 							{
-								$return .= ">".
-									NEWLINE.str_repeat(INDENT, $this->_indent + 1).
-									preg_replace(
-										array('/[^>]\n/',	'/>\n/'),
-										array('<br />'.NEWLINE,
-										'>'.NEWLINE.str_repeat(INDENT, $this->_indent + 1)),
-									$this->_content).
-								NEWLINE.str_repeat(INDENT, $this->_indent)."</".$this->_tag.">";
+								$search = array('/[^>]\n/', '/>\n/');
+								$replace = array('<br />'.OUTPUTNEWLINE, '>'.OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent + 1));
+								
+								$return .= ">".OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent + 1).
+									preg_replace($search, $replace, $this->_content).
+									OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
 							}
 							else { $return .= ">".$this->_content."</".$this->_tag.">"; }
 						}
@@ -113,10 +121,10 @@ if (defined('reiZ') or exit(1))
 					}
 					else
 					{
-						$return .= ">".NEWLINE;
-						if ($this->_content != EMPTYSTRING) { $return .= str_repeat(INDENT, $this->_indent + 1).str_replace("\n", "<brlol />".NEWLINE.str_repeat(INDENT, $this->_indent), $this->_content).NEWLINE; }
-						foreach ($this->_children as $c) { $return .= $c.NEWLINE; }
-						$return .= str_repeat(INDENT, $this->_indent)."</".$this->_tag.">";
+						$return .= ">".OUTPUTNEWLINE;
+						if ($this->_content != EMPTYSTRING) { $return .= str_repeat(OUTPUTINDENT, $this->_indent + 1).str_replace("\n", "<brlol />".OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent), $this->_content).OUTPUTNEWLINE; }
+						foreach ($this->_children as $c) { $return .= $c.OUTPUTNEWLINE; }
+						$return .= str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
 					}
 				}
 			}
@@ -126,7 +134,7 @@ if (defined('reiZ') or exit(1))
 				for ($i = 0; $i < $sizeofchildren; $i++)
 				{
 					$return .= $this->_children[$i];
-					if ($i != $sizeofchildren -1) { $return .= NEWLINE; }
+					if ($i != $sizeofchildren -1) { $return .= OUTPUTNEWLINE; }
 				}
 			}
 			return $return;
