@@ -1,13 +1,10 @@
 <?php
-// TODO: Add support for direct blogpost linking (no category og page, just like: /blog/$ID )
-
 define("BLOGPOSTPRPAGE", 10);
 define("BLOGDEFAULTCATEGORY", 'All');
-define("BLOGPAGINATIONLINKS", 3);
-define("BLOGPAGINATIONFIRST", '&Lt;');
-define("BLOGPAGINATIONLAST", '&Gt;');
-define("BLOGPAGINATIONPREV", '&lt;');
-define("BLOGPAGINATIONNEXT", '&gt;');
+define("BLOGPAGINATIONINTOP", true);
+define("BLOGPAGINATIONINBOTTOM", true);
+define("BLOGPRELOADALLCATEGORIES", true);	// Only True case implemented yet
+define("BLOGPRELOADALLTAGS", true);			// Only True case implemented yet
 define("BLOGCATEGORYONFRONTPAGE", 'english,nihongo');
 define("BLOGPOSTONFRONTPAGE", 5);
 
@@ -75,7 +72,7 @@ class BlogModule extends Module
 	public function GetHtml_Categories()
 	{
 		$return = false;
-		if ($this->_htmlextra['categories'] != null)
+		if (isset($this->_htmlextra['categories']) && $this->_htmlextra['categories'] != null)
 		{
 			$return = $this->_htmlextra['categories'];
 		}
@@ -89,7 +86,7 @@ class BlogModule extends Module
 	public function GetHtml_Tags()
 	{
 		$return = false;
-		if ($this->_htmlextra['tags'] != null)
+		if (isset($this->_htmlextra['tags']) && $this->_htmlextra['tags'] != null)
 		{
 			$return = $this->_htmlextra['tags'];
 		}
@@ -107,49 +104,78 @@ class BlogModule extends Module
 			$p = reiZ::GetSafeArgument(GETPAGE);
 			$url = reiZ::GetSafeArgument(GETARGS);
 			$dir = explode('/', $url);
-			$catortag = '';
-			$cat = '';
+			$cat = null;
+			$tag = null;
 			$page = 0;
-			$post = 0;
+			$post = EMPTYSTRING;
+			$baseurl = URLPAGE.$p.URLARGS;
+			$url = EMPTYSTRING;
 			
 			$this->_html = new HtmlElement('div', 'class="blog"');
 			$this->_htmlextra['categories'] = new HtmlElement('ul', 'class="blogcategories"');
 			$this->_htmlextra['tags'] = new HtmlElement('ul', 'class="blogtags"');
 			
 			$categories = BlogCategory::LoadAll();
-			$tags = BlogTag::LoadByPopularity();
+			$tags = null;
+			if (BLOGPRELOADALLTAGS) {
+				BlogTag::LoadAll();
+				$tags = BlogTag::MostPopular(10);
+			}
 			
-			$countandposts = null;
+			$count = 0;
+			$posts = null;
 			$pagination = null;
 			
 			// Get the blog directory value into the local variables
 			if (isset($dir[0]) && !empty($dir[0]))
 			{
+				// integer value = Post
+				if (intval($dir[0]) != 0)
+				{
+					$post = $dir[0];
+				}
 				// First letter uppercase = Category
-				if (reiZ::StartsWithUpper($dir[0])) { $cat = strtolower($dir[0]); }
-				$catortag = $dir[0];
-			} else { $cat = BLOGDEFAULTCATEGORY; }
+				elseif (reiZ::StartsWithUpper($dir[0]))
+				{
+					// TODO: Consider making this a for loop to make it escapable
+					foreach($categories as $c) { if ($c->GetName() == strtolower($dir[0])) { $cat = $c; } }
+					if ($cat == null) { $cat = BlogCategory::LoadFromName($dir[0]); }
+					if ($cat != null) { $url = ucfirst($cat->GetName()).'/'; }
+				}
+				// First letter uppercase = Tag
+				else
+				{
+					foreach($tags as $t) { if ($t->GetName() == $dir[0]) { $tag = $t; } }
+					if ($tag == null) { $tag = BlogTag::LoadFromName($dir[0]); }
+					if ($tag != null) { $url = $tag->GetName().'/'; }
+				}
+			}
 			if (isset($dir[1]) && !empty($dir[1])) { $page = $dir[1]; } else { $page = 1; }
 			if (isset($dir[2]) && !empty($dir[2])) { $post = $dir[2]; }
 			
 			// Fetch the relevant blog post (newest X posts of the selected category or tag)
-			if ($post != 0)	{ $countandposts = BlogPost::LoadById($post); }
-			elseif ($cat != EMPTYSTRING) { $countandposts = BlogPost::LoadNewestByCategory($cat, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); }
-			elseif ($catortag != EMPTYSTRING) { $countandposts = BlogPost::LoadNewestByTag($catortag, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); }
-			//else { $countandposts = BlogPost::LoadNewest($page); $catortag = BLOGDEFAULTCATEGORY; }
-			if ($countandposts[0] == 0) { $countandposts = BlogPost::LoadNewest((BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE); $catortag = BLOGDEFAULTCATEGORY; }
-			$pagination = new BlogPagination($p, $countandposts[0], $catortag, $page);
+			if ($post != EMPTYSTRING) { $posts = array(BlogPost::LoadFromID($post, $count)); }
+			elseif ($cat != null) { $posts = BlogPost::LoadNewestByCategory($cat, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE, $count); }
+			elseif ($tag != null) { $posts = BlogPost::LoadNewestByTag($tag, (BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE, $count); }
 			
-			if ($post == 0) { $this->_html->AddChild($pagination->GetHtml()); }
+			if ($count == 0)
+			{
+				$cat = BLOGDEFAULTCATEGORY;
+				$url = $cat.'/';
+				$posts = BlogPost::LoadNewest((BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE, $count);
+			}
+			$pagination = new Pagination($baseurl.$url, $count, BLOGPOSTPRPAGE, $page);
+			
+			if ($count > BLOGPOSTPRPAGE && BLOGPAGINATIONINTOP) { $this->_html->AddChild($pagination->GetHtml()); }
 			
 			// Print the fetched posts
-			foreach ($countandposts[1] as $blogpost)
+			foreach ($posts as $blogpost)
 			{
-				$this->_html->AddChild($this->GenerateHtmlForPost($blogpost, $post, $countandposts, $p, $catortag, $page));
+				$this->_html->AddChild($this->GenerateHtmlForPost($blogpost, $post, $count, $baseurl, $url.$page.'/'));
 			}
 			
-			if ($post == 0) { $this->_html->AddChild($pagination->GetHtml()); }
-	
+			if ($count > BLOGPOSTPRPAGE && BLOGPAGINATIONINBOTTOM) { $this->_html->AddChild($pagination->GetHtml()); }
+			
 			// Get all the categories
 			foreach ($categories as $category)
 			{
@@ -173,20 +199,22 @@ class BlogModule extends Module
 		return $this->_html;
 	}
 	
-	private function GenerateHtmlForPost($blogpost, $post = 0, $countandposts = null, $p = null, $catortag = null, $page = null)
+	private function GenerateHtmlForPost($blogpost, $post=EMPTYSTRING, $count=null, $baseurl=null, $url=null)
 	{
-		$posthtml = new HtmlElement('div', 'class="blogpost"', '',
+		$timestamp = reiZ::TimestampToHumanTime($blogpost->GetPosted());
+		
+		$posthtml = new HtmlElement('div', 'class="blogpost"', EMPTYSTRING,
 			array(
-				new HtmlElement('div', 'class="top"', '',
+				new HtmlElement('div', 'class="top"', EMPTYSTRING,
 					array(
 						new HtmlElement('h3', 'class="title"', $blogpost->GetTitle()),
-						new HtmlElement('span', 'class="timestamp"', reiZ::TimestampToHumanTime($blogpost->GetTimestamp()))
+						new HtmlElement('span', 'class="timestamp"', $timestamp)
 					)
 				)
 			)
 		);
 		$postcontent = new HtmlElement('div', 'class="center"');
-		if ($post != 0 || $countandposts[0] == 1)
+		if ($post != EMPTYSTRING || $count == 1)
 		{
 			$postcontent->AddChild(new HtmlElement('span', 'class="text"', $blogpost->GetFullText()));
 		}
@@ -197,7 +225,7 @@ class BlogModule extends Module
 			{
 				$postcontent->AddChild(
 					new HtmlElement('span', 'class="readmore"', '',
-						new HtmlElement('a', 'href="'.URLPAGE.$p.URLARGS.$catortag.'/'.$page.'/'.$blogpost->GetId().'/"', '...')
+						new HtmlElement('a', 'href="'.$baseurl.$url.$blogpost->GetPostID().'/"', '...')
 					)
 				);
 			}
@@ -206,8 +234,17 @@ class BlogModule extends Module
 		$posttags = new HtmlElement('div', 'class="bottom"');
 		foreach ($blogpost->GetTags() as $tag)
 		{
+			if (is_a($tag, "BlogTag"))
+			{
+				$posttags->AddChild(
+					new HtmlElement('a', 'href="'.$baseurl.$tag->GetName().'/"', $tag->GetName())
+				);
+			}
+		}
+		if ($blogpost->GetEdited() > 0)
+		{
 			$posttags->AddChild(
-				new HtmlElement('a', 'href="'.URLPAGE.$p.URLARGS.$tag->GetName().'/"', $tag->GetName())
+				new HtmlElement('span', 'class="timestamp"', '(edited: '.reiZ::TimestampToHumanTime($blogpost->GetEdited()).')')
 			);
 		}
 		$posthtml->AddChild($posttags);
@@ -217,16 +254,22 @@ class BlogModule extends Module
 	
 	public function GenerateHtml_Frontpage()
 	{
+		$count = 0;
+		// TODO: Fetch real blogpage name from database
+		$blogpage = "blog";//Page::LoadByModule("blog")->GetName();
+		$baseurl = URLPAGE.$blogpage.URLARGS;
+		BlogTag::LoadAll();
+		
 		$html = new HtmlElement('div', 'class="blog_frontpage"');
 		foreach (explode(",", BLOGCATEGORYONFRONTPAGE) as $name)
 		{
 			$category = BlogCategory::LoadFromName($name);
-			$countandposts = BlogPost::LoadNewestByCategory($name, 0, BLOGPOSTONFRONTPAGE);
+			$posts = BlogPost::LoadNewestByCategory($category, 0, BLOGPOSTONFRONTPAGE, $count);
 			$html_cat = new HtmlElement('div', 'class="blog_category"');
 			
-			foreach ($countandposts[1] as $blogpost)
+			foreach ($posts as $blogpost)
 			{
-				$html_cat->AddChild($this->GenerateHtmlForPost($blogpost, 0, $countandposts));
+				$html_cat->AddChild($this->GenerateHtmlForPost($blogpost, 0, $count, $baseurl, EMPTYSTRING));
 			}
 			
 			$html->AddChild($html_cat);

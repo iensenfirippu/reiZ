@@ -6,7 +6,7 @@
 
 if (defined('reiZ') && class_exists('Administration') or exit(1))
 {
-	$HTML = new HtmlPage('Iensenfirippu.dk');
+	$HTML = new HtmlDocument('Iensenfirippu.dk');
 	
 	// HEAD
 	$HTML->SetPointer('HEAD');

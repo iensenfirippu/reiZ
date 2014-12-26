@@ -6,9 +6,9 @@
 
 if (defined('reiZ') or exit(1))
 {
-	$HTML = new HtmlPage('Iensenfirippu.dk');
-	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
+	//$HTML = new HtmlDocument('Iensenfirippu.dk');
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/bigbox.php');
+	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
 	
 	$HTML->SetPointer('content');
 	// Add something?

@@ -23,7 +23,7 @@ foreach (glob(FOLDERCLASSES."/*.cls.inc") as $classfile) { include_once($classfi
 if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 {
 	// TODO: Change to maintenance mode specific theme
-	$HTML = new HtmlPage('Maintenance');
+	$HTML = new HtmlDocument('Maintenance');
 	$HTML->AddElement(new HtmlElement('span', '', 'This site is currently undergoing maintenance, please check back later.'));
 	$HTML->GetReference('TITLE')->SetContent('test');
 }
@@ -41,7 +41,7 @@ else
 		}
 		else
 		{
-			$HTML = new HtmlPage('No database');
+			$HTML = new HtmlDocument('No database');
 			$HTML->AddContent(new HtmlElement('span', '', 'Couldn&apos;t connect to database "'.DBDATABASE.'".'));
 		}
 	}
@@ -67,7 +67,7 @@ else
 			if (isset($_SESSION["verysecureuserid"])) { reiZ::BackToDisneyland(true); }
 			else
 			{
-				// TODO: Allow login to be on ny page
+				// TODO: Allow login to be on any page
 				$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
 				$PAGE = Page::LoadByName($input_p);
 				include_once($THEME->GetDirectory().'/login.php');

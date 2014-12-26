@@ -188,7 +188,7 @@ ul.options a span {
 }
 
 ul.options a span.noicon {
-	margin:0px 8px;
+	margin: 5px 8px;
 }
 
 ul.options a.selected {
@@ -324,4 +324,71 @@ table {
 
 .table_header_row {
 	border: 1px solid #aaaaaa;
+}
+
+/* Form */
+
+select, input, textarea {
+	left: 0px;
+	margin: 0px;
+	padding: 0px;
+	box-sizing: content-box;
+	-ms-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	-webkit-box-sizing: content-box;
+	resize: none;
+}
+
+.formtext {
+	display: block;
+	width: 100%;
+	clear: both;
+}
+
+.formline {
+	display: block;
+	width: 100%;
+	height: 24px;
+	clear: both;
+}
+
+.formline label {
+	display: inline-block;
+	float: left;
+	height: 16px;
+	width: 15%;
+}
+
+.formline input, .formline select, .formline textarea {
+	display: inline-block;
+	float: left;
+	min-height: 18px;
+	width: 70%;
+	margin-bottom: 4px;
+	
+	color: #000000;
+	border: 1px solid #dddddd;
+	border-radius: 2px;
+	background-color: #eeeeee;
+}
+
+.formline input:focus, .formline select:focus, .formline textarea:focus {
+	border-color: #cccccc;
+	background-color: #ffffff;
+}
+
+.formline input.checkbox {
+	width: auto;
+}
+
+.formline .submit {
+	margin-left: 15%;
+	border-color: #bbbbbb;
+	background-color: #cccccc;
+}
+
+.formline .submit:focus, .formline .submit:hover {
+	margin-left: 15%;
+	border-color: #bbbbbb;
+	background-color: #dddddd;
 }

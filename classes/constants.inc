@@ -6,11 +6,18 @@
 
 if (defined('reiZ') or exit(1))
 {
-	define("ZERO",				0);
-	define("EMPTYSTRING",		"");
+	// URL related constants
 	define("REQUESTEDFILE",		$_SERVER['SCRIPT_FILENAME']);
 	define("GETPAGE",			"page");
 	define("GETARGS",			"args");
+	// Neatness constants, for often repeated values
+	define("ZERO",				0);
+	define("EMPTYSTRING",		"");
+	define("SINGLESPACE",		" ");
+	define("SINGLECOMMA",		",");
+	define("NEWLINE",			"\n");
+	define("INDENT",			"\t");
+	define("COMMASPACE",		SINGLECOMMA.SINGLESPACE);
 	// Folder names
 	define("FOLDERINSTALL",		"install");
 	define("FOLDERADMIN",		"admin");

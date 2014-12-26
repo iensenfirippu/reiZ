@@ -69,6 +69,24 @@ if (defined('reiZ') or exit(1))
 			return $masterpage;
 		}
 		
+		public static function LoadAll()
+		{
+			$array = array();
+			
+			$query = new Query();
+			$query->SetType('select');
+			$query->AddFields(array('id', 'name'));
+			$query->AddTable('masterpage');
+			$result = $GLOBALS['DB']->RunQuery($query);
+			
+			while ($row = $GLOBALS['DB']->GetArray($result))
+			{
+				array_push($array, new Masterpage($row['id'], $row['name']));
+			}
+			
+			return $array;
+		}
+		
 		public static function LoadByName($name)
 		{
 			$masterpage = null;

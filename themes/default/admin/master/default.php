@@ -11,7 +11,7 @@ if (defined('reiZ') or exit(1))
 		include_once(FOLDERMODULES.'/'.$module.'/module.php');
 	}*/
 	
-	$HTML = new HtmlPage('Iensenfirippu.dk');
+	$HTML = new HtmlDocument('Iensenfirippu.dk');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
 	
 	$HTML->AddToBody(

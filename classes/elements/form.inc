@@ -20,15 +20,21 @@ class HtmlForm extends HtmlElement
 		}
 	}
 	
-	public function AddTextField($name, $title, $size=null, $container=null)
+	public function AddText($text, $container=null)
+	{
+		$field = new HtmlElement('div', 'class="formtext"', $text);
+		$this->AddToContainer($field, $container);
+	}
+	
+	public function AddTextField($name, $title, $value=null, $size=null, $container=null)
 	{
 		$field = new HtmlElement('div', 'class="formline"');
 		$field->AddChild(new HtmlElement('label', 'for="'.$name.'"', $title));
 		
 		if ($size == null || intval($size) <= 0) {
-			$field->AddChild(new HtmlElement('input', 'type="text" name="'.$name.'"'));
+			$field->AddChild(new HtmlElement('input', 'type="text" name="'.$name.'" value="'.$value.'"'));
 		} else {
-			$field->AddChild(new HtmlElement('textarea', 'name="'.$name.'" rows="'.$size.'"'));
+			$field->AddChild(new HtmlElement('textarea', 'name="'.$name.'" rows="'.$size.'"', $value));
 		}
 		
 		$this->AddToContainer($field, $container);
@@ -38,7 +44,46 @@ class HtmlForm extends HtmlElement
 	{
 		$field = new HtmlElement('div', 'class="formline"');
 		$field->AddChild(new HtmlElement('label', 'for="'.$name.'"', $title));
-		$field->AddChild(new HtmlElement('input', 'type="pass" name="'.$name.'"'));
+		$field->AddChild(new HtmlElement('input', 'type="password" name="'.$name.'"'));
+		
+		$this->AddToContainer($field, $container);
+	}
+	
+	public function AddCheckBox($name, $title, $checked=false, $value='true', $text=null, $container=null)
+	{
+		$field = new HtmlElement('div', 'class="formline"');
+		$field->AddChild(new HtmlElement('label', 'for="'.$name.'"', $title));
+		
+		$checkedtext = EMPTYSTRING; if ($checked) { $checkedtext = ' checked'; }
+		$field->AddChild(new HtmlElement('input', 'class="checkbox" type="checkbox" name="'.$name.'" value="'.$value.'"'.$checkedtext));
+		
+		if ($text != null) { $field->AddChild(new HtmlElement('span', EMPTYSTRING, $text)); }
+		
+		$this->AddToContainer($field, $container);
+	}
+	
+	public function AddRadioButtons($name, $title, $options, $selected=null, $container=null)
+	{
+		$buttons = new HtmlElement('div', 'class="radiobuttons"');
+		
+		$o_value = EMPTYSTRING;
+		$o_title = EMPTYSTRING;
+		foreach ($options as $option)
+		{
+			if (reiZ::IsArrayLongerThan($option, 1))
+			{
+				$o_value = $option[0];
+				$o_title = $option[1];
+			}
+			else { $o_value = $o_title = $option; }
+			
+			$checked = EMPTYSTRING; if ($selected == $o_value) { $checked = ' checked'; }
+			$buttons->AddChild(new HtmlElement('input', 'type="radio" name="'.$name.'" value="'.$o_title.'"'.$checked));
+		}
+		
+		$field = new HtmlElement('div', 'class="formline"');
+		$field->AddChild(new HtmlElement('label', 'for="'.$name.'"', $title));
+		$field->AddChild($buttons);
 		
 		$this->AddToContainer($field, $container);
 	}
@@ -46,22 +91,20 @@ class HtmlForm extends HtmlElement
 	public function AddDropDown($name, $title, $options, $selected=null, $container=null)
 	{
 		$dropdown = new HtmlElement('select', 'name="'.$name.'"');
-		$value = EMPTYSTRING; $title = EMPTYSTRING;
+		
+		$o_value = EMPTYSTRING;
+		$o_title = EMPTYSTRING;
 		foreach ($options as $option)
 		{
 			if (reiZ::IsArrayLongerThan($option, 1))
 			{
-				$value = $option[0];
-				$title = $option[1];
+				$o_value = $option[0];
+				$o_title = $option[1];
 			}
-			else
-			{
-				$value = $option;
-				$title = $option;
-			}
+			else { $o_value = $o_title = $option; }
 			
-			$selectedtext = EMPTYSTRING; if ($selected == $value) { $selectedtext = 'selected '; }
-			$dropdown->AddChild(new HtmlElement('option', $selectedtext.'value="'.$value.'"', $title));
+			$selectedtext = EMPTYSTRING; if ($selected == $o_value) { $selectedtext = 'selected '; }
+			$dropdown->AddChild(new HtmlElement('option', $selectedtext.'value="'.$o_value.'"', $o_title));
 		}
 		
 		$field = new HtmlElement('div', 'class="formline"');
@@ -74,7 +117,7 @@ class HtmlForm extends HtmlElement
 	public function AddButton($name='submit', $title='Submit', $container=null)
 	{
 		$field = new HtmlElement('div', 'class="formline"');
-		$field->AddChild(new HtmlElement('input', 'type="submit" name="'.$name.'" value="'.$title.'"'));
+		$field->AddChild(new HtmlElement('input', 'type="submit" class="submit" name="'.$name.'" value="'.$title.'"'));
 		
 		$this->AddToContainer($field, $container);
 	}
