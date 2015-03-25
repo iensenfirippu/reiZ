@@ -9,10 +9,16 @@ class Administration
 	private $_menu = null;
 	private $_options = null;
 	private $_content = null;
+	private $_stylesheets = array();
+	private $_javascripts = array();
 	
 	public function GetMenu() { return $this->_menu; }
 	public function GetOptions() { return $this->_options; }
 	public function GetContent() { return $this->_content; }
+	public function GetStylesheets() { return $this->_stylesheets; }
+	public function GetJavaScripts() { return $this->_javascripts; }
+	public function AddStylesheet($value) { array_push($this->_stylesheets, $value); }
+	public function AddJavaScript($value) { array_push($this->_javascripts, $value); }
 	
 	public function __construct()
 	{
@@ -75,7 +81,7 @@ class Administration
 				if (file_exists($modulefile))
 				{
 					include_once($modulefile);
-					$classname = 'CustomAdmininistrationPage';
+					$classname = 'CustomAdministrationPage';
 					if (class_exists($classname))
 					{
 						$ref = new ReflectionClass($classname);

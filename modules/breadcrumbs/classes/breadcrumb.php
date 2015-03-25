@@ -4,8 +4,8 @@ if (defined('reiZ') or exit(1))
 {
 	class Breadcrumb
 	{
-		protected $_url = '';
-		protected $_name = '';
+		protected $_url = EMPTYSTRING;
+		protected $_name = EMPTYSTRING;
 		
 		public function __construct($url, $name)
 		{
@@ -13,8 +13,11 @@ if (defined('reiZ') or exit(1))
 			$this->_name = $name;
 		}
 		
-		public function GetUrl() { return $this->_url; }
-		public function GetName() { return $this->_name; }
+		public function GetUrl()	{ return $this->_url; }
+		public function GetName()	{ return $this->_name; }
+		
+		public function SetUrl($value)	{ $this->_url = $value; }
+		public function SetName($value)	{ $this->_name = $value; }
 		
 		/*public function __construct($name, $url, $addseperator = true, $class = '')
 		{

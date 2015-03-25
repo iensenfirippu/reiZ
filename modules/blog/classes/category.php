@@ -101,7 +101,7 @@ if (defined('reiZ') or exit(1))
 				$query->SetType(DBQT::Select);
 				$query->AddTable(static::$_dbtable);
 				$query->AddFields(array('blogcategory.c_id','blogcategory.name','blogcategory.title'));
-				$query->AddCondition('id', '=', $id);
+				$query->AddCondition('c_id', '=', $id);
 				$result = $GLOBALS['DB']->RunQuery($query);
 				$row = $GLOBALS['DB']->GetArray($result);
 				if ($row != null)

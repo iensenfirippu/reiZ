@@ -116,7 +116,7 @@ if (defined('reiZ') or exit(1))
 			}
 		}*/
 		
-		public function __tostring()
+		public function __tostring() //($includeprivate=false)
 		{
 			$html = EMPTYSTRING;
 			$headprocessed = false;
@@ -133,6 +133,14 @@ if (defined('reiZ') or exit(1))
 			
 			return $html;
 		}
+		
+		/* TODO: Make function to cache page html
+		public function cache()
+		{
+			$this->__tostring(true);
+			// elements should contain a "private" variable to tell if the element (and it's children) should be cached,
+			// or if it should be regenerated per request
+		}*/
 	}
 }
 ?>

@@ -4,14 +4,22 @@ if (defined('reiZ') or exit(1))
 {
 	class reiZ
 	{
-		/** Redirecting **/
+		/** Redirection **/
 		
+		/**
+		 * Redirects the page to the root of the website
+		 * @param logout, if set to true will also log out the user.
+		 */
 		public static function BackToDisneyland($logout = false)
 		{
 			if ($logout) { session_destroy(); }
 			reiZ::Redirect('/');
 		}
 		
+		/**
+		 * Redirects the page to the specified URL
+		 * @param relative, specifies if the URL is relative to the current page.
+		 */
 		public static function Redirect($url, $relative = false)
 		{
 			if ($relative) { header('Location: '.$url); }
@@ -19,6 +27,12 @@ if (defined('reiZ') or exit(1))
 			exit;
 		}
 		
+		/** GET/POST **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function GetSafeArgument($id, $keephtml = false)
 		{
 			$return = '';
@@ -29,6 +43,10 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function GetSafePost($id, $keephtml = false)
 		{
 			$return = '';
@@ -39,50 +57,97 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function Sanitize($string, $keephtml = false)
 		{
-			$return = addslashes($string);
-			if ($keephtml == false) { htmlspecialchars($return); }
-			return $return;
+			$string = addslashes($string);
+			if ($keephtml == false) { htmlspecialchars($string); }
+			reiZ::EnforceProperLineEndings($string);
+			return $string;
 		}
 		
-		/*public static function StripMarkupFromTextArea($text)
-		{
-			$text = explode(NEWLINE, $text);
-			foreach ($text as $line) { $line = trim($line); }
-			return implode(NEWLINE, $text);
-		}*/
+		/** HTML syntax **/
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function ConvertTextToHtml($text)
 		{
 			return str_replace(array('\n', '\t'), array(NEWLINE, INDENT), htmlspecialchars_decode($text));
 		}
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function ConvertHtmlToText($html)
 		{
 			return htmlspecialchars(str_replace(array(NEWLINE, INDENT), array('\n', '\t'), $html));
 		}
 		
+		/* Serialization */
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function Unserialize($text)
 		{
 			return unserialize(gzuncompress(base64_decode($text)));
 		}
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function Serialize($object)
 		{
 			return base64_encode(gzcompress(serialize($object)));
 		}
 		
-		/** Toolbox **/
+		/** File methods **/
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function LOGSOURCE($source) // Write html source to file
+		{
+			reiZ::WriteToFile('source.txt', $source, true);
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function ERRORLOG($message) // Logs an error message to the log file
 		{
 			$_SESSION['MESSAGE'] = $message;
-			$fp = fopen('errorlog.txt','a');
-			fwrite($fp,$message.RNT(0));
+			reiZ::WriteToFile('errorlog.txt', $message);
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		private static function WriteToFile($file, $string, $overwrite=false) // Logs an message to a file
+		{
+			if ($overwrite && file_exists($file)) { unlink($file); }
+			$fp = fopen($file,'a');
+			fwrite($fp,$string.NEWLINE);
 			fclose($fp);
 		}
 		
+		/** Time methods **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function TimestampToHumanTime($timestamp, $format = false)
 		{
 			// TODO: ineffective, enhance using halfing technique. (N becomes N/2)
@@ -127,6 +192,12 @@ if (defined('reiZ') or exit(1))
 			return $string;
 		}
 		
+		/** Boolean methods **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function DisplayBoolean($boolean)
 		{
 			$value;
@@ -136,6 +207,10 @@ if (defined('reiZ') or exit(1))
 			return $value;
 		}
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function FlipBoolean(&$boolean)
 		{
 			if (is_bool($boolean))
@@ -144,6 +219,12 @@ if (defined('reiZ') or exit(1))
 			}
 		}
 		
+		/** reiZ specific **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function MakeHideId()
 		{
 			// TODO: research possibility for "later addition: '...WTF Past-Philip, finish your comments!'"
@@ -157,93 +238,10 @@ if (defined('reiZ') or exit(1))
 			return $classname.$hiddenindex;
 		}
 		
-		/*public static function GUID($stripcurlies = false, $stripdashes = false)
-		{
-			$value = '';
-			if (function_exists('com_create_guid'))
-			{
-				$value = com_create_guid();
-			}
-			else
-			{
-				mt_srand((double)microtime()*10000);
-				$charid = strtoupper(md5(uniqid(rand(), true)));
-				$hyphen = chr(45);
-				$uuid = chr(123)
-						.substr($charid, 0, 8).$hyphen
-						.substr($charid, 8, 4).$hyphen
-						.substr($charid,12, 4).$hyphen
-						.substr($charid,16, 4).$hyphen
-						.substr($charid,20,12)
-						.chr(125);
-				$value = $uuid;
-			}
-			
-			if ($stripcurlies) { $value = str_replace(array('{', '}'), '', $value); }
-			if ($stripdashes) { $value = str_replace('-', '', $value); }
-			
-			return $value;
-		}*/
-		
-		public static function GetFileSize($bytes)
-		{
-			$value = '';
-			if ($bytes < 1024)
-			{
-				$value = $bytes.' bytes';
-			}
-			else if ($bytes < 1048576)
-			{
-				$value = number_format(($bytes / 1024), 1, ',', '').' KB';
-			}
-			else
-			{
-				$value = number_format(($bytes / 1048576), 1, ',', '').' MB';
-			}
-			return $value;
-		}
-		
-		public static function SetAndNotNull($variable)
-		{
-			return isset($variable) && $variable != null;
-		}
-		
-		public static function SetAndNotEmpty($variable)
-		{
-			return isset($variable) && !empty($variable);
-		}
-		
-		public static function IsArrayLongerThan($variable, $size)
-		{
-			return is_array($variable) && sizeof($variable) > $size;
-		}
-		
-		/* String methods */
-		
-		public static function strstr(/*string*/ $haystack, /*string or string[]*/ $needles)
-		{
-			$result = false;
-			
-			if (is_string($needles)) { $result = strstr($haystack, $needles); }
-			elseif (is_array($needles))
-			{
-				$i = 0;
-				while ($result == false && $i < sizeof($needles))
-				{
-					if (is_string($needles[$i]) && strstr($haystack, $needles[$i])) { $result = true; }
-					$i++;
-				}
-			}
-			
-			return $result;
-		}
-		
-		public static function StartsWithUpper($str)
-		{
-			$chr = mb_substr($str, 0, 1, "UTF-8");
-			return mb_strtolower($chr, "UTF-8") != $chr;
-		}
-		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function CheckLogin($username=null, $password=null)
 		{
 			if (isset($username) && !empty($username))
@@ -254,6 +252,10 @@ if (defined('reiZ') or exit(1))
 			}
 		}
 		
+		/**
+		 * description
+		 * @param param, description.
+		 */
 		public static function Login($username, $password, $redirect=null)
 		{
 			$success = false;
@@ -294,6 +296,237 @@ if (defined('reiZ') or exit(1))
 			}
 		}
 		
+		/** Math **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function GetFileSize($bytes)
+		{
+			$value = '';
+			if ($bytes < 1024)
+			{
+				$value = $bytes.' bytes';
+			}
+			else if ($bytes < 1048576)
+			{
+				$value = number_format(($bytes / 1024), 1, ',', '').' KB';
+			}
+			else
+			{
+				$value = number_format(($bytes / 1048576), 1, ',', '').' MB';
+			}
+			return $value;
+		}
+		
+		/** Variable checking **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function SetAndNotNull($variable)
+		{
+			return isset($variable) && $variable != null;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function SetAndNotEmpty($variable)
+		{
+			return isset($variable) && !empty($variable);
+		}
+		
+		/** Array methods **/
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function IsArrayLongerThan($array, $size)
+		{
+			return is_array($array) && sizeof($array) > $size;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function RemoveFromArray(&$array, $index)
+		{
+			$result = false;
+			if (is_array($array) && sizeof($array) > $index)
+			{
+				unset($array[$index]);
+				$array = array_values($array);
+				$result = true;
+			}
+			return $result;
+		}
+		
+		/* String methods */
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function strstr(/*string*/ $haystack, /*string or string[]*/ $needles)
+		{
+			$result = false;
+			
+			if (is_string($needles)) { $result = strstr($haystack, $needles); }
+			elseif (is_array($needles))
+			{
+				$i = 0;
+				while ($result == false && $i < sizeof($needles))
+				{
+					if (is_string($needles[$i]) && strstr($haystack, $needles[$i])) { $result = true; }
+					$i++;
+				}
+			}
+			
+			return $result;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function EnforceProperLineEndings(& $string)
+		{
+			$improper_lineending = "\r\n";
+			if (strstr($string, $improper_lineending)) { $string = str_replace($improper_lineending, NEWLINE, $string); }
+			return $string;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function StartsWithUpper($str)
+		{
+			$chr = mb_substr($str, 0, 1, "UTF-8");
+			return mb_strtolower($chr, "UTF-8") != $chr;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function string_is_one_of($array, $string, &$out=null)
+		{
+			$result = false;
+			
+			if (is_array($array))
+			{
+				$result = in_array($string, $array);
+				if ($out !== null) { $out = array_search($string, $array); }
+			}
+			
+			return $result;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function string_contains($haystack, $needle, $match=-1, &$out=null)
+		{
+			$value = false;
+			
+			if (is_array($needle))
+			{
+				$matches = 0;
+				//foreach ($needle as $n)
+				for ($i = 0; $i < sizeof($needle); $i++)
+				{
+					$n = $needle[$i];
+					if (strpos($haystack, $n) !== false)
+					{
+						$matches++;
+						if ($matches == 1) $out = $i;
+					}
+				}
+				
+				// IF match=-1(all), and all needles matched...
+				if ($match == -1 && $matches == sizeof($needle)) $value = true;
+				// OR match=0(none), and no matches...
+				elseif ($match == 0 && $matches == 0) $value = true;
+				// OR match=x(at least x), and more than x matches...
+				elseif ($match > 0 && $matches >= $match) $value = true;
+				// ...return true
+			}
+			else
+			{
+				$value = ($out = strpos($haystack, $needle)) !== false;
+			}
+			
+			return $value;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function string_beginswith($haystack, $needle)
+		{
+			return strpos($haystack, $needle) === 0;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function string_endswith($haystack, $needle)
+		{
+			return strpos($haystack, $needle) === sizeof($haystack-1);
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function url_append($url, $append)
+		{
+			$value = $url;
+			
+			if (is_array($append))
+			{
+				$array = $append;
+				$append = EMPTYSTRING;
+				foreach ($array as $item)
+				{
+					$append = reiZ::url_append($append, $item);
+				}
+			}
+			
+			if (is_string($append))
+			{
+				if ($url != EMPTYSTRING && $append != EMPTYSTRING)
+				{
+					$slash = '/';
+					$trailing = (substr($url, -1) == $slash);
+					$preceding = (substr($append, 0, 1) == $slash);
+					
+					if ($trailing && $preceding) { $url = substr($url, 0, -1); $append = substr($append, 1); }
+					elseif (!$trailing && !$preceding) { $value .= $slash; }
+				}
+				$value .= $append;
+			}
+			
+			return $value;
+		}
+		
+		/*public static function StripMarkupFromTextArea($text)
+		{
+			$text = explode(NEWLINE, $text);
+			foreach ($text as $line) { $line = trim($line); }
+			return implode(NEWLINE, $text);
+		}*/
+		
 		/*function IPv4To6($ip)
 		{
 			if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false)
@@ -318,56 +551,33 @@ if (defined('reiZ') or exit(1))
 			return '::ffff:'.$Part7.':'.$Part8;
 		}*/
 		
-		public static function string_is_one_of($array, $string, &$out=null)
+		/*public static function GUID($stripcurlies = false, $stripdashes = false)
 		{
-			$result = false;
-			
-			if (is_array($array))
+			$value = '';
+			if (function_exists('com_create_guid'))
 			{
-				$result = in_array($string, $array);
-				if ($out !== null) { $out = array_search($string, $array); }
-			}
-			
-			return $result;
-		}
-		
-		public static function string_contains($haystack, $needle, $match=-1, &$out=null)
-		{
-			$value = false;
-			
-			if (is_array($needle))
-			{
-				$matches = 0;
-				foreach ($needle as $n)
-				{
-					if (strpos($haystack, $n) !== false) $matches++;
-				}
-				
-				// IF match=-1(all), and all needles matched...
-				if ($match == -1 && $matches == sizeof($needle)) $value = true;
-				// OR match=0(none), and no matches...
-				elseif ($match == 0 && $matches == 0) $value = true;
-				// OR match=x(at least x), and more than x matches...
-				elseif ($match == 0 && $matches == 0) $value = true;
-				// ...return true
+				$value = com_create_guid();
 			}
 			else
 			{
-				$value = ($out = strpos($haystack, $needle)) !== false;
+				mt_srand((double)microtime()*10000);
+				$charid = strtoupper(md5(uniqid(rand(), true)));
+				$hyphen = chr(45);
+				$uuid = chr(123)
+						.substr($charid, 0, 8).$hyphen
+						.substr($charid, 8, 4).$hyphen
+						.substr($charid,12, 4).$hyphen
+						.substr($charid,16, 4).$hyphen
+						.substr($charid,20,12)
+						.chr(125);
+				$value = $uuid;
 			}
 			
+			if ($stripcurlies) { $value = str_replace(array('{', '}'), '', $value); }
+			if ($stripdashes) { $value = str_replace('-', '', $value); }
+			
 			return $value;
-		}
-		
-		public static function string_beginswith($haystack, $needle)
-		{
-			return strpos($haystack, $needle) === 0;
-		}
-		
-		public static function string_endswith($haystack, $needle)
-		{
-			return strpos($haystack, $needle) === sizeof($haystack-1);
-		}
+		}*/
 	}
 	
 	abstract class TimeFormat

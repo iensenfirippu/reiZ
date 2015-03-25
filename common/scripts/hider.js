@@ -1,6 +1,13 @@
+var lastid = "";
+
 function showdiv(divid)
 {
-   document.getElementById(divid).className = "unhidden";
+	if (window.lastid != "")
+	{
+		hidediv(window.lastid);
+	}
+	document.getElementById(divid).className = "unhidden";
+	window.lastid = divid;
 }
  
 function hidediv(divid)

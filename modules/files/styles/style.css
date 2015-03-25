@@ -23,32 +23,41 @@
 	padding: 6px 0px 8px 37px;
 }
 
+.fileslinkgroup {
+	position: relative; 
+	display: block;
+	width: 100%;
+	height: auto;
+	clear: both;
+}
+
 .fileslink, .fileslinkup, .filesfile {
 	position: relative; 
 	display: block;
 	float: left;
-	height: 32px;
+	height: 40px;
 	width: 300px;
-	background-image: url("/common/images/folder.png");
+	background-image: url("/common/images/oxygen/32/folder.png");
 	background-repeat: no-repeat;
 }
 
 .fileslinkup {
-	background-image: url("/common/images/folder_up.png");
+	background-image: url("/common/images/oxygen/32/go-previous.png");
+	clear: both;
 }
 
 .filesfile {
-	background-image: url("/common/images/file.png");
+	background-image: url("/common/images/oxygen/32/unknown.png");
 }
 
 .fileimage {
-	background-image: url("/common/images/file_image.png");
+	background-image: url("/common/images/oxygen/32/image-x-generic.png");
 }
 
 .filearchive {
-	background-image: url("/common/images/file_archive.png");
+	background-image: url("/common/images/oxygen/32/application-x-tar.png");
 }
 
 .fileexecutable {
-	background-image: url("/common/images/file_executable.png");
+	background-image: url("/common/images/oxygen/32/application-x-m4.png");
 }

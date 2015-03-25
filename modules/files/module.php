@@ -1,9 +1,11 @@
 <?php
+define("FILESDIR", FOLDERFILES."/public");
+define("FILESDEFAULTTITLE", "Files");
+define("FILESDEFAULTTEXT", "&nbsp");
+define("FILESPREVLINKTEXT", "Back to previous folder");
 
 if (defined('reiZ') or exit(1))
 {
-	define("FILESDIR", FOLDERFILES."/public");
-	
 	class FilesModule extends Module
 	{
 		public function __construct($initialize = true)
@@ -21,6 +23,7 @@ if (defined('reiZ') or exit(1))
 		public function Initialize()
 		{
 			foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERCLASSES.'/*.php') as $classfile) { include_once($classfile); }
+			foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERLAYOUT.'/*.inc') as $classfile) { include_once($classfile); }
 			$this->_stylesheets = array(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERSTYLES.'/style.css');
 			$this->_javascripts = array(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/hider.js');
 		}
@@ -53,12 +56,21 @@ if (defined('reiZ') or exit(1))
 			return false;
 		}
 		
-		public function GenerateHtml()
+		private function GenerateHtml()
+		{
+			$url = reiZ::GetSafeArgument(GETARGS);
+			$folder = new FilesFolder($url);
+			
+			$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
+			$this->_html = new HtmlElement_FilesFolder($this, $folder);
+		}
+		
+		/*public function GenerateHtml()
 		{
 			if ($this->_html == null)
 			{
 				$url = reiZ::GetSafeArgument(GETARGS);
-			
+				
 				$this->_html = new HtmlElement('div', 'class="files"');
 				$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
 				
@@ -98,7 +110,7 @@ if (defined('reiZ') or exit(1))
 					$putextra = '';
 					if ($f->GetHideId() != '')
 					{
-						$putextra = ' onmouseover="showdiv(\''.$f->GetHideId().'\')" onmouseout="hidediv(\''.$f->GetHideId().'\')"';
+						$putextra = ' onmouseover="showdiv(\''.$f->GetHideId().'\')"';
 						
 						$this->_htmlextra['hidden']->AddChild(
 							new HtmlElement('div', 'id="'.$f->GetHideId().'" class="hidden"', '',
@@ -125,7 +137,7 @@ if (defined('reiZ') or exit(1))
 					$putextra = '"';
 					if ($f->GetHideId() != '')
 					{
-						$putextra = ' hasinfo" onmouseover="showdiv(\''.$f->GetHideId().'\')" onmouseout="hidediv(\''.$f->GetHideId().'\')"';
+						$putextra = ' hasinfo" onmouseover="showdiv(\''.$f->GetHideId().'\')"';
 						
 						$this->_htmlextra['hidden']->AddChild(
 							new HtmlElement('div', 'id="'.$f->GetHideId().'" class="hidden"', '',
@@ -150,7 +162,7 @@ if (defined('reiZ') or exit(1))
 				}
 			}
 			return $this->_html;
-		}
+		}*/
 		
 		public function GetHtml_RightPane()
 		{
