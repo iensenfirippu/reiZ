@@ -69,7 +69,7 @@ h5 { font-size: 16px; }
 	height: 34px;
 	width: 34px;
 	
-	background-image: url('/common/images/logo_32.png');
+	background-image: url('/common/images/reiz/logo_32.png');
 	background-position:center;
 	background-repeat: no-repeat;
 }
@@ -359,7 +359,7 @@ select, input, textarea {
 	width: 15%;
 }
 
-.formline input, .formline select, .formline textarea {
+.formline input, .formline select, .formline textarea, .formline button {
 	display: inline-block;
 	float: left;
 	min-height: 18px;
@@ -381,14 +381,42 @@ select, input, textarea {
 	width: auto;
 }
 
-.formline .submit {
+.formline .submit, .formline button {
 	margin-left: 15%;
 	border-color: #bbbbbb;
 	background-color: #cccccc;
 }
 
-.formline .submit:focus, .formline .submit:hover {
+.formline .submit:focus, .formline .submit:hover, .formline button:focus, .formline button:hover {
 	margin-left: 15%;
 	border-color: #bbbbbb;
 	background-color: #dddddd;
+}
+
+.hidden {
+	display: none;
+}
+
+.popupbackground {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	
+	width: 100%;
+	height: 300%;
+	
+	background-color: #555555;
+}
+
+.popup {
+	position: relative;
+	margin: auto;
+	margin-top: 50px;
+	padding: 10px;
+	width: 400px;
+	height: 100px;
+	
+	background: #888888;
+	border: 1px solid #999999;
+	border-radius: 10px;
 }

@@ -14,6 +14,8 @@ if (defined('reiZ') && class_exists('Administration') or exit(1))
 	$HTML->AddElement(new HtmlElement('link',
 		'rel="icon" type="image/png" href="'.URLROOT.'/'.FOLDERCOMMON.'/'.FOLDERIMAGES.'/favicon.png"'));
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
+	foreach ($PAGE->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
+	foreach ($PAGE->GetJavascripts() as $js) { $HTML->AddJavascript($js); }
 	
 	// BODY
 	$HTML->AddElement(new HtmlElement('div', 'id="fixedtop"'), 'BODY', 'fixedtop');

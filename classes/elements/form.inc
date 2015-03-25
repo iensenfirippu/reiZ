@@ -1,23 +1,10 @@
 <?php
 class HtmlForm extends HtmlElement
 {
-	protected $_containers;
-	protected $_pointer;
-	
 	public function __construct($name=EMPTYSTRING, $action=EMPTYSTRING, $method='POST')
 	{
 		parent::__construct('form', 'name="'.$name.'" action="'.$action.'" method="'.$method.'"');
 		$this->_containers = array();
-	}
-	
-	public function AddContainer($HtmlElement, $name)
-	{
-		$this->AddChild($HtmlElement);
-		while ($HtmlElement->HasChildren())
-		{
-			$HtmlElement = $HtmlElement->_children[sizeof($HtmlElement->_children) -1];
-			$this->_pointer = $this->_containers[$name] = $HtmlElement;
-		}
 	}
 	
 	public function AddText($text, $container=null)
@@ -122,6 +109,33 @@ class HtmlForm extends HtmlElement
 		$this->AddToContainer($field, $container);
 	}
 	
+	public function AddElement($htmlelement, $container=null)
+	{
+		$field = new HtmlElement('div', 'class="formline"');
+		$field->AddChild($htmlelement);
+		
+		$this->AddToContainer($field, $container);
+	}
+	
+	// Moved to Parent Class
+	/*protected $_containers;
+	protected $_pointer;
+	
+	public function SetPointer($containerindex)
+	{
+		if (isset($this->_containers[$containerindex]))
+		{
+			$this->_pointer = $this->_containers[$containerindex];
+		}
+	}
+	
+	public function AddContainer($HtmlElement, $name)
+	{
+		$this->AddChild($HtmlElement);
+		while ($HtmlElement->HasChildren()) { $HtmlElement = $HtmlElement->_children[sizeof($HtmlElement->_children) -1]; }
+		$this->_pointer = $this->_containers[$name] = $HtmlElement;
+	}
+	
 	private function AddToContainer($HtmlElement, $container=null)
 	{
 		if ($container != null && reiZ::SetAndNotNull($this->_containers[$container]))
@@ -136,6 +150,6 @@ class HtmlForm extends HtmlElement
 		{
 			$this->AddChild($HtmlElement);
 		}
-	}
+	}*/
 }
 ?>

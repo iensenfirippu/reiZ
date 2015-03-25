@@ -15,22 +15,27 @@ if (defined('reiZ') or exit(1))
 	define("EMPTYSTRING",		"");
 	define("SINGLESPACE",		" ");
 	define("SINGLECOMMA",		",");
+	define("SINGLEDOT",			".");
+	define("SINGLESLASH",		"/");
 	define("NEWLINE",			"\n");
 	define("INDENT",			"\t");
 	define("COMMASPACE",		SINGLECOMMA.SINGLESPACE);
 	// Folder names
-	define("FOLDERINSTALL",		"install");
 	define("FOLDERADMIN",		"admin");
+	define("FOLDERCACHE",		"cache");
 	define("FOLDERCLASSES",		"classes");
 	define("FOLDERCOMMON",		"common");
 	define("FOLDERCONFIG",		"config");
 	define("FOLDERFILES",		"files");
+	define("FOLDERINSTALL",		"install");
+	define("FOLDERIMAGES",		"images");
+	define("FOLDERLAYOUTS",		"layouts");
+	define("FOLDERLAYOUT",		FOLDERLAYOUTS); // obsolete: not plural
 	define("FOLDERMASTER",		"master");
 	define("FOLDERMODULES",		"modules");
 	define("FOLDERSCRIPTS",		"scripts");
 	define("FOLDERSTYLES",		"styles");
 	define("FOLDERTHEMES",		"themes");
-	define("FOLDERIMAGES",		"images");
 	// Number of seconds in specified interval
 	define("ONEMINUTE",			60);
 	define("-ONEMINUTE",		-60);

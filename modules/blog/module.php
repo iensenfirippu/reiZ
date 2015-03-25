@@ -166,7 +166,7 @@ class BlogModule extends Module
 			}
 			$pagination = new Pagination($baseurl.$url, $count, BLOGPOSTPRPAGE, $page);
 			
-			if ($count > BLOGPOSTPRPAGE && BLOGPAGINATIONINTOP) { $this->_html->AddChild($pagination->GetHtml()); }
+			if ($count > BLOGPOSTPRPAGE && BLOGPAGINATIONINTOP) { $this->_html->AddChild($pagination); }
 			
 			// Print the fetched posts
 			foreach ($posts as $blogpost)
@@ -174,7 +174,7 @@ class BlogModule extends Module
 				$this->_html->AddChild($this->GenerateHtmlForPost($blogpost, $post, $count, $baseurl, $url.$page.'/'));
 			}
 			
-			if ($count > BLOGPOSTPRPAGE && BLOGPAGINATIONINBOTTOM) { $this->_html->AddChild($pagination->GetHtml()); }
+			if ($count > BLOGPOSTPRPAGE && BLOGPAGINATIONINBOTTOM) { $this->_html->AddChild($pagination); }
 			
 			// Get all the categories
 			foreach ($categories as $category)

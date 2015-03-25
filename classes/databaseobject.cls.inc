@@ -6,6 +6,7 @@ Class to easily map a database table to a class.
 // TODO: Enable excluding fields from loadall
 // TODO: Fix the way innerjoins are handled, to allow for automatic inclusion of table-names, rather than the current static always-on solution.
 // TODO: Include timestamps as proper fields
+// TODO: Allow for custom ID's, or at least to select between UUID and auto_incrementing numbers
 
 if (defined('reiZ') or exit(1))
 {
@@ -96,8 +97,10 @@ if (defined('reiZ') or exit(1))
 				for ($i = 0; $i < sizeof($this->_values); $i++)
 				{
 					$field = each($this->_values);
-					$query->AddField($field[0], $field[1]);
+					$query->AddField($field[0], reiZ::Sanitize($field[1]));
 				}
+				
+				$result = $GLOBALS['DB']->RunNonQuery($query);
 			}
 			else
 			{
@@ -111,9 +114,9 @@ if (defined('reiZ') or exit(1))
 					$query->AddField($field[0], $field[1]);
 				}
 				$query->AddCondition(static::$_dbtable_dbo.'.'.$this::$_key, DBOP::Is, $this->_id);
+				
+				$result = $GLOBALS['DB']->RunNonQuery($query);
 			}
-			
-			$result = $GLOBALS['DB']->RunNonQuery($query);
 			
 			if ($result) { $this->_indb = true; }
 			

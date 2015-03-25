@@ -111,8 +111,7 @@ hr {
 	height: 100px;
 	width: 100px;
 	
-	background-image: url('/common/images/logo_100.png');
-	/*background-image: url('../images/logo.png');*/
+	background-image: url('/common/images/reiz/logo_100.png');
 }
 
 .toplink-left { left: 15px; }
@@ -181,4 +180,48 @@ ul.menu a:hover {
 #content p {
 	display: block;
 	margin: 10px;
+}
+
+/* Lightbox styling */
+
+.lightbox img {
+	min-width: 200px;
+	min-height: 200px;
+}
+
+.lightbox .lb-nav {
+	position: relative;
+	margin-top: -50px;
+	padding: 0 3% 0px 3%;
+	height: 50px;
+	width: 94%;
+	text-align: center;
+	line-height: 0;
+}
+
+.lightbox .lb-nav:hover {
+	background-image: url('/common/images/reiz/transparent_white_25.png');
+}
+
+.lightbox .lb-next, .lightbox .lb-prev, .lightbox .lb-close {
+	-webkit-filter: contrast(0);
+	/*opacity: 0.75;*/
+}
+
+.lightbox .lb-next:hover, .lightbox .lb-prev:hover, .lightbox .lb-close:hover {
+	-webkit-filter: contrast(1);
+	/*opacity: 1;*/
+}
+
+.lightbox .lb-next, .lightbox .lb-next:hover {
+	background: url('/common/images/oxygen/32/go-next.png') right 50% no-repeat;
+}
+
+.lightbox .lb-prev, .lightbox .lb-prev:hover {
+	background: url('/common/images/oxygen/32/go-previous.png') left 50% no-repeat;
+}
+
+.lightbox .lb-close {
+	height: 32px !important;
+	background: url('/common/images/oxygen/32/dialog-cancel.png') top right no-repeat !important;
 }

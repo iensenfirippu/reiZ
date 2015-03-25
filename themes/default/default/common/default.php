@@ -54,7 +54,7 @@ if (defined('reiZ') or exit(1))
 	// - bottom
 	$HTML->AddElement(new HtmlElement('div', 'id="bottom"'), 'main', 'bottom');
 	//$HTML->SetPointer('bottom');
-	$HTML->AddElement(new HtmlElement('span', 'class="left"', 'Copyright Philip Jensen'));
+	$HTML->AddElement(new HtmlElement('span', 'class="left"', 'Powered by <a href="#">reiZ</a>'));
 	$HTML->AddElement(new HtmlElement('span', 'class="right"', '<!--{EXECUTIONTIME}--!> <!--{QUERYCOUNT}--!>'));
 }
 ?>

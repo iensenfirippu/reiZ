@@ -18,7 +18,7 @@ if (defined('reiZ') or exit(1))
 		protected $_stylesheets = array();
 		protected $_javascripts = array();
 		
-		public function __construct($name = '', $title = '', $author = 'John Doe', $version = 0.1, $description = '')
+		public function __construct($name=EMPTYSTRING, $title=EMPTYSTRING, $author='John Doe', $version=0.1, $description=EMPTYSTRING)
 		{
 			$this->_name = $name;
 			$this->_title = $title;
@@ -32,10 +32,19 @@ if (defined('reiZ') or exit(1))
 		public function GetAuthor()			{ return $this->_author;			}
 		public function GetVersion()		{ return $this->_version;			}
 		public function GetDescription()	{ return $this->_description;		}
-		/*public function GetHtml()			{ return $this->_html;				}
-		public function GetHtmlExtra($id)	{ return $this->_htmlextra[$id];	}*/
 		public function GetStylesheets()	{ return $this->_stylesheets;		}
 		public function GetJavascripts()	{ return $this->_javascripts;		}
+		
+		public function GetPath()		{ return reiZ::url_append(FOLDERMODULES, $this->_name);	}
+		public function GetClassPath()	{ return reiZ::url_append($this->GetPath(), FOLDERCLASSES);	}
+		public function GetLayoutPath()	{ return reiZ::url_append($this->GetPath(), FOLDERLAYOUTS);	}
+		public function GetStylePath()	{ return reiZ::url_append($this->GetPath(), FOLDERSTYLES);	}
+		public function GetScriptPath()	{ return reiZ::url_append($this->GetPath(), FOLDERLAYOUTS);	}
+		
+		public function Initialize()
+		{
+			$this->LoadAll();
+		}
 		
 		public function Install()
 		{
@@ -70,6 +79,42 @@ if (defined('reiZ') or exit(1))
 			// This method is for implenting "translation" of breadcrumbs.
 			// E.G. from "prod-cat-86" to "e-books". This logic can be customized for every module.
 			// If not implemented in the child class, the given breadcrumb will be unaffected.
+		}
+		
+		public function LoadAll()
+		{
+			$this->LoadClasses();
+			$this->LoadLayouts();
+			$this->LoadStyles();
+			$this->LoadScripts();
+		}
+		
+		public function LoadClasses()
+		{
+			foreach (glob(reiZ::url_append($this->GetClassPath(), '*.php')) as $file) { include_once($file); }
+		}
+		
+		public function LoadStyles()
+		{
+			foreach (glob(reiZ::url_append($this->GetStylePath(), '*.css')) as $file) { array_push($this->_stylesheets, $file); }
+		}
+		
+		public function LoadScripts()
+		{
+			foreach (glob(reiZ::url_append($this->GetScriptPath(), '*.js')) as $file) { array_push($this->_javascripts, $file); }
+		}
+		
+		public function LoadLayouts()
+		{
+			foreach (glob(reiZ::url_append($this->GetLayoutPath(), '*.inc')) as $file) { $this->LoadLayout($file); }
+		}
+		
+		public function LoadLayout($path)
+		{
+			//$defaultlayout = reiZ::url_append($this->GetPath(), $name);
+			$customlayout = reiZ::url_append($GLOBALS['THEME']->GetPath(), $path);
+			if (file_exists($customlayout)) { include_once($customlayout); }
+			else { include_once($path); }
 		}
 	}
 }

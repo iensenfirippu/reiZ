@@ -31,10 +31,10 @@ class MenuModule extends Module
 			$this->_html = new HtmlElement('ul', 'class="menu"');
 			foreach ($pages as $page)
 			{
-				$putextra = '';
+				$putextra = EMPTYSTRING;
 				if ($page == $current) { $putextra = 'class="selected" '; }
 				$this->_html->AddChild(
-					new HtmlElement('li', '', '',
+					new HtmlElement('li', EMPTYSTRING, EMPTYSTRING,
 						new HtmlElement('a', $putextra.'href="'.URLROOT.INDEXFILE.URLPAGE.$page.'/"', $page)
 					)
 				);

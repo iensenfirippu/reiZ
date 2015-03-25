@@ -10,6 +10,7 @@ if (defined('reiZ') or exit(1))
 	class BlogTag
 	{
 		private static $_dbtable = "blogtag";
+		private static $_dbtable_rel = "blogposttag";
 		private static $_cache = array();
 		
 		private $_id = EMPTYSTRING;
@@ -19,7 +20,7 @@ if (defined('reiZ') or exit(1))
 		
 		public function GetID()					{ return $this->_id; }
 		public function GetName()				{ return $this->_name; }
-		public function GetPolarity()			{ return $this->_popularity; }
+		public function GetPopularity()			{ return $this->_popularity; }
 		
 		public function SetName($value)			{ $this->_name = $value; }
 		
@@ -43,17 +44,30 @@ if (defined('reiZ') or exit(1))
 			}
 		}
 		
+		public static function CompareName($a, $b, $reverse=false)
+		{
+			$var1 = EMPTYSTRING; if (is_a($a, 'BlogTag')) { $var1 = $a->GetName(); }
+			$var2 = EMPTYSTRING; if (is_a($b, 'BlogTag')) { $var2 = $b->GetName(); }
+			$result = strcmp($var1, $var2);
+			if ($reverse) { reiZ::ToggleBool($result); }
+			return $result;
+		}
+		
 		public static function ComparePopularity($a, $b)
 		{
-			$result = $b->GetPolarity() - $a->GetPolarity();
-			if ($result == 0) { $result = strcmp($a->GetName(), $b->GetName()); }
+			$var1 = EMPTYSTRING; if (is_a($a, 'BlogTag')) { $var1 = $a->GetPopularity(); }
+			$var2 = EMPTYSTRING; if (is_a($b, 'BlogTag')) { $var2 = $b->GetPopularity(); }
+			$result = $var2 - $var1;
+			if ($result == 0) { $result = BlogTag::CompareName($a, $b); }
 			return $result;
 		}
 		
 		public function Save()
 		{
-			if ($this->_indb == true) { $this->Update(); }
-			else { $this->Insert(); }
+			$saved = false;
+			if ($this->_indb == true) { $saved = $this->Update(); }
+			else { $saved = $this->Insert(); }
+			return $saved;
 		}
 		
 		private function Update()
@@ -65,8 +79,8 @@ if (defined('reiZ') or exit(1))
 			$query->SetTable(static::$_dbtable);
 			$query->AddField('name', $this->_name);
 			$query->AddCondition('t_id', DBOP::Is, $this->_id);
-			$saved = $GLOBALS['DB']->RunNonQuery($query);
-			$saved = true;
+			$result = $GLOBALS['DB']->RunNonQuery($query);
+			$saved = ($result != false);
 			
 			return $saved;
 		}
@@ -75,18 +89,35 @@ if (defined('reiZ') or exit(1))
 		{
 			$saved = false;
 			
-			$query = new Query();
-			$query->SetType(DBQT::Insert);
-			$query->SetTable(static::$_dbtable);
-			$query->AddField('t_id', $this->_id);
-			$query->AddField('name', $this->_name);
-			$result = $GLOBALS['DB']->RunNonQuery($query);
-			
-			if ($result != false)
+			if ($this->_name != EMPTYSTRING)
 			{
-				$this->_indb = true;
-				$this->_id = mysql_insert_id();
-				$saved = true;
+				$query = new Query();
+				$query->SetType(DBQT::Insert);
+				$query->SetTable(static::$_dbtable);
+				$query->AddField('name', $this->_name);
+				$result = $GLOBALS['DB']->RunNonQuery($query);
+				
+				if ($result != false)
+				{
+					$tag = BlogTag::LoadFromName($this->_name);
+					
+					if ($tag != null)
+					{
+						//echo "New ID: [".$tag->GetID()."]\n";
+						$this->_indb = true;
+						//$this->_id = mysql_insert_id();
+						$this->_id = $tag->GetID();
+						$saved = true;
+					}
+					else
+					{
+						//echo "Tag \"".$this->_name."\" saved, but not found...\n";
+					}
+				}
+				else
+				{
+					//echo "Tag \"".$this->_name."\" already exists...\n";
+				}
 			}
 			
 			return $saved;
@@ -97,14 +128,15 @@ if (defined('reiZ') or exit(1))
 			$query = new Query();
 			$query->SetType(DBQT::Select);
 			$query->AddTable(static::$_dbtable);
-			$query->AddFields(array('blogtag.t_id', 'name', array('COUNT(blogposttag.t_id)', 'popularity')));
-			$query->AddInnerJoin('', 'blogposttag', 't_id', 't_id');
-			$query->SetGroupBy(DBPREFIX.'blogposttag.t_id');
+			$query->AddFields(array(static::$_dbtable.'.t_id', 'name', array('COUNT('.static::$_dbtable_rel.'.t_id)', 'popularity')));
+			$query->AddInnerJoin('', static::$_dbtable_rel, 't_id', 't_id');
+			$query->SetGroupBy(DBPREFIX.static::$_dbtable_rel.'.t_id');
 			$query->SetOrderby('t_id', DBOD::Asc);
 			$result = $GLOBALS['DB']->RunQuery($query);
 			while ($row = $GLOBALS['DB']->GetArray($result))
 			{
-				new BlogTag($row['t_id'], $row['name'], $row['popularity']);
+				$tag = new BlogTag($row['t_id'], $row['name'], $row['popularity']);
+				$tag->_indb = true;
 			}
 			
 			return static::$_cache;
@@ -123,15 +155,16 @@ if (defined('reiZ') or exit(1))
 				$query = new Query();
 				$query->SetType(DBQT::Select);
 				$query->AddTable(static::$_dbtable);
-				$query->AddFields(array(static::$_dbtable.'.t_id', 'name', array('COUNT(blogposttag.t_id)', 'popularity')));
-				$query->AddInnerJoin('', 'blogposttag', 't_id', 't_id');
-				$query->SetGroupBy(DBPREFIX.'blogposttag.t_id');
+				$query->AddFields(array(static::$_dbtable.'.t_id', 'name', array('COUNT('.static::$_dbtable_rel.'.t_id)', 'popularity')));
+				$query->AddInnerJoin('', static::$_dbtable_rel, 't_id', 't_id');
+				$query->SetGroupBy(DBPREFIX.static::$_dbtable_rel.'.t_id');
 				$query->AddCondition(static::$_dbtable.'.t_id', DBOP::Is, $id);
 				$result = $GLOBALS['DB']->RunQuery($query);
 				$row = $GLOBALS['DB']->GetArray($result);
 				if ($row != null)
 				{
 					$tag = new BlogTag($row['t_id'], $row['name'], $row['popularity']);
+					$tag->_indb = true;
 				}
 			}
 			
@@ -140,24 +173,33 @@ if (defined('reiZ') or exit(1))
 		
 		public static function LoadFromName($name, $orcreate=false)
 		{
-			$tag = null;
+			//echo "Loading Tag \"".$name."\"\n";
 			
+			$tag = null;
 			foreach (static::$_cache as $object) { if ($object->GetName() == $name) { $tag = $object; } }
 			
 			if ($tag == null)
 			{
+				//echo "Tag \"".$name."\" not found in cache\n";
+				
 				$query = new Query();
 				$query->SetType(DBQT::Select);
 				$query->AddTable(static::$_dbtable);
-				$query->AddFields(array('t_id', 'name', array('COUNT(blogposttag.t_id)', 'popularity')));
-				$query->AddInnerJoin('', 'blogposttag', 't_id', 't_id');
-				$query->SetGroupBy(DBPREFIX.'blogposttag.t_id');
-				$query->AddCondition('name', '=', $name);
+				$query->AddFields(array(DBPREFIX.static::$_dbtable.'.t_id', 'name', array('COUNT('.static::$_dbtable_rel.'.t_id)', 'popularity')));
+				$query->AddInnerJoin('', static::$_dbtable_rel, 't_id', 't_id');
+				//$query->SetGroupBy(DBPREFIX.static::$_dbtable_rel.'.t_id');
+				$query->AddCondition('name', DBOP::Is, $name);
 				$result = $GLOBALS['DB']->RunQuery($query);
 				$row = $GLOBALS['DB']->GetArray($result);
-				if ($row != null)
+				
+				//echo "Load Query: \"".$query."\"\n";
+				
+				if ($row != null && $row['t_id'] != null && $row['name'] != null)
 				{
 					$tag = new BlogTag($row['t_id'], $row['name'], $row['popularity']);
+					$tag->_indb = true;
+					
+					//var_dump($tag);
 				}
 			}
 			
@@ -166,26 +208,117 @@ if (defined('reiZ') or exit(1))
 			return $tag;
 		}
 		
-		// Moved to BlogTagCollection
-		/*public static function LoadByPost($post)
+		public static function LoadFromPost($post)
 		{
 			$tags =  array();
 			
-			$query = new Query();
-			$query->SetType(DBQT::Select);
-			$query->SetTable(static::$_dbtable);
-			$query->AddField(static::$_dbtable.'.t_id');
-			$query->AddInnerJoin('', 'blogposttag', 't_id', 't_id');
-			$query->AddCondition('p_id', DBOP::Is, $post->GetID());
-			$query->SetOrderby('t_id', DBOD::Asc);
-			$result = $GLOBALS['DB']->RunQuery($query);
-			while ($row = $GLOBALS['DB']->GetArray($result))
+			if (is_a($post, 'BlogPost'))
 			{
-				array_push($tags, BlogTag::LoadFromID($row['t_id']));
+				$query = new Query();
+				$query->SetType(DBQT::Select);
+				$query->SetTable(static::$_dbtable);
+				$query->AddField(static::$_dbtable.'.t_id');
+				$query->AddInnerJoin('', static::$_dbtable_rel, 't_id', 't_id');
+				$query->AddCondition('p_id', DBOP::Is, $post->GetPostID());
+				$query->SetOrderby('t_id', DBOD::Asc);
+				$result = $GLOBALS['DB']->RunQuery($query);
+				
+				//echo "Load query: \"".$query."\"\n";
+				
+				while ($row = $GLOBALS['DB']->GetArray($result))
+				{
+					array_push($tags, BlogTag::LoadFromID($row['t_id']));
+				}
 			}
 			
 			return $tags;
-		}*/
+		}
+		
+		protected function Delete()
+		{
+			$result = false;
+			$query = new Query();
+			
+			if ($this->_indb)
+			{
+				// Make sure that the tag isn't referenced (popularity = 0), before deleting
+				$query->SetType(DBQT::Select);
+				$query->AddTable(static::$_dbtable);
+				$query->AddFields(array('COUNT('.static::$_dbtable_rel.'.t_id)', 'popularity'));
+				$query->AddInnerJoin('', static::$_dbtable_rel, 't_id', 't_id');
+				$query->SetGroupBy(DBPREFIX.static::$_dbtable_rel.'.t_id');
+				$query->AddCondition(static::$_dbtable.'.t_id', DBOP::Is, $this->_id);
+				$result = $GLOBALS['DB']->RunQuery($query);
+				$row = $GLOBALS['DB']->GetArray($result);
+				if ($row != null && $row['popularity'] == 0)
+				{
+					parent::Delete();
+				}
+			}
+			
+			return $result;
+		}
+		
+		public function AddReferenceTo(/*BlogPost*/ $post)
+		{
+			$result = false;
+			$query = new Query();
+			
+			if (is_a($post, 'BlogPost') && $post->GetPostID() != null)
+			{
+				//var_dump($this->_indb);
+				if (!$this->_indb) { $this->Save(); }
+				//var_dump($this->GetID());
+				if ($this->_indb && $this->_id > 0)
+				{
+					$query->SetType(DB_QueryType::Insert);
+					$query->SetTable(DBPREFIX.static::$_dbtable_rel);
+					$query->AddField('p_id', $post->GetPostID());
+					$query->AddField('t_id', $this->GetID());
+					//$query->AddCondition('p_id', DB_Operator::Is, $post->GetPostID());
+					//$query->AddCondition('t_id', DB_Operator::Is, $this->GetID());
+					$result = $GLOBALS['DB']->RunNonQuery($query);
+					
+					//echo $query."\n";
+					
+					// On succes, increment popularity
+					if ($result) { $this->_popularity++; }
+				}
+				else
+				{
+					//echo "Tag doesn't have ID\n";
+				}
+			}
+			
+			return $result;
+		}
+		
+		public function DeleteReferenceTo(/*BlogPost*/ $post)
+		{
+			$result = false;
+			$query = new Query();
+			
+			if (is_a($post, 'BlogPost'))
+			{
+				$query->SetType(DB_QueryType::Delete);
+				$query->SetTable(DBPREFIX.static::$_dbtable_rel);
+				$query->AddCondition('p_id', DB_Operator::Is, $post->GetPostID());
+				$query->AddCondition('t_id', DB_Operator::Is, $this->GetID());
+				$result = $GLOBALS['DB']->RunNonQuery($query);
+				
+				//echo $query;
+				
+				if ($result)
+				{
+					// On succes, decrement popularity
+					$this->_popularity--;
+					// If popularity is 0, there is no other posts using this tag, so delete the tag aswell.
+					if ($this->GetPopularity() == 0) { $this->Delete(); }
+				}
+			}
+			
+			return $result;
+		}
 		
 		public static function MostPopular($amount)
 		{
@@ -320,54 +453,85 @@ if (defined('reiZ') or exit(1))
 		}*/
 	}
 	
-	class BlogTagCollection
+	class BlogTagCollection implements ArrayAccess
 	{
-		// TODO: research possibility of mapping BlogTagCollection->GetTags[$i] > BlogTagCollection[$i]
+		// Temporary solution (redundant data, please revise)
+		// TODO: Find a way to share dbtable with BlogTag class
+		//private static $_dbtable = "blogtag";
+		//private static $_dbtable_rel = "blogtagpost";
+		
+		// TODO: research possibility of mapping BlogTagCollection->GetTag[$i] > BlogTagCollection[$i]
+		// Fixed?: ArrayAccess implented, but untested.
 		private $_post = null;
 		private $_tags = array();
+		private $_added = array();
+		private $_removed = array();
 		
 		public function GetTags() { return $this->_tags; }
+		public function GetTag($index) { return $this->_tags[$index]; }
 		
 		public function SetTags(/*string*/ $value) { $this->ImportFromString($value); }
-			
+		
 		public function __construct(/*BlogPost*/ $post, /*bool*/ $load=true)
 		{
-			if (is_a($post, 'BlogPost'))
+			$this->_post = $post;
+			if ($load)
 			{
-				$this->_post = $post;
-				
-				$query = new Query();
-				$query->SetType(DBQT::Select);
-				$query->SetTable(static::$_dbtable);
-				$query->AddField(static::$_dbtable.'.t_id');
-				$query->AddInnerJoin('', 'blogposttag', 't_id', 't_id');
-				$query->AddCondition('p_id', DBOP::Is, $post->GetID());
-				$query->SetOrderby('t_id', DBOD::Asc);
-				$result = $GLOBALS['DB']->RunQuery($query);
-				while ($row = $GLOBALS['DB']->GetArray($result))
-				{
-					array_push($this->_tags, BlogTag::LoadFromID($row['t_id']));
-				}
-			}
-			else
-			{
-				var_dump($post);
+				$this->_tags = BlogTag::LoadFromPost($post);
+				// Sort Alphabetically
+				usort($this->_tags, array("BlogTag", "CompareName"));
 			}
 		}
 		
 		public function __tostring()
 		{
+			//var_dump($this->_tags);
+			
 			$value = EMPTYSTRING;
-			for ($i = sizeof($this->_tags) -1; $i >= 0; $i--)
+			$lastindex = sizeof($this->_tags) -1;
+			for ($i = 0; $i <= $lastindex; $i++)
 			{
-				$value .= $this->_tags[$i]->GetName();
-				if ($i != 0) { $value .= ', '; }
+				$tag = $this->_tags[$i];
+				if ($tag != null)
+				{
+					$value .= $tag->GetName();
+					if ($i < $lastindex) { $value .= ', '; }
+				}
 			}
 			return $value;
 		}
 		
+		public function Save()
+		{
+			//var_dump($this->_post);
+			for ($i = sizeof($this->_removed) -1; $i >= 0; $i--)
+			{
+				$tag = $this->_removed[$i];
+				if ($tag != null)
+				{
+					if ($tag->DeleteReferenceTo($this->_post)) { reiZ::RemoveFromArray($this->_removed, $i); }
+					// TODO: Add error handling for failed removals
+				}
+			}
+			
+			for ($i = sizeof($this->_added) -1; $i >= 0; $i--)
+			{
+				$tag = $this->_added[$i];
+				if ($tag != null)
+				{
+					if ($tag->AddReferenceTo($this->_post)) { reiZ::RemoveFromArray($this->_removed, $i); }
+					// TODO: Add error handling for failed additions
+				}
+			}
+			$this->_added = array();
+			
+			return true;
+		}
+		
 		public function ImportFromString(/*string*/ $value)
 		{
+			//echo "Import string: \"".$value."\"\n";
+			
 			if (!empty($value))
 			{
 				$newtags = array();
@@ -376,14 +540,16 @@ if (defined('reiZ') or exit(1))
 					$i = -1;
 					$separator = array(SINGLECOMMA, ';', SINGLESPACE);
 					
-					if (reiZ::string_contains($string, $separator, 1, $i))
+					if (reiZ::string_contains($value, $separator, 1, $i))
 					{
-						$names = explode($separator[$i], $string);
+						$names = explode($separator[$i], $value);
 						foreach ($names as $name)
 						{
-							if ($name = strtolower(trim($name)) != EMPTYSTRING) { array_push($newtags, $name); }
+							$name = strtolower(trim($name));
+							if ($name != EMPTYSTRING) { array_push($newtags, $name); }
 						}
 					}
+					else { array_push($newtags, $value); }
 				}
 				elseif (is_array($value))
 				{
@@ -400,52 +566,74 @@ if (defined('reiZ') or exit(1))
 				for ($i = 0; $i < sizeof($this->_tags); $i++)
 				{
 					$tag = $this->_tags[$i];
-					// if the tag also exists in the new collection, remove it from new tags so it doesn't get readded.
-					if (reiZ::string_is_one_of($newtags, $tag->GetName(), $z)) { $newtags[$z] = null; }
+					// if the tag also exists in the new collection, remove it from new tags so it doesn't get read.
+					if (reiZ::string_is_one_of($newtags, $tag->GetName(), $z)) { reiZ::RemoveFromArray($newtags, $z); }
 					// if the tag doesn't exist in the new collection, remove it from the old collection.
-					else { $this->Remove($tag); }
+					else { $this->RemoveAt($i); }
 				}
 				
 				// Add all the new tags to the collection
-				foreach ($newtags as $tag) { $this->Add($tag); }
+				foreach ($newtags as $tag) { $this->Add(BlogTag::LoadFromName($tag, true)); }
+				
+				// Sort Alphabetically
+				usort($this->_tags, array("BlogTag", "CompareName"));
 			}
 		}
 		
 		public function Add(/*BlogTag*/ $value)
 		{
-			// TODO: make work
-			
 			if (is_string($value)) { $value = BlogTag::LoadFromName($value, true); }
 			
 			if (is_a($value, 'BlogTag'))
 			{
-				$incollection = false;
-				foreach ($this->_tags as $tag) { if ($tag->GetName() == $value->GetName()) { $incollection = true; } }
-				
-				if (!$incollection)
+				if (!$this->InCollection($value))
 				{
 					array_push($this->_tags, $value);
+					array_push($this->_added, $value);
 				}
 			}
 		}
 		
-		public function Remove(/*BlogTag*/ $value)
+		public function Remove(/*BlogTag*/ $tag)
 		{
-			// TODO: make work
-			
-			if (is_a($value, 'BlogTag')) { $value = $value->GetName(); }
-			if (is_string($value)) { foreach ($this->_tags as $tag) { if ($tag->GetName() == $value->GetName()) { $incollection = true; } }
-			
-			if (is_integer($value))
+			$i = -1;
+			if ($this->InCollection($value, $i)) { $this->RemoveAt($i); }
+		}
+		
+		public function RemoveAt(/*integer*/ $index)
+		{
+			if ($index < sizeof($this->_tags))
 			{
-				$incollection = false;
-				
-				if (!$incollection)
-				{
-					array_push($this->_tags, $value);
-				}
+				array_push($this->_removed, $this->_tags[$index]);
+				reiZ::RemoveFromArray($this->_tags, $index);
 			}
 		}
+		
+		public function InCollection(/*string*/ $value, /*integer*/& $out=null) {
+			$incollection = false;
+			if (is_a($value, 'BlogTag')) { $value = $value->GetName(); }
+			if (is_string($value))
+			{
+				//foreach ($this->_tags as $tag)
+				for ($i = 0; $i < sizeof($this->_tags); $i++)
+				{
+					$tag = $this->_tags[$i];
+					if ($tag != null && $tag->GetName() == $value)
+					{
+						$incollection = true;
+						if ($out != null) { $out = $i; }
+						$i = sizeof($this->_tags);
+					}
+				}
+			}
+			return $incollection;
+		}
+		
+		/* ArrayAccess methods */
+		public function offsetSet($offset, $value) { if (is_null($offset)) { $this->_tags[] = $value; } else { $this->_tags[$offset] = $value; } }
+		public function offsetExists($offset) { return isset($this->_tags[$offset]); }
+		public function offsetUnset($offset) { unset($this->_tags[$offset]); }
+		public function offsetGet($offset) { return isset($this->_tags[$offset]) ? $this->_tags[$offset] : null; }
 	}
 }
 ?>

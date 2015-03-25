@@ -4,6 +4,8 @@
 # Copyright 2014 Philip Jensen <me@iensenfrippu.dk>
 #######################################################*/
 
+ob_start();
+
 define("STARTTIME", microtime(true));
 define("reiZ", true);
 session_start();
@@ -92,5 +94,14 @@ else
 	}
 }
 
+$output = ob_get_flush();
+ob_clean();
+
+// TODO: Revise final DEBUG str_replace above so that $HTML remains an HTMLDocument object, and the OB string can be properly inserted
+
+if ($output != EMPTYSTRING) { echo "\n<br>\n<br>\n<br>\nERROR OCCURED, CHECK SOURCE LOGFILE.<br>\n"; }
+
 echo $HTML;
+
+if (DEBUG) { reiZ::LOGSOURCE($output.$HTML); }
 ?>

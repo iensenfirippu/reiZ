@@ -9,8 +9,8 @@ if (defined('reiZ') or exit(1))
 	class BlogPost extends reiZ_DatabaseObject
 	{
 		protected static $_fields = array("p_id", "category", "title", "shorttext", "content");
-		protected static $_orderindex = 3;
-		protected static $_orderdirection = "ASC";
+		protected static $_orderindex = 1;
+		protected static $_orderdirection = DBOD::Desc;
 		protected static $_itemsperpage = 10;
 		protected static $_type = "dbo_blogpost";
 		protected static $_dbtable = "blogpost";
@@ -23,18 +23,20 @@ if (defined('reiZ') or exit(1))
 		protected $_tags = null;
 		protected $_images = array(); // TODO: make into generic module calls instead of statically linking gallery module
 		
-		public function GetPostID()		{ return $this->_postid; }
-		public function GetCategory()	{ return $this->_category; }
-		public function GetTitle()		{ return $this->_title; }
-		public function GetText()		{ return $this->_text; }
-		public function GetFullText()	{ $return = $this->_fulltext; if ($return == EMPTYSTRING) { $return = $this->_text; } return $return; }
-		public function GetPosted()		{ return $this->_added; }
-		public function GetEdited()		{ return $this->_updated; }
-		public function GetTags()		{ return $this->_tags; }
-		public function GetImages()		{ return $this->_images; }
+		public function GetPostID()			{ return $this->_postid; }
+		public function GetCategory()		{ return $this->_category; }
+		public function GetTitle()			{ return $this->_title; }
+		public function GetText()			{ return $this->_text; }
+		public function GetFullText()		{ $return = $this->_fulltext; if ($return == EMPTYSTRING) { $return = $this->_text; } return $return; }
+		public function GetPosted()			{ return $this->_added; }
+		public function GetEdited()			{ return $this->_updated; }
+		public function GetTags()			{ return $this->_tags->GetTags(); }
+		public function GetTagCollection()	{ return $this->_tags; }
+		public function GetImages()			{ return $this->_images; }
 		
 		private function SetPostID($value)		{ $this->_values[self::$_fields[0]] = $this->_postid = $value; }
-		public function SetCategory($value)		{ $this->_values[self::$_fields[1]] = $this->_category = $value; }
+		public function SetCategory($value)		{ $this->_values[self::$_fields[1]] = $value;
+												  $this->_category = BlogCategory::LoadFromID($value); }
 		public function SetTitle($value)		{ $this->_values[self::$_fields[2]] = $this->_title = $value; }
 		public function SetShortText($value)	{ $this->_values[self::$_fields[3]] = $this->_text = $value; }
 		public function SetFullText($value)		{ $this->_values[self::$_fields[4]] = $this->_fulltext = $value; }
@@ -46,15 +48,15 @@ if (defined('reiZ') or exit(1))
 			if (is_array($values))
 			{
 				if (isset($values[self::$_fields[0]]))	{ self::SetPostID		($values[self::$_fields[0]]); }
-				if (isset($values[self::$_fields[1]]))	{ self::SetCategory		(BlogCategory::LoadFromID($values[self::$_fields[1]])); }
+				if (isset($values[self::$_fields[1]]))	{ self::SetCategory		($values[self::$_fields[1]]); }
 				if (isset($values[self::$_fields[2]]))	{ self::SetTitle		($values[self::$_fields[2]]); }
 				if (isset($values[self::$_fields[3]]))	{ self::SetShortText	($values[self::$_fields[3]]); }
 				if (isset($values[self::$_fields[4]]))	{ self::SetFullText		($values[self::$_fields[4]]); }
 				//if (isset($values[self::$_fields[5]]))	{ self::SetPosted		($values[self::$_fields[5]]); }
 				//if (isset($values[self::$_fields[6]]))	{ self::SetEdited		($values[self::$_fields[6]]); }
-				
-				$this->_tags = new BlogTagCollection($this);
 			}
+			
+			$this->_tags = new BlogTagCollection($this);
 		}
 		
 		public static function Create($category=0, $title=EMPTYSTRING)
@@ -87,19 +89,19 @@ if (defined('reiZ') or exit(1))
 			if (strlen($value) > 255)
 			{
 				$tmp = substr($value, 0, 252);
-				$this->SetText(substr($tmp, 0, strrpos($tmp, ' ')).'...');
+				$this->SetShortText(substr($tmp, 0, strrpos($tmp, ' ')).'...');
 				$this->SetFullText($value);
 			}
 			else
 			{
-				$this->SetText($value);
+				$this->SetShortText($value);
 				$this->SetFullText($value);
 			}
 		}
 		
 		public function HasFullText()	{ $return = true; if ($this->_fulltext == '') { $return = false; } return $return; }
 		
-		public function AddTag($tag)
+		/*public function AddTag($tag)
 		{
 			$value = false;
 			if (!in_array($tag, $this->_tags))
@@ -107,6 +109,41 @@ if (defined('reiZ') or exit(1))
 				$value = array_push($this->_tags, $tag);
 			}
 			return $value;
+		}*/
+		
+		public function Save()
+		{
+			$result = parent::Save();
+			if ($this->GetPostID() == null)
+			{
+				$query = new Query();
+				$query->SetType(DBQT::Select);
+				$query->SetTable(DBPREFIX.$this::$_dbtable);
+				$query->AddField($this::$_fields[0]);
+				$query->AddCondition(static::$_dbtable.'.'.$this::$_key, DBOP::Is, $this->_id);
+				
+				$result = $GLOBALS['DB']->RunQuery($query);
+				$array = $GLOBALS['DB']->GetArray($result);
+				
+				if (isset($array[$this::$_fields[0]]) && $array[$this::$_fields[0]] != null)
+				{
+					$this->SetPostID($array[$this::$_fields[0]]);
+				}
+				else { $result = false; }
+			}
+			if ($result) { $result = $this->_tags->Save(); }
+			return $result;
+		}
+		
+		public function Delete($final=false)
+		{
+			$result = false;
+			if ($final)
+			{
+				while (sizeof($this->_tags->GetTags()) > 0) { $this->_tags->RemoveAt(0); }
+				$result = $this->_tags->Save();
+			}
+			return $result && parent::Delete($final);
 		}
 		
 		public static function Load($conditions)
@@ -138,19 +175,19 @@ if (defined('reiZ') or exit(1))
 		
 		public static function LoadNewest($limit_start, $limit_amount, &$count=null)
 		{
-			return self::LoadAll(null, $limit_start, $limit_amount, null, null, $count);
+			return self::LoadAll(null, $limit_start, $limit_amount, 'p_id', DBOD::Desc, $count);
 		}
 		
 		public static function LoadNewestByCategory($category, $limit_start, $limit_amount, &$count=null)
 		{
-			return self::LoadAll(array(array(self::$_fields[1], DBOP::Is, $category->GetID())), $limit_start, $limit_amount, null, null, $count);
+			return self::LoadAll(array(array(self::$_fields[1], DBOP::Is, $category->GetID())), $limit_start, $limit_amount, 'p_id', DBOD::Desc, $count);
 		}
 		
 		public static function LoadNewestByTag($tag, $limit_start, $limit_amount, &$count=null)
 		{
 			$query = parent::PrepareLoadAllQuery(array(array('blogposttag.t_id', DBOP::Is, $tag->GetID())));
 			self::InnerJoinBlogTag($query);
-			$rows = parent::RunLoadAllQuery($query, $limit_start, $limit_amount, null, null, $count);
+			$rows = parent::RunLoadAllQuery($query, $limit_start, $limit_amount, 'p_id', DBOD::Desc, $count);
 			
 			$posts = array();
 			foreach ($rows as $row) { array_push($posts, new BlogPost($row)); }
@@ -167,8 +204,8 @@ if (defined('reiZ') or exit(1))
 		
 		public static function InnerJoinBlogTag($query, $capture=false)
 		{
-			if ($capture) { $query->AddFields(array(array('blogtag.uuid', 'tag_id'), array('blogtag.name', 'tag_name'))); }
-			$query->AddInnerJoin('', 'blogposttag', self::$_key, 'p_id');
+			if ($capture) { $query->AddFields(array(array('blogtag.t_id', 'tag_id'), array('blogtag.name', 'tag_name'))); }
+			$query->AddInnerJoin('', 'blogposttag', 'p_id', 'p_id');
 			if ($capture) { $query->AddInnerJoin('blogposttag', 'blogtag', 't_id', 'uuid'); }
 		}
 		
