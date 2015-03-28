@@ -81,6 +81,11 @@ if (defined('reiZ') or exit(1))
 			// If not implemented in the child class, the given breadcrumb will be unaffected.
 		}
 		
+		public function GetTitleFromUrl($url)
+		{
+			return EMPTYSTRING;
+		}
+		
 		public function LoadAll()
 		{
 			$this->LoadClasses();

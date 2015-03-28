@@ -1,7 +1,7 @@
 <?php
 /*#######################################################
 # reiZ php OOP CMS (initially created for iensenfrippu.dk)
-# Copyright 2014 Philip Jensen <me@iensenfrippu.dk>
+# Copyright 2015 Philip Jensen <me@iensenfrippu.dk>
 #######################################################*/
 
 ob_start();
@@ -26,7 +26,7 @@ if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 {
 	// TODO: Change to maintenance mode specific theme
 	$HTML = new HtmlDocument('Maintenance');
-	$HTML->AddElement(new HtmlElement('span', '', 'This site is currently undergoing maintenance, please check back later.'));
+	$HTML->AddElement(new HtmlElement('span', EMPTYSTRING, 'This site is currently undergoing maintenance, please check back later.'));
 	$HTML->GetReference('TITLE')->SetContent('test');
 }
 else
@@ -44,7 +44,7 @@ else
 		else
 		{
 			$HTML = new HtmlDocument('No database');
-			$HTML->AddContent(new HtmlElement('span', '', 'Couldn&apos;t connect to database "'.DBDATABASE.'".'));
+			$HTML->AddContent(new HtmlElement('span', EMPTYSTRING, 'Couldn&apos;t connect to database "'.DBDATABASE.'".'));
 		}
 	}
 	else
