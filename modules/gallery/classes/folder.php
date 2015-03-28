@@ -16,6 +16,7 @@ if (defined('reiZ') or exit(1))
 		protected $_text = EMPTYSTRING;
 		protected $_subfolders = array();
 		protected $_images = array();
+		protected $_exists = false;
 		
 		public function GetHideId()		{ return $this->_hideid;		}
 		public function GetName()		{ return $this->_name;			}
@@ -25,6 +26,7 @@ if (defined('reiZ') or exit(1))
 		public function GetText()		{ return $this->_text;			}
 		public function GetSubfolders()	{ return $this->_subfolders;	}
 		public function GetImages()		{ return $this->_images;		}
+		public function Exists()		{ return $this->_exists;		}
 		
 		public function HasInfo()		{ return ($this->_hideid != EMPTYSTRING);	}
 		
@@ -35,35 +37,40 @@ if (defined('reiZ') or exit(1))
 			$this->_link = $url;
 			$this->_name = $pathinfo['filename'];
 			
-			$infofile = null;
-			$directoryinfofile = reiZ::url_append($this->_url, 'directory.info');
-			$galleryinfofile = reiZ::url_append($this->_url, 'gallery.info');
-			if (file_exists($directoryinfofile))
+			if (file_exists($this->_url))
 			{
-				$infofile = file($directoryinfofile);
+				$this->_exists = true;
+				
+				$infofile = null;
+				$directoryinfofile = reiZ::url_append($this->_url, 'directory.info');
+				$galleryinfofile = reiZ::url_append($this->_url, 'gallery.info');
+				if (file_exists($directoryinfofile))
+				{
+					$infofile = file($directoryinfofile);
+				}
+				elseif (file_exists($galleryinfofile))
+				{
+					$thumbdsdir = reiZ::url_append($this->_url, 'thumbs');
+					if (!is_dir($thumbdsdir)) { mkdir($thumbdsdir); }
+					$infofile = file($galleryinfofile);
+				}
+				
+				if ($infofile != null && is_array($infofile) && sizeof($infofile > 2))
+				{
+					$this->_title = trim(preg_replace('/\s\s+/', ' ', $infofile[0]));
+					$this->_text = trim(preg_replace('/\s\s+/', ' ', $infofile[1]));
+				}
+				else { $this->_title = $this->_name; }
+				
+				if ($this->_title == EMPTYSTRING ) { $this->_title = GALLERYDEFAULTTITLE; }
+				if ($this->_text == EMPTYSTRING ) { $this->_text = GALLERYDEFAULTTEXT; }
+				
+				if ($firstlevel)
+				{
+					$this->LoadContents();
+				}
+				elseif ($infofile != null) { $this->_hideid = reiZ::MakeHideId(); }
 			}
-			elseif (file_exists($galleryinfofile))
-			{
-				$thumbdsdir = reiZ::url_append($this->_url, 'thumbs');
-				if (!is_dir($thumbdsdir)) { mkdir($thumbdsdir); }
-				$infofile = file($galleryinfofile);
-			}
-			
-			if ($infofile != null && is_array($infofile) && sizeof($infofile > 2))
-			{
-				$this->_title = trim(preg_replace('/\s\s+/', ' ', $infofile[0]));
-				$this->_text = trim(preg_replace('/\s\s+/', ' ', $infofile[1]));
-			}
-			else { $this->_title = $this->_name; }
-			
-			if ($this->_title == EMPTYSTRING ) { $this->_title = GALLERYDEFAULTTITLE; }
-			if ($this->_text == EMPTYSTRING ) { $this->_text = GALLERYDEFAULTTEXT; }
-			
-			if ($firstlevel)
-			{
-				$this->LoadContents();
-			}
-			elseif ($infofile != null) { $this->_hideid = reiZ::MakeHideId(); }
 		}
 		
 		private function LoadContents()

@@ -52,7 +52,7 @@ if (defined('reiZ') or exit(1))
 		public function GetHtml_HiddenInfo()
 		{
 			$return = false;
-			if ($this->_htmlextra['hidden'] != null)
+			if (reiZ::SetAndNotNull($this->_htmlextra, 'hidden'))
 			{
 				$return = $this->_htmlextra['hidden'];
 			}
@@ -63,19 +63,28 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
-		public function TranslateBreadcrumb($string)
+		/*public function GetTitleFromUrl($url)
 		{
-			
-			return false;
-		}
+			$result = false;
+			$folder = new GalleryFolder($url, false);
+			if ($folder->GetTitle() != EMPTYSTRING) { $result = $folder->GetTitle(); }
+			return $result;
+		}*/
 		
 		private function GenerateHtml()
 		{
 			$url = reiZ::GetSafeArgument(GETARGS);
 			$folder = new GalleryFolder($url);
 			
-			$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
-			$this->_html = new HtmlElement_GalleryFolder($this, $folder);
+			if ($folder->Exists())
+			{
+				$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
+				$this->_html = new HtmlElement_GalleryFolder($this, $folder);
+			}
+			// Else redirect to Gallery Root
+			else { reiZ::Redirect(URLPAGE.reiZ::GetSafeArgument(GETPAGE)); }
+			// Else redirect to previous gallery (loops until an existing gallery is found, or the max redirect is reached)
+			//else { reiZ::Redirect(URLPAGE.reiZ::GetSafeArgument(GETPAGE).URLARGS.substr($url, 0, strrpos( $url, SINGLESLASH))); }
 		}
 		
 		public function GetHtml_RightPane()

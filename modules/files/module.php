@@ -40,7 +40,7 @@ if (defined('reiZ') or exit(1))
 		public function GetHtml_HiddenInfo()
 		{
 			$return = false;
-			if ($this->_htmlextra['hidden'] != null)
+			if (reiZ::SetAndNotNull($this->_htmlextra, 'hidden'))
 			{
 				$return = $this->_htmlextra['hidden'];
 			}
@@ -61,8 +61,13 @@ if (defined('reiZ') or exit(1))
 			$url = reiZ::GetSafeArgument(GETARGS);
 			$folder = new FilesFolder($url);
 			
-			$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
-			$this->_html = new HtmlElement_FilesFolder($this, $folder);
+			if ($folder->Exists())
+			{
+				$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
+				$this->_html = new HtmlElement_FilesFolder($this, $folder);
+			}
+			// Else redirect to Gallery Root
+			else { reiZ::Redirect(URLPAGE.reiZ::GetSafeArgument(GETPAGE)); }
 		}
 		
 		/*public function GenerateHtml()

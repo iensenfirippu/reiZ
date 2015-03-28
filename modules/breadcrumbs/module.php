@@ -18,7 +18,7 @@ class BreadcrumbsModule extends Module
 		$description = 'Generates breadcrumbs from the URL, for easy site navigation.';
 		parent::__construct($name, $title, $author, $version, $description);
 		
-		$_module = $module;
+		$this->_module = $module;
 		if ($initialize) { $this->Initialize(); }
 	}
 	
@@ -58,10 +58,21 @@ class BreadcrumbsModule extends Module
 				$arg = $args[$i];
 				$url .= $arg.SINGLESLASH;
 				$crumb = new Breadcrumb($url, $arg);
-				// TODO: Load module corresponding to page and translate
-				//$module = ???;
-				//$module->TranslateBreadcrumb($crumb);
 				array_push($this->_breadcrumbs, $crumb);
+			}
+		}
+		
+		foreach ($this->_breadcrumbs as $crumb)
+		{
+			if ($this->_module instanceof Module)
+			{
+				$title = $this->_module->GetTitleFromUrl($url);
+				if ($title != null) { $crumb->SetName($title); }
+				//var_dump($crumb);
+			}
+			else
+			{
+				//var_dump($this->_module);
 			}
 		}
 	}

@@ -49,12 +49,12 @@ if (defined('reiZ') or exit(1))
 	// - content
 	$HTML->AddElement(new HtmlElement('div', 'id="content"'), 'main', 'content');
 	//$HTML->SetPointer('content');
-	$HTML->AddElement(new HtmlElement('div', 'class="breadcrumbs"', '', $breadcrumbs->GetHtml()));
+	$HTML->AddElement(new HtmlElement('div', 'class="breadcrumbs"', EMPTYSTRING, $breadcrumbs->GetHtml()));
 	
 	// - bottom
 	$HTML->AddElement(new HtmlElement('div', 'id="bottom"'), 'main', 'bottom');
 	//$HTML->SetPointer('bottom');
-	$HTML->AddElement(new HtmlElement('span', 'class="left"', 'Powered by <a href="#">reiZ</a>'));
+	$HTML->AddElement(new HtmlElement('span', 'class="left"', 'Powered by <a href="https://github.com/iensenfirippu/reiZ">reiZ</a>'));
 	$HTML->AddElement(new HtmlElement('span', 'class="right"', '<!--{EXECUTIONTIME}--!> <!--{QUERYCOUNT}--!>'));
 }
 ?>

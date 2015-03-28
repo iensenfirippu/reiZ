@@ -10,7 +10,7 @@ if (defined('reiZ') or exit(1))
 		 * Redirects the page to the root of the website
 		 * @param logout, if set to true will also log out the user.
 		 */
-		public static function BackToDisneyland($logout = false)
+		public static function BackToDisneyland($logout=false)
 		{
 			if ($logout) { session_destroy(); }
 			reiZ::Redirect('/');
@@ -20,7 +20,7 @@ if (defined('reiZ') or exit(1))
 		 * Redirects the page to the specified URL
 		 * @param relative, specifies if the URL is relative to the current page.
 		 */
-		public static function Redirect($url, $relative = false)
+		public static function Redirect($url, $relative=false)
 		{
 			if ($relative) { header('Location: '.$url); }
 			else { header('Location: '.URLROOT.$url); }
@@ -326,8 +326,9 @@ if (defined('reiZ') or exit(1))
 		 * description
 		 * @param param, description.
 		 */
-		public static function SetAndNotNull($variable)
+		public static function SetAndNotNull($variable, $key=null)
 		{
+			if ($key != null && is_array($variable) && array_key_exists($key, $variable)) { $variable = $variable[$key]; }
 			return isset($variable) && $variable != null;
 		}
 		
@@ -335,8 +336,9 @@ if (defined('reiZ') or exit(1))
 		 * description
 		 * @param param, description.
 		 */
-		public static function SetAndNotEmpty($variable)
+		public static function SetAndNotEmpty($variable, $key=null)
 		{
+			if ($key != null && is_array($variable) && array_key_exists($key, $variable)) { $variable = $variable[$key]; }
 			return isset($variable) && !empty($variable);
 		}
 		

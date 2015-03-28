@@ -8,6 +8,9 @@ if (defined('reiZ') or exit(1))
 {
 	class Page extends reiZ_DatabaseObject
 	{
+		// TODO: Add Weight to modules to order them, and set a Master module, to determine which module should translate...
+		// or... devise a general function to translate any URL into a Title. (if page="gallery" use gallery module to translate)
+		
 		protected static $_fields = array("masterpage", "name", "title", "content", "inmenu", "weight");
 		//protected static $_keyindex = 0;
 		protected static $_orderindex = 4;
