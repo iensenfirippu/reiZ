@@ -23,6 +23,7 @@ if (defined('reiZ') or exit(1))
 	class HtmlElement
 	{
 		protected $_indent = 0;
+		protected $_oneline = false;
 		protected $_tag = EMPTYSTRING;
 		protected $_endtag = EMPTYSTRING;
 		protected $_attributes = EMPTYSTRING;
@@ -31,6 +32,16 @@ if (defined('reiZ') or exit(1))
 		//protected $_container = null;
 		protected $_containers = array();
 		protected $_pointer = null;
+		
+		public function GetIndent()			{ return $this->_indent; }
+		public function GetOneline()		{ return $this->_oneline; }
+		public function GetTag()			{ return $this->_tag; }
+		public function GetAttributes()		{ return $this->_attributes; }
+		public function GetContent()		{ return $this->_content; }
+		public function GetChildren()		{ return $this->_children; }
+		public function HasChildren()		{ return sizeof($this->_children) > 0; }
+		
+		public function SetOneline($value)	{ $this->_oneline = ($value == true); }
 		
 		public function __construct($tag=EMPTYSTRING, $attributes=EMPTYSTRING, $content=EMPTYSTRING, $child=null)
 		{
@@ -53,12 +64,27 @@ if (defined('reiZ') or exit(1))
 			//$this->_container = $container;
 		}
 		
-		public function GetIndent()			{ return $this->_indent; }
-		public function GetTag()			{ return $this->_tag; }
-		public function GetAttributes()		{ return $this->_attributes; }
-		public function GetContent()		{ return $this->_content; }
-		public function GetChildren()		{ return $this->_children; }
-		public function HasChildren()		{ return sizeof($this->_children) > 0; }
+		protected static function ArgsToString($args)
+		{
+			$result = EMPTYSTRING;
+			
+			if ($args != null)
+			{
+				if (is_string($args))
+				{
+					$result = SINGLESPACE.$key.'="'.$val.'"';
+				}
+				if (is_array($args))
+				{
+					ksort($args);
+					foreach ($args as $key => $val) {
+						$result .= SINGLESPACE.$key.'="'.$val.'"';
+					}
+				}
+			}
+			
+			return trim($result);
+		}
 		
 		//public function SetIndent($int)	{ $this->_indent = $int; UpdateChildren(); }
 		public function SetContent($content) { $this->_content = $content; }
@@ -76,7 +102,8 @@ if (defined('reiZ') or exit(1))
 		public function AddContainer($HtmlElement, $name)
 		{
 			$this->AddChild($HtmlElement);
-			while ($HtmlElement->HasChildren()) { $HtmlElement = $HtmlElement->_children[sizeof($HtmlElement->_children) -1]; }
+			//while ($HtmlElement->HasChildren()) { $HtmlElement = $HtmlElement->_children[sizeof($HtmlElement->_children) -1]; }
+			while ($HtmlElement->HasChildren()) { $HtmlElement = end($HtmlElement->_children); }
 			$this->_pointer = $this->_containers[$name] = $HtmlElement;
 		}
 		
@@ -153,15 +180,24 @@ if (defined('reiZ') or exit(1))
 							else { $return .= ">".$this->_content."</".$this->_tag.">"; }
 						}
 						elseif (strstr(NONCLOSINGELEMENTS, $this->_tag)) { $return .= ">"; }
-						elseif (strstr(NONVOIDELEMENTS, $this->_tag)) { $return .= "></".$this->_tag.">"; }
+						elseif (strstr(NONVOIDELEMENTS, $this->_tag) || $this->_oneline) { $return .= "></".$this->_tag.">"; }
 						else { $return .= " />"; }
 					}
 					else
 					{
-						$return .= ">".OUTPUTNEWLINE;
-						if ($this->_content != EMPTYSTRING) { $return .= str_repeat(OUTPUTINDENT, $this->_indent + 1).str_replace("\n", "<br />".OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent), $this->_content).OUTPUTNEWLINE; }
-						foreach ($this->_children as $c) { $return .= $c.OUTPUTNEWLINE; }
-						$return .= str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
+						if ($this->_oneline)
+						{
+							$return .= ">";
+							foreach ($this->_children as $c) { $return .= $c; }
+							$return .= "</".$this->_tag.">";
+						}
+						else
+						{
+							$return .= ">".OUTPUTNEWLINE;
+							if ($this->_content != EMPTYSTRING) { $return .= str_repeat(OUTPUTINDENT, $this->_indent + 1).str_replace("\n", "<br />".OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent), $this->_content).OUTPUTNEWLINE; }
+							foreach ($this->_children as $c) { $return .= $c.OUTPUTNEWLINE; }
+							$return .= str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
+						}
 					}
 				}
 			}

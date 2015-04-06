@@ -1,13 +1,4 @@
 <?php
-define("GALLERYDIR", FOLDERFILES."/gallery");
-define("GALLERYNOPREVIEW", FOLDERCOMMON."/images/reiz/nopreview.jpg"); // must be jpg
-define("THUMBNAILWIDTH", 100);
-define("THUMBNAILHEIGHT", 75);
-define("USELIGHTBOX", true);
-define("GALLERYDEFAULTTITLE", "Gallery");
-define("GALLERYDEFAULTTEXT", "&nbsp");
-define("GALLERYPREVLINKTEXT", "Back to previous folder"); // ".."
-
 if (defined('reiZ') or exit(1))
 {
 	class GalleryModule extends Module
@@ -15,7 +6,7 @@ if (defined('reiZ') or exit(1))
 		public function __construct($initialize = true)
 		{
 			$name = 'gallery';
-			$title = 'Gallery module';
+			$title = 'Gallery';
 			$author = 'Philip Jensen';
 			$version = 0.1;
 			$description = 'Image gallery viewer module, without any database calls.';
@@ -91,8 +82,23 @@ if (defined('reiZ') or exit(1))
 		{
 			return $this->GetHtml_HiddenInfo();
 		}
+		
+		public function GetSettings()
+		{
+			$settings = new Settings();
+			$settings->Add('GALLERYDIR',				'File directory',			ST::String,	FOLDERFILES.'/gallery');
+			$settings->Add('GALLERYNOPREVIEW',			'Default image',			ST::String,	FOLDERCOMMON."/images/reiz/nopreview.jpg");
+			$settings->Add('GALLERYTHUMBNAILWIDTH',		'Thumbnail width',			ST::Integer,	100);
+			$settings->Add('GALLERYTHUMBNAILHEIGHT',	'Thumbnail height',			ST::Integer,	75);
+			$settings->Add('GALLERYUSELIGHTBOX',		'Use lightbox',				ST::Bool,	true);
+			$settings->Add('GALLERYDEFAULTTITLE',		'Default Title',			ST::String,	'Gallery');
+			$settings->Add('GALLERYDEFAULTTEXT',		'Default Text',				ST::String,	'&nbsp;');
+			$settings->Add('GALLERYPREVLINKTEXT',		'Text on "Back" button',	ST::String,	'Back to previous folder');
+			
+			return $settings;
+		}
 	}
 	
-	$MODULE = new GalleryModule(false);
+	$GLOBALS['MODULES'][] = new GalleryModule(false);
 }
 ?>

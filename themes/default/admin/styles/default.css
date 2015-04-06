@@ -306,9 +306,20 @@ table {
 	border-left: 1px solid #aaaaaa;
 }
 
+.table_cell input, .table_cell select {
+	width: 96%;
+	height: 20px;
+	margin: 2px 2% 2px 2%;
+	box-sizing: border-box;
+}
+
 .table_last_cell {
-	width: 50px;
+	margin: 0;
+	padding: 4px 4px 0 4px;
+    width:1%;
+    white-space:nowrap;
 	border-right: 1px solid #aaaaaa;
+	text-align: right;
 }
 
 /* table.header */
@@ -328,6 +339,9 @@ table {
 
 /* Form */
 
+.form {
+}
+
 select, input, textarea {
 	left: 0px;
 	margin: 0px;
@@ -343,6 +357,7 @@ select, input, textarea {
 	display: block;
 	width: 100%;
 	clear: both;
+	font-size: 2px;
 }
 
 .formline {
@@ -356,14 +371,14 @@ select, input, textarea {
 	display: inline-block;
 	float: left;
 	height: 16px;
-	width: 15%;
+	width: 30%;
 }
 
 .formline input, .formline select, .formline textarea, .formline button {
 	display: inline-block;
 	float: left;
 	min-height: 18px;
-	width: 70%;
+	width: 69%;
 	margin-bottom: 4px;
 	
 	color: #000000;
@@ -382,14 +397,14 @@ select, input, textarea {
 }
 
 .formline .submit, .formline button {
-	margin-left: 15%;
+	margin-left: 30%;
 	border-color: #bbbbbb;
 	background-color: #cccccc;
 }
 
 .formline .submit:focus, .formline .submit:hover, .formline button:focus, .formline button:hover {
-	margin-left: 15%;
-	border-color: #bbbbbb;
+	/*margin-left: 30%;
+	border-color: #bbbbbb;*/
 	background-color: #dddddd;
 }
 

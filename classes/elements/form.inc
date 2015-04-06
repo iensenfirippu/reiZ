@@ -77,7 +77,7 @@ class HtmlForm extends HtmlElement
 	
 	public function AddDropDown($name, $title, $options, $selected=null, $container=null)
 	{
-		$dropdown = new HtmlElement('select', 'name="'.$name.'"');
+		/*$dropdown = new HtmlElement('select', 'name="'.$name.'"');
 		
 		$o_value = EMPTYSTRING;
 		$o_title = EMPTYSTRING;
@@ -92,7 +92,9 @@ class HtmlForm extends HtmlElement
 			
 			$selectedtext = EMPTYSTRING; if ($selected == $o_value) { $selectedtext = 'selected '; }
 			$dropdown->AddChild(new HtmlElement('option', $selectedtext.'value="'.$o_value.'"', $o_title));
-		}
+		}*/
+		
+		$dropdown = new HtmlDropDown($name, $options, $selected);
 		
 		$field = new HtmlElement('div', 'class="formline"');
 		$field->AddChild(new HtmlElement('label', 'for="'.$name.'"', $title));
@@ -104,7 +106,8 @@ class HtmlForm extends HtmlElement
 	public function AddButton($name='submit', $title='Submit', $container=null)
 	{
 		$field = new HtmlElement('div', 'class="formline"');
-		$field->AddChild(new HtmlElement('input', 'type="submit" class="submit" name="'.$name.'" value="'.$title.'"'));
+		//$field->AddChild(new HtmlElement('input', 'type="submit" class="submit" name="'.$name.'" value="'.$title.'"'));
+		$field->AddChild(new HtmlButton($name, $title));
 		
 		$this->AddToContainer($field, $container);
 	}

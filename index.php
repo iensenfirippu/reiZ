@@ -15,11 +15,12 @@ $DB = null;
 $HTML = null;
 $THEME = null;
 $PAGE = null;
-$MODULE = null;
-$MODULES = null;
+//$MODULE = null;
+$MODULES = array();
 $ARGS = null;
 $HIDDENINDEX = 0;
 
+foreach (glob(FOLDERCLASSES."/*.typ.inc") as $classfile) { include_once($classfile); }
 foreach (glob(FOLDERCLASSES."/*.cls.inc") as $classfile) { include_once($classfile); }
 	
 if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)

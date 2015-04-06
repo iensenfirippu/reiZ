@@ -1,0 +1,6 @@
+<?php
+	define("BREADCRUMBSEPARATOR", "&gt;");
+	define("BREADCRUMBROOT", URLROOT.INDEXFILE.URLPAGE);
+	define("BREADCRUMBINDEX", "home");
+	define("BREADCRUMBINCLUDECURRENT", false);
+?>

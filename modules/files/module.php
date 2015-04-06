@@ -1,9 +1,4 @@
 <?php
-define("FILESDIR", FOLDERFILES."/public");
-define("FILESDEFAULTTITLE", "Files");
-define("FILESDEFAULTTEXT", "&nbsp");
-define("FILESPREVLINKTEXT", "Back to previous folder");
-
 if (defined('reiZ') or exit(1))
 {
 	class FilesModule extends Module
@@ -11,7 +6,7 @@ if (defined('reiZ') or exit(1))
 		public function __construct($initialize = true)
 		{
 			$name = 'files';
-			$title = 'Files module';
+			$title = 'Files';
 			$author = 'Philip Jensen';
 			$version = 0.1;
 			$description = 'File viewer/downloader module, without any database calls.';
@@ -173,8 +168,19 @@ if (defined('reiZ') or exit(1))
 		{
 			return $this->GetHtml_HiddenInfo();
 		}
+		
+		public function GetSettings()
+		{
+			$settings = new Settings();
+			$settings->Add('FILESDIR',			'File directory',			ST::String,	FOLDERFILES.'/public');
+			$settings->Add('FILESDEFAULTTITLE',	'Default Title',			ST::String,	'Files');
+			$settings->Add('FILESDEFAULTTEXT',	'Default Text',				ST::String,	'&nbsp;');
+			$settings->Add('FILESPREVLINKTEXT',	'Text on "Back" button',	ST::String,	'Back to previous folder');
+			
+			return $settings;
+		}
 	}
 	
-	$MODULE = new FilesModule(false);
+	$GLOBALS['MODULES'][] = new FilesModule(false);
 }
 ?>
