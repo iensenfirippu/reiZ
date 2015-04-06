@@ -328,7 +328,11 @@ if (defined('reiZ') or exit(1))
 		 */
 		public static function SetAndNotNull($variable, $key=null)
 		{
-			if ($key != null && is_array($variable) && array_key_exists($key, $variable)) { $variable = $variable[$key]; }
+			if ($key != null && is_array($variable))
+			{
+				if (array_key_exists($key, $variable)) { $variable = $variable[$key]; }
+				else { $variable = null; }
+			}
 			return isset($variable) && $variable != null;
 		}
 		
@@ -338,7 +342,12 @@ if (defined('reiZ') or exit(1))
 		 */
 		public static function SetAndNotEmpty($variable, $key=null)
 		{
-			if ($key != null && is_array($variable) && array_key_exists($key, $variable)) { $variable = $variable[$key]; }
+			//var_dump($variable);
+			if ($key != null && is_array($variable))
+			{
+				if (array_key_exists($key, $variable)) { $variable = $variable[$key]; }
+				else { $variable = null; }
+			}
 			return isset($variable) && !empty($variable);
 		}
 		
@@ -580,6 +589,17 @@ if (defined('reiZ') or exit(1))
 			
 			return $value;
 		}*/
+		
+		public static function vd($var)
+		{
+			var_dump($var);
+		}
+		
+		public static function vdd($var)
+		{
+			var_dump($var);
+			die(1);
+		}
 	}
 	
 	abstract class TimeFormat

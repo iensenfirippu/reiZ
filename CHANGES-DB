@@ -1,0 +1,5 @@
+# This file will be used to record changes to the database between versions.
+# We do this to simplify the process of writing update scripts.
+# Like [32-13-3011: removed "id" from table "foobar": no longer needed]
+
+[xx-xx-xxxx: Start recording changes at v0.2]

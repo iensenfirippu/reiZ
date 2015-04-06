@@ -1,10 +1,12 @@
 <?php
 class HtmlLink extends HtmlElement
 {
-	public function __construct($url=EMPTYSTRING, $name=EMPTYSTRING, $args=EMPTYSTRING)
+	public function __construct($url=EMPTYSTRING, $name=EMPTYSTRING, $args=null)
 	{
-		if ($args != EMPTYSTRING) { $args = SINGLESPACE.$args; }
-		parent::__construct('a', 'href="'.$url.'"'.$args, $name);
+		if ($args == null || !is_array($args)) { $args = array(); }
+		$args['href'] = $url;
+		
+		parent::__construct('a', HtmlElement::ArgsToString($args), $name);
 	}
 }
 ?>

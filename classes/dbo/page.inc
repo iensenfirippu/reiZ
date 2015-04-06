@@ -83,7 +83,7 @@ if (defined('reiZ') or exit(1))
 			return $this::$_fields[1]." = ".$this->_values[$this::$_fields[1]];
 		}
 		
-		public static function Create($name=EMPTYSTRING, $content=EMPTYSTRING, $masterpage=0, $inmenu=false, $weight=0, $file=EMPTYSTRING)
+		public static function Create($name=EMPTYSTRING, $title=EMPTYSTRING, $content=EMPTYSTRING, $masterpage=0, $inmenu=false, $weight=0, $file=EMPTYSTRING)
 		{
 			if		(is_a($masterpage, "Masterpage"))	{ $masterpage = $masterpage->GetId(); }
 			elseif	(!is_integer($masterpage))			{ $masterpage = 0; }
@@ -153,6 +153,7 @@ if (defined('reiZ') or exit(1))
 		
 		public function Delete($final=false)
 		{
+			Page::ReleaseModules();
 			parent::Delete($final);
 		}
 		
@@ -200,6 +201,16 @@ if (defined('reiZ') or exit(1))
 				$method = null; if ($row['method'] != EMPTYSTRING) { $method = $row['method']; }
 				array_push($this->_modules, array($row['name'], $method));
 			}
+		}
+		
+		private function ReleaseModules()
+		{
+			$query = new Query();
+			$query->SetType(DBQT::Update);
+			$query->AddField('page', EMPTYSTRING);
+			$query->AddTable('module');
+			$query->AddCondition('page', DBOP::Is, $this->_id);
+			$result = $GLOBALS['DB']->RunNonQuery($query);
 		}
 		
 		public static function LoadPagenamesByWeight($limittoinmenu = true, $asc = true)

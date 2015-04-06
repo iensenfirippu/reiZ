@@ -115,11 +115,11 @@ class CustomAdministrationPage
 		foreach ($posts as $post)
 		{
 			$links = new HtmlElement();
-			$links->AddChild(new HtmlElement('a', 'href="/blog/'.$post->GetPostID().'/"', 'V'));
+			$links->AddChild(new HtmlLink_Image('/blog/'.$post->GetPostID().'/', '/common/images/oxygen/16/view-preview.png', 'V'));
 			//$links->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/blog/post/edit/'.$post->GetPostID().'/"', 'E'));
 			//$links->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/blog/post/delete/'.$post->GetPostID().'/"', 'D'));
-			$links->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/blog/edit/'.$post->GetPostID().'/"', 'E'));
-			$links->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/blog/delete/'.$post->GetPostID().'/"', 'D'));
+			$links->AddChild(new HtmlLink_Image('/'.ADMINPAGE.'/blog/edit/'.$post->GetPostID().'/', '/common/images/oxygen/16/configure.png', 'E'));
+			$links->AddChild(new HtmlLink_Image('/'.ADMINPAGE.'/'.ADMINPAGE.'/blog/delete/'.$post->GetPostID().'/', '/common/images/oxygen/16/edit-delete.png', 'D'));
 			$list->AddRow(array($post->GetTitle(), reiZ::TimestampToHumanTime($post->GetPosted(), TF::DateTime),
 				reiZ::TimestampToHumanTime($post->GetEdited(), TF::DateTime), $links));
 		}

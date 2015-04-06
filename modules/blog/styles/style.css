@@ -46,9 +46,10 @@
 
 .blogpost .timestamp {
 	display: block;
-	position: relative;
+	position: absolute;
 	top: 4px;
 	right: 5px;
+	width: auto;
 	display: block;
 
 	font-size: 10px;
@@ -80,6 +81,7 @@
 
 .blogpost .bottom a {
 	display: block;
+	z-index: 2;
 	float: left;
 	margin: 3px 0px 3px 3px;
 	padding: 2px 5px 2px 5px;

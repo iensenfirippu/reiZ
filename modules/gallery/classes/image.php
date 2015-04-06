@@ -12,7 +12,6 @@ if (defined('reiZ') or exit(1))
 		protected $_name = EMPTYSTRING;
 		protected $_url = EMPTYSTRING;
 		protected $_link = EMPTYSTRING;
-		protected $_thumbnail = EMPTYSTRING;
 		protected $_title = EMPTYSTRING;
 		protected $_text = EMPTYSTRING;
 		
@@ -58,8 +57,8 @@ if (defined('reiZ') or exit(1))
 				$img = imagecreatefromjpeg(GALLERYDIR.'/'.$this->_url);
 				$width = imagesx($img);
 				$height = imagesy($img);
-				$new_width = THUMBNAILWIDTH;
-				$new_height = floor($height * (THUMBNAILWIDTH / $width));
+				$new_width = GALLERYTHUMBNAILWIDTH;
+				$new_height = floor($height * (GALLERYTHUMBNAILWIDTH / $width));
 				$tmp_img = imagecreatetruecolor($new_width, $new_height);
 				imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
 				imagejpeg($tmp_img, GALLERYDIR.'/'.$pathinfo['dirname'].'/thumbs/'.$pathinfo['filename'].'.'.$pathinfo['extension'], 85);
@@ -97,13 +96,13 @@ if (defined('reiZ') or exit(1))
 			
 			if ($value['width'] > $value['height'])
 			{
-				$value['newwidth'] = THUMBNAILWIDTH;
-				$value['newheight'] = intval(floor($value['height'] * (THUMBNAILWIDTH / $value['width'])));
+				$value['newwidth'] = GALLERYTHUMBNAILWIDTH;
+				$value['newheight'] = intval(floor($value['height'] * (GALLERYTHUMBNAILWIDTH / $value['width'])));
 			}
 			else
 			{
-				$value['newwidth'] = intval(floor($value['width'] * (THUMBNAILHEIGHT / $value['height'])));
-				$value['newheight'] = THUMBNAILHEIGHT;
+				$value['newwidth'] = intval(floor($value['width'] * (GALLERYTHUMBNAILHEIGHT / $value['height'])));
+				$value['newheight'] = GALLERYTHUMBNAILHEIGHT;
 			}
 			
 			if ($value['width'] < $value['newwidth'] && $value['height'] < $value['newheight'])

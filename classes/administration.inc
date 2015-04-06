@@ -39,7 +39,11 @@ class Administration
 		$replace = array(EMPTYSTRING, EMPTYSTRING);
 		foreach (glob(FOLDERMODULES.'/*/admin.php') as $page)
 		{
-			array_push($pages, str_replace($search, $replace, $page));
+			$module = Module::Load(str_replace($search, $replace, $page));
+			if ($module->isInstalled())
+			{
+				array_push($pages, $module->GetName());
+			}
 		}
 		
 		foreach ($pages as $name)
@@ -139,9 +143,9 @@ class Administration
 		{
 			$inmenu = $page->GetInMenu() ? 'true' : 'false';
 			$options = new HtmlElement();
-			$options->AddChild(new HtmlElement('a', 'href="/'.$page->GetName().'/"', 'V'));
-			$options->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/pages/edit/'.$page->GetId().'/"', 'E'));
-			$options->AddChild(new HtmlElement('a', 'href="/'.ADMINPAGE.'/pages/delete/'.$page->GetId().'/"', 'D'));
+			$options->AddChild(new HtmlLink_Image('/'.$page->GetName().'/', '/common/images/oxygen/16/view-preview.png', 'V'));
+			$options->AddChild(new HtmlLink_Image('/'.ADMINPAGE.'/pages/edit/'.$page->GetId().'/', '/common/images/oxygen/16/configure.png', 'E'));
+			$options->AddChild(new HtmlLink_Image('/'.ADMINPAGE.'/pages/delete/'.$page->GetId().'/', '/common/images/oxygen/16/edit-delete.png', 'D'));
 			$list->AddRow(array($page->GetName(), $page->GetTitle(true), $inmenu, $page->GetWeight(), $options));
 		}
 		$admin->AddContent($list);
@@ -206,7 +210,7 @@ class Administration
 	
 	private function MakeHtml_DeletePage($args, $page)
 	{
-		if ($page != null)
+		if ($page instanceof Page)
 		{
 			if (isset($_POST['submit']) && $_POST['submit'] != null)
 			{
@@ -229,22 +233,235 @@ class Administration
 	
 	private function MakeHtml_Modules($args)
 	{
-		$search = FOLDERMODULES.'/';
-		$modules = str_replace(array($search, '/'), EMPTYSTRING, glob($search.'*/'));
+		$showlist = false;
+		$module = null;
 		
-		$admin = new AdminBox('List');
-		
-		$list = new HtmlList(array('Name', EMPTYSTRING));
-		foreach ($modules as $module)
+		if (sizeof($args) > 2 && $args[2] != null)
 		{
-			$options = new HtmlElement();
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'S')); //settings
-			$options->AddChild(new HtmlElement('a', 'href="#"', 'E/D')); //enable/disable
-			$list->AddRow(array($module, $options));
+			$module = Module::Load($args[2]);
+			if ($module == null)
+			{
+				$tmp = new Module($args[2]);
+				if ($tmp->LoadInfo()) { $module = $tmp; }
+			}
 		}
-		$admin->AddContent($list);
 		
-		$this->_content->AddChild($admin);
+		if (sizeof($args) > 1 && $module != null)
+		{
+			if ($args[1] == 'install') { $this->MakeHtml_InstallModule($args, $module); }
+			elseif ($args[1] == 'uninstall') { $this->MakeHtml_UninstallModule($args, $module); }
+			elseif ($args[1] == 'configure') { $this->MakeHtml_ConfigureModule($args, $module); }
+			else { $showlist = true; }
+		}
+		else { $showlist = true; }
+		
+		if ($showlist) { $this->MakeHtml_ListModules($args); }
+	}
+	
+	private function MakeHtml_ListModules($args)
+	{
+		$search = FOLDERMODULES.'/';
+		$modules_db = Module::LoadInstalledNames();
+		$modules_dir = str_replace(array($search, '/'), EMPTYSTRING, glob($search.'*/'));
+		$modules = array_unique(array_merge($modules_db, $modules_dir));
+		sort($modules);
+		
+		$pages = Page::LoadAll(null, null, null, 'name', DBOD::Asc);
+		$pageoptions = array(array(EMPTYSTRING, EMPTYSTRING));
+		foreach ($pages as $page) { $pageoptions[] = array($page->GetId(), $page->GetName()); }
+		$pageoptions[] = array(-1, '[New Page]');
+		
+		$admin1 = new AdminBox('Installed modules');
+		$form1 = new HtmlForm('PageSelections');
+		$list1 = new HtmlList(array('Name', 'Author', 'Version', 'Page', EMPTYSTRING));
+		$show1 = false;
+		
+		$admin2 = new AdminBox('Installable Modules');
+		$list2 = new HtmlList(array('Name', 'Author', 'Version', EMPTYSTRING));
+		$show2 = false;
+		
+		$admin3 = new AdminBox('Invalid Modules');
+		$list3 = new HtmlList(array('Name', EMPTYSTRING));
+		$show3 = false;
+		
+		foreach ($modules as $name)
+		{
+			$module = Module::Load($name);
+			
+			$options = new HtmlElement();
+			if ($module instanceof Module)
+			{
+				$hasdir = $module->Exists();
+				$installed = $module->isInstalled();
+				
+				if ($hasdir)
+				{
+					if ($installed) // Installed modules
+					{
+						if (reiZ::SetAndNotNull($_POST, $module->GetId()))
+						{
+							$pageid = $_POST[$module->GetId()];
+							if ($pageid == -1)
+							{
+								$page = Page::Create($module->GetName());
+								$page->Save();
+								$module->SetPage($page->GetId());
+							} 
+							elseif ($pageid != $module->GetPage())
+							{
+								$module->SetPage($pageid);
+							}
+						}
+						
+						$pageselect = new HtmlDropDown($module->GetId(), $pageoptions, $module->GetPage());
+						
+						if ($module->HasConfig()) { $options->AddChild(new HtmlLink_Image('/admin/modules/configure/'.$module->GetName(), '/common/images/oxygen/16/configure.png', 'S')); }
+						$options->AddChild(new HtmlLink_Image('/admin/modules/uninstall/'.$module->GetName(), '/common/images/oxygen/16/list-remove.png', 'D'));
+						$list1->AddRow(array($module->GetName(), $module->GetAuthor(), $module->GetVersion(), $pageselect, $options));
+						$show1 = true;
+					}
+					else // Installable modules
+					{
+						$options->AddChild(new HtmlLink_Image('/admin/modules/install/'.$module->GetName(), '/common/images/oxygen/16/list-add.png', 'E'));
+						$list2->AddRow(array($module->GetName(), $module->GetAuthor(), $module->GetVersion(), $options));
+						$show2 = true;
+					}
+				}
+				else // Modules with invalid files
+				{
+					$list3->AddRow(array($module->GetName(), $options));
+					$show3 = true;
+				}
+			}
+			else // Installed modules with no files
+			{
+				$options->AddChild(new HtmlLink_Image('/admin/modules/uninstall/'.$name, '/common/images/oxygen/16/list-remove.png', 'D'));
+				$list3->AddRow(array($name, $options));
+				$show3 = true;
+			}
+		}
+		$list1->AddRow(array(EMPTYSTRING, EMPTYSTRING, EMPTYSTRING, new HtmlButton('submit', 'Save'), EMPTYSTRING));
+		
+		$form1->AddChild($list1);
+		$admin1->AddContent($form1);
+		$admin2->AddContent($list2);
+		$admin3->AddContent($list3);
+		if ($show1) { $this->_content->AddChild($admin1); }
+		if ($show2) { $this->_content->AddChild($admin2); }
+		if ($show3) { $this->_content->AddChild($admin3); }
+	}
+	
+	private function MakeHtml_InstallModule($args, $module)
+	{
+		if ($module instanceof Module && $module->Exists())
+		{
+			if (isset($_POST['submit']) && $_POST['submit'] != null)
+			{
+				$module->Install();
+				reiZ::Redirect('/'.ADMINPAGE.'/modules/');
+			}
+			
+			$this->_options->AddOption('home', '/'.ADMINPAGE.'/modules/', 'Back');
+			
+			$form = new HtmlForm('module_install');
+			
+			$form->AddContainer(new AdminBox('Install Module "'.$module->GetTitle().'"'), 'box1');
+			$form->AddText('Are you sure you want to install this module?<br />');
+			$form->AddButton('submit', 'Yes, I am sure I want to install it.');
+			
+			$this->_content->AddChild($form);
+		}
+	}
+	
+	private function MakeHtml_UninstallModule($args, $module)
+	{
+		if ($module instanceof Module && $module->Exists())
+		{
+			if (isset($_POST['submit']) && $_POST['submit'] != null)
+			{
+				$module->Uninstall();
+				reiZ::Redirect('/'.ADMINPAGE.'/modules/');
+			}
+			
+			$this->_options->AddOption('home', '/'.ADMINPAGE.'/modules/', 'Back');
+			
+			$form = new HtmlForm('module_install');
+			
+			$form->AddContainer(new AdminBox('Uninstall Module "'.$module->GetTitle().'"'), 'box1');
+			$form->AddText('Are you sure you want to uninstall this module?<br />');
+			$form->AddButton('submit', 'Yes, I am sure I want to uninstall it.');
+			
+			$this->_content->AddChild($form);
+		}
+	}
+	
+	private function MakeHtml_ConfigureModule($args, $module)
+	{
+		if ($module instanceof Module)
+		{
+			if (reiZ::SetAndNotNull($_POST, 'submit'))
+			{
+				/*$valid = true;
+				
+				if (isset($_POST['masterpage'])) { $page->SetMasterpage(MasterPage::Load($_POST['masterpage'])); }
+				if (isset($_POST['name'])) { $page->SetName($_POST['name']); }
+				if (isset($_POST['title'])) { $page->SetTitle($_POST['title']); }
+				if (isset($_POST['content'])) { $page->SetContent($_POST['content']); }
+				if (isset($_POST['inmenu'])) { $page->SetInMenu(true); } else { $page->SetInMenu(false); }
+				if (isset($_POST['weight'])) { $page->SetWeight($_POST['weight']); }
+				
+				if ($valid)
+				{
+					$saved = $page->Save();
+					
+					if ($args[1] == 'add' && $saved)
+					{
+						reiZ::Redirect('/'.ADMINPAGE.'/pages/');
+						//reiZ::Redirect('/'.ADMINPAGE.'/pages/edit/'.$page->GetId());
+					}
+				}*/
+			}
+			
+			$this->_options->AddOption('home', '/'.ADMINPAGE.'/modules/', 'Back');
+			
+			$form = new HtmlForm('page_form');
+			
+			$form->AddContainer(new AdminBox('Config for '.$module->GetTitle()), 'box1');
+			
+			$settings = $module->GetSettings();
+			foreach ($settings as $setting)
+			{
+				if ($setting->GetType() == ST::Bool)
+				{
+					$form->AddCheckBox($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
+				}
+				// TODO: Change to numerical input eventually
+				/*elseif ($setting->GetType() == ST::Integer)
+				{
+					$form->AddTextField($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
+				}*/
+				// TODO: Change to multiselect input eventually
+				elseif ($setting->GetType() == ST::Strings)
+				{
+					$form->AddTextField($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
+				}
+				else
+				{
+					if ($setting->GetOptions() != null)
+					{
+						$form->AddDropDown($setting->GetName(), $setting->GetTitle(), $setting->GetOptions(), $setting->GetValue());
+					}
+					else
+					{
+						$form->AddTextField($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
+					}
+				}
+			}
+			
+			$form->AddButton('submit', 'Save changes');
+			
+			$this->_content->AddChild($form);
+		}
 	}
 	
 	private function MakeHtml_Themes($args)

@@ -27,12 +27,14 @@ if (defined('reiZ') or exit(1))
 		public function GetCategory()		{ return $this->_category; }
 		public function GetTitle()			{ return $this->_title; }
 		public function GetText()			{ return $this->_text; }
-		public function GetFullText()		{ $return = $this->_fulltext; if ($return == EMPTYSTRING) { $return = $this->_text; } return $return; }
+		public function GetFullText()		{ return $this->_fulltext != EMPTYSTRING ? $this->_fulltext : $this->_text; }
 		public function GetPosted()			{ return $this->_added; }
 		public function GetEdited()			{ return $this->_updated; }
 		public function GetTags()			{ return $this->_tags->GetTags(); }
 		public function GetTagCollection()	{ return $this->_tags; }
 		public function GetImages()			{ return $this->_images; }
+		
+		public function HasFullText()	{ return ($this->_fulltext != EMPTYSTRING && $this->_fulltext != $this->_text); }
 		
 		private function SetPostID($value)		{ $this->_values[self::$_fields[0]] = $this->_postid = $value; }
 		public function SetCategory($value)		{ $this->_values[self::$_fields[1]] = $value;
@@ -98,8 +100,6 @@ if (defined('reiZ') or exit(1))
 				$this->SetFullText($value);
 			}
 		}
-		
-		public function HasFullText()	{ $return = true; if ($this->_fulltext == '') { $return = false; } return $return; }
 		
 		/*public function AddTag($tag)
 		{
