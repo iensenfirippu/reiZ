@@ -32,7 +32,8 @@ if (defined('reiZ') or exit(1))
 			return $this->_html;
 		}
 	}
-	
-	$GLOBALS['MODULES'][] = new MenuModule(false);
+
+	Module::Register(new MenuModule());
+	//$GLOBALS['MODULES'][] = new MenuModule(false);
 }
 ?>

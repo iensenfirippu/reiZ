@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogPostTag extends HtmlElement
+class HtmlElement_Blog_PostTag extends HtmlElement
 {
 	public function __construct($module, $tag)
 	{

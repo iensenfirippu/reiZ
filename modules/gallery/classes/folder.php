@@ -30,6 +30,7 @@ if (defined('reiZ') or exit(1))
 		
 		public function HasInfo()		{ return ($this->_hideid != EMPTYSTRING);	}
 		
+		// TODO: Consider renaming $firstlevel to something more apporpriate, like: $load or $loadcontents
 		public function __construct($url, $firstlevel = true)
 		{
 			$pathinfo = pathinfo($url);
@@ -90,7 +91,8 @@ if (defined('reiZ') or exit(1))
 				else
 				{
 					$mimetype = false;
-					if (strtolower($fileinfo['extension']) == 'svg') { $mimetype = 'image/svg'; }
+					if (reiZ::string_is_one_of(array('info', 'txt'), strtolower($fileinfo['extension']))) { }
+					elseif (strtolower($fileinfo['extension']) == 'svg') { $mimetype = 'image/svg'; }
 					else { $mimetype = getimagesize($file)["mime"]; }
 					
 					if ($mimetype != false)
@@ -99,6 +101,42 @@ if (defined('reiZ') or exit(1))
 					}
 				}
 			}
+		}
+		
+		/**
+		 * Finds the folder path of the first occurance of name in the gallery folder
+		 * @param name, the directory name to search for.
+		 */
+		public static function Find($name)
+		{
+			$base = GALLERYDIR.SINGLESLASH;
+			$url = substr(GalleryFolder::Recurse($base, $name), strlen($base));
+			return new GalleryFolder($url, true);
+		}
+		
+		/**
+		 * Traverses the gallery folder and returns the path of the first occurance of $name
+		 * @param dir, the directory to recurse.
+		 * @param name, the directory name to search for.
+		 */
+		private static function Recurse($dir, $name)
+		{
+			$value = null;
+			
+			$subdirs = glob($dir.'*/');
+			
+			for ($i = 0; $i < sizeof($subdirs); $i++)
+			{
+				$newdir = $subdirs[$i];
+				$dirname = reiZ::url_lastfolder($newdir);
+				
+				if ($dirname == $name) { $value = $newdir; }
+				else { $value = GalleryFolder::Recurse($newdir, $name); }
+				
+				if ($value != null) { $i = sizeof($subdirs); }
+			}
+			
+			return $value;
 		}
 		
 		public function GetRandomImage()

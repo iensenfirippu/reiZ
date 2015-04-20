@@ -23,7 +23,7 @@ if (defined('reiZ') or exit(1))
 	class HtmlElement
 	{
 		protected $_indent = 0;
-		protected $_oneline = false;
+		protected $_oneline = 0;
 		protected $_tag = EMPTYSTRING;
 		protected $_endtag = EMPTYSTRING;
 		protected $_attributes = EMPTYSTRING;
@@ -34,14 +34,14 @@ if (defined('reiZ') or exit(1))
 		protected $_pointer = null;
 		
 		public function GetIndent()			{ return $this->_indent; }
-		public function GetOneline()		{ return $this->_oneline; }
+		public function GetOneline()		{ return ($this->_oneline == true); }
 		public function GetTag()			{ return $this->_tag; }
 		public function GetAttributes()		{ return $this->_attributes; }
 		public function GetContent()		{ return $this->_content; }
 		public function GetChildren()		{ return $this->_children; }
 		public function HasChildren()		{ return sizeof($this->_children) > 0; }
 		
-		public function SetOneline($value)	{ $this->_oneline = ($value == true); }
+		public function SetOneline()		{ $this->_oneline = 1; }
 		
 		public function __construct($tag=EMPTYSTRING, $attributes=EMPTYSTRING, $content=EMPTYSTRING, $child=null)
 		{
@@ -55,7 +55,7 @@ if (defined('reiZ') or exit(1))
 				$this->_tag = $tag;
 			}
 			$this->_attributes = $attributes;
-			$this->_content = $content;
+			$this->_content = reiZ::EnforceProperLineEndings($content);
 			if ($child !== null)
 			{
 				if (!is_array($child)) { $this->AddChild($child); }
@@ -87,7 +87,7 @@ if (defined('reiZ') or exit(1))
 		}
 		
 		//public function SetIndent($int)	{ $this->_indent = $int; UpdateChildren(); }
-		public function SetContent($content) { $this->_content = $content; }
+		public function SetContent($content) { $this->_content = reiZ::EnforceProperLineEndings($content); }
 		
 		/* Added container stuff */
 		
@@ -144,12 +144,13 @@ if (defined('reiZ') or exit(1))
 		{
 			foreach ($this->_children as $c)
 			{
-				//if (is_a($c, 'HtmlElement'))
-				//{
+				if ($c instanceof HtmlElement)
+				{
 					$c->_indent = $this->_indent + 1;
 					if ($this->_tag == EMPTYSTRING) { $c->_indent = $this->_indent; }
+					if ($this->_oneline > 0) { $c->_oneline = $this->_oneline + 1; }
 					$c->Updatechildren();
-				//}
+				}
 			}
 		}
 		
@@ -158,7 +159,7 @@ if (defined('reiZ') or exit(1))
 			$return = EMPTYSTRING;
 			if ($this->_tag != EMPTYSTRING)
 			{
-				$return = str_repeat(OUTPUTINDENT, $this->_indent);
+				if ($this->_oneline <= 1) { $return = str_repeat(OUTPUTINDENT, $this->_indent); }
 				$return .= "<".$this->_tag;
 				if ($this->_attributes != EMPTYSTRING) { $return .= " ".$this->_attributes; }
 				if ($this->_endtag != EMPTYSTRING) { $return .= $this->_endtag.">"; }
@@ -170,12 +171,20 @@ if (defined('reiZ') or exit(1))
 						{
 							if (strstr($this->_content, NEWLINE) && !strstr(PRESERVECONTENTS, $this->_tag))
 							{
-								$search = array('/([^>])\n/', '/>\n/');
+								/*$search = array('/([^>])\n/', '/>\n/');
 								$replace = array('$1<br />'.OUTPUTNEWLINE, '>'.OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent + 1));
 								
 								$return .= ">".OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent + 1).
-									preg_replace($search, $replace, reiZ::EnforceProperLineEndings($this->_content)).
-									OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
+									preg_replace($search, $replace, $this->_content).
+									OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";*/
+								
+								$return .= ">";
+								foreach (explode(NEWLINE, $this->_content) as $line)
+								{
+									if ($line == EMPTYSTRING || $line[strlen($line) -1] != '>') { $line .= '<br />'; }
+									$return .= OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent + 1).$line;
+								}
+								$return .= OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
 							}
 							else { $return .= ">".$this->_content."</".$this->_tag.">"; }
 						}

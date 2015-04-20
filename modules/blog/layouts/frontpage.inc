@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogFrontpage extends HtmlElement
+class HtmlElement_Blog_Frontpage extends HtmlElement
 {
 	public function __construct($module, $categories)
 	{
@@ -11,7 +11,7 @@ class HtmlElement_BlogFrontpage extends HtmlElement
 			{
 				foreach ($posts as $post)
 				{
-					$this->AddChild(new HtmlElement_BlogPost($module, $post, false));
+					$this->AddChild(new HtmlElement_Blog_Post($module, $post, false));
 				}
 			}
 		}

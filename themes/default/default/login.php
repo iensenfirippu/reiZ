@@ -10,7 +10,6 @@ if (defined('reiZ') or exit(1))
 		reiZ::CheckLogin($_POST['username'], $_POST['password']);
 	}
 	
-	//$HTML = new HtmlDocument('Iensenfirippu.dk');
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/bigbox.php');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
 	

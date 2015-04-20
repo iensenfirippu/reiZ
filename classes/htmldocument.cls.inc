@@ -128,7 +128,7 @@ if (defined('reiZ') or exit(1))
 				
 			foreach ($this->_elements as $HtmlElement)
 			{
-				$html .= $HtmlElement.NEWLINE;
+				$html .= $HtmlElement.OUTPUTNEWLINE;
 			}
 			
 			return $html;

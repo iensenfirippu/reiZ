@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogTags extends HtmlElement
+class HtmlElement_Blog_Tags extends HtmlElement
 {
 	public function __construct($module, $tags)
 	{
@@ -8,7 +8,7 @@ class HtmlElement_BlogTags extends HtmlElement
 			parent::__construct('ul', 'class="blogtags"', EMPTYSTRING);
 			foreach ($tags as $tag)
 			{
-				$this->AddChild(new HtmlElement_BlogTag($module, $tag));
+				$this->AddChild(new HtmlElement_Blog_Tag($module, $tag));
 			}
 		}
 		else { parent::__construct(); }

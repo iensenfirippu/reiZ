@@ -8,22 +8,7 @@ if (defined('reiZ') or exit(1))
 {
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/common.php');
 	
-	include_once(FOLDERMODULES.'/menu/module.php');
-	include_once(FOLDERMODULES.'/breadcrumbs/module.php');
-	$menu = new MenuModule();
-	$breadcrumbs = new BreadcrumbsModule();
-	
-	// HEAD
-	/*$HTML->SetPointer('HEAD');
-	$HTML->AddElement(new HtmlElement('meta', 'charset="UTF-8"'));
-	$HTML->AddElement(new HtmlElement('link',
-		'rel="icon" type="image/png" href="'.URLROOT.'/'.FOLDERCOMMON.'/'.FOLDERIMAGES.'/favicon.png"'));
-		//'rel="icon" type="image/png" href="'.URLROOT.'/'.$THEME->GetDirectory().'/'.FOLDERIMAGES.'/favicon.png"'));
-	$HTML->AddStylesheet(FOLDERCOMMON.'/'.FOLDERSTYLES.'/common.css');
-	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/common.css');*/
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/bigbox.css');
-	foreach ($menu->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
-	foreach ($breadcrumbs->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
 	
 	// BODY
 	$HTML->AddElement(new HtmlElement('div', 'id="wrapper"'), 'BODY', 'wrapper');
@@ -32,7 +17,7 @@ if (defined('reiZ') or exit(1))
 	// - bigbox
 	$HTML->AddElement(new HtmlElement('div', 'id="bigbox"'), 'main', 'bigbox');
 	$HTML->AddElement(new HtmlElement('span', 'id="bigbox-logo"', '&nbsp;'), 'bigbox', 'logo');
-	$HTML->AddElement(new HtmlElement('span', 'id="bigbox-title"', 'iensenfirippu.dk'), 'bigbox', 'title');
+	$HTML->AddElement(new HtmlElement('span', 'id="bigbox-title"', WEBSITETITLE), 'bigbox', 'title');
 	$HTML->AddElement(new HtmlElement('div', 'id="bigbox-content"'), 'bigbox', 'content');
 }
 ?>

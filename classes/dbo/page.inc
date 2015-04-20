@@ -27,37 +27,41 @@ if (defined('reiZ') or exit(1))
 		private $_inmenu = null;
 		private $_weight = null;
 		//private $_file = null;
+		private $_module = null;
 		private $_modules = null;
 		private $_notices = null;
 		private $_errors = null;
 		
-		public function GetTheme()				{ return $this->_themeobject; }
+		public function GetTheme()					{ return $this->_themeobject; }
 		public function GetMasterpage()			{ return $this->_masterpage; }
-		public function GetName()				{ return $this->_name; }
-		public function GetTitle($force=false)	{ if ($force == false && $this->_title == null) { return $this->_name; } else { return $this->_title; } }
-		public function GetContent()			{ return $this->_content; }
+		public function GetName()					{ return $this->_name; }
+		public function GetTitle($force=false)	{ return ($force == false && $this->_title == null) ? $this->_name : $this->_title; }
+		public function GetContent($final=true)	{ return ($final) ? reiZ::ExecuteCommands($this->_content).$this->GetModuleContent() : $this->_content; }
+		//public function GetFinalContent()			{ return reiZ::ExecuteCommands($this->_content); }
 		//public function GetContentAsHtml()		{ return reiZ::ConvertTextToHtml($this->_content); }
-		public function GetInMenu()				{ return $this->_inmenu; }
-		public function GetWeight()				{ return $this->_weight; }
-		//public function GetFile()				{ return $this->_file; }
-		//public function GetFilename()			{ return $this->_file.".php"; }
+		public function GetInMenu()					{ return $this->_inmenu; }
+		public function GetWeight()					{ return $this->_weight; }
+		//public function GetFile()					{ return $this->_file; }
+		//public function GetFilename()				{ return $this->_file.".php"; }
 		public function GetFilenameMaster()		{ return $this->_masterpage.'.php'; }
-		public function GetModules()			{ return $this->_modules; }
-		public function GetNotices()			{ return $this->_notices; }
-		public function GetErrors()				{ return $this->_errors; }
+		public function GetModule()					{ return $this->_module; }
+		public function GetModuleContent()		{ return ($this->_module instanceof Module) ? $this->_module->GetHtml() : EMPTYSTRING; }
+		public function GetModules()				{ return $this->_modules; }
+		public function GetNotices()				{ return $this->_notices; }
+		public function GetErrors()					{ return $this->_errors; }
 		
-		public function SetTheme($value)			{ $this->_theme = $value; /*$this->_values[self::$_fields[0]] = $this->_theme->GetUrl();*/ }
+		public function SetTheme($value)				{ $this->_theme = $value; /*$this->_values[self::$_fields[0]] = $this->_theme->GetUrl();*/ }
 		public function SetMasterpage($value)		{ $this->_masterpage = $value; $this->_values[self::$_fields[0]] = $this->_masterpage->GetId(); }
 		public function SetName($value)				{ $this->_values[self::$_fields[1]] = $this->_name = $value; }
-		public function SetTitle($value)			{ $this->_values[self::$_fields[2]] = $this->_title = $value; }
-		public function SetContent($value)			{ $this->_values[self::$_fields[3]] = reiZ::ConvertHtmlToText($value); $this->_content = $value; }
-		private function _SetContent($value)		{ $this->_values[self::$_fields[3]] = $value; $this->_content = reiZ::ConvertTextToHtml($value); }
+		public function SetTitle($value)				{ $this->_values[self::$_fields[2]] = $this->_title = $value; }
+		public function SetContent($value)			{ $value = reiZ::EnforceProperLineEndings($value); $this->_values[self::$_fields[3]] = reiZ::ConvertHtmlToText($value); $this->_content = $value; }
+		private function _SetContent($value)			{ $value = reiZ::EnforceProperLineEndings($value); $this->_values[self::$_fields[3]] = $value; $this->_content = reiZ::ConvertTextToHtml($value); }
 		//public function SetContent($value)			{ $this->_values[self::$_fields[3]] = $this->_content = $value; }
 		//public function SetContentFromHtml($value)	{ $this->SetContent(reiZ::ConvertHtmlToText($value)); }
-		public function SetInMenu($value)			{ $this->_values[self::$_fields[4]] = $this->_inmenu = boolval($value); }
-		public function SetWeight($value)			{ $this->_values[self::$_fields[5]] = $this->_weight = intval($value); }
-		//public function SetFile($value)			{ $this->_values[self::$_fields[6]] = $this->_file = $value; }
-		//public function SetModules($value)		{ $this->_modules = $value; }
+		public function SetInMenu($value)				{ $this->_values[self::$_fields[4]] = $this->_inmenu = boolval($value); }
+		public function SetWeight($value)				{ $this->_values[self::$_fields[5]] = $this->_weight = intval($value); }
+		//public function SetFile($value)				{ $this->_values[self::$_fields[6]] = $this->_file = $value; }
+		//public function SetModules($value)			{ $this->_modules = $value; }
 		
 		protected function __construct($values = null)
 		{
@@ -65,16 +69,17 @@ if (defined('reiZ') or exit(1))
 			
 			if (is_array($values))
 			{
-				//if (isset($values[self::$_fields[0]]))	{ self::SetTheme		($values[self::$_fields[0]]); }
+				//if (isset($values[self::$_fields[0]]))	{ self::SetTheme			($values[self::$_fields[0]]); }
 				if (isset($values[self::$_fields[0]]))	{ self::SetMasterpage	(Masterpage::Load($values[self::$_fields[0]])); }
 				if (isset($values[self::$_fields[1]]))	{ self::SetName			($values[self::$_fields[1]]); }
-				if (isset($values[self::$_fields[2]]))	{ self::SetTitle		($values[self::$_fields[2]]); }
+				if (isset($values[self::$_fields[2]]))	{ self::SetTitle			($values[self::$_fields[2]]); }
 				if (isset($values[self::$_fields[3]]))	{ self::_SetContent		($values[self::$_fields[3]]); }
-				if (isset($values[self::$_fields[4]]))	{ self::SetInMenu		($values[self::$_fields[4]]); }
-				if (isset($values[self::$_fields[5]]))	{ self::SetWeight		($values[self::$_fields[5]]); }
+				if (isset($values[self::$_fields[4]]))	{ self::SetInMenu			($values[self::$_fields[4]]); }
+				if (isset($values[self::$_fields[5]]))	{ self::SetWeight			($values[self::$_fields[5]]); }
 				//if (isset($values[self::$_field[6]]))	{ self::SetFile			($values[self::$_fields[6]]); }
-				$this->_modules = array();
-				$this->LoadModules();
+				//$this->_modules = array();
+				//$this->LoadModules();
+				$this->LoadModule();
 			}
 		}
 		
@@ -87,8 +92,8 @@ if (defined('reiZ') or exit(1))
 		{
 			if		(is_a($masterpage, "Masterpage"))	{ $masterpage = $masterpage->GetId(); }
 			elseif	(!is_integer($masterpage))			{ $masterpage = 0; }
-			if		(!is_bool($inmenu))					{ $inmenu = false; }
-			if		(!is_integer($weight))				{ $weight = 0; }
+			if		(!is_bool($inmenu))						{ $inmenu = false; }
+			if		(!is_integer($weight))					{ $weight = 0; }
 			
 			return new Page(array(
 				self::$_fields[0] => $masterpage,
@@ -153,7 +158,7 @@ if (defined('reiZ') or exit(1))
 		
 		public function Delete($final=false)
 		{
-			Page::ReleaseModules();
+			$this->ReleaseModules();
 			parent::Delete($final);
 		}
 		
@@ -187,9 +192,27 @@ if (defined('reiZ') or exit(1))
 		
 		// Custom load Methods
 		
-		private function LoadModules()
+		private function LoadModule()
 		{
 			$query = new Query();
+			$query->SetType('select');
+			$query->AddField('name');
+			$query->AddTable('module');
+			$query->AddCondition('page', DBOP::Is, $this->_id);
+			$result = $GLOBALS['DB']->RunQuery($query);
+			$row = $GLOBALS['DB']->GetArray($result);
+			
+			if ($row['name'] != null)
+			{
+				$this->_module = Module::Load($row['name']);
+				$this->_module->SetPagename($this->GetName());
+				$this->_module->Initialize();
+			}
+		}
+		
+		private function LoadModules()
+		{
+			/*$query = new Query();
 			$query->SetType('select');
 			$query->AddFields(array('module.name', 'page_module.method'));
 			$query->AddTable('module');
@@ -200,7 +223,8 @@ if (defined('reiZ') or exit(1))
 			{
 				$method = null; if ($row['method'] != EMPTYSTRING) { $method = $row['method']; }
 				array_push($this->_modules, array($row['name'], $method));
-			}
+			}*/
+			return null;
 		}
 		
 		private function ReleaseModules()

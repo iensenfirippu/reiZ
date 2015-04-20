@@ -10,36 +10,46 @@ if (defined('reiZ') or exit(1))
 	{
 		protected $_name = EMPTYSTRING;
 		protected $_title = EMPTYSTRING;
-		protected $_author = 0;
+		protected $_author = EMPTYSTRING;
 		protected $_version = 0;
 		protected $_description = EMPTYSTRING;
 		protected $_html = null;
 		protected $_htmlextra = array();
-		protected $_stylesheets = array();
-		protected $_javascripts = array();
+		//protected $_stylesheets = array();
+		//protected $_javascripts = array();
 		protected $_dbid = -1;
 		protected $_dbpage = null;
-		protected $_exists = true;
-		protected $_hasconfig = false;
+		protected $_pagename = EMPTYSTRING;
+		protected $_installed = false;
+		protected $_initialized = false;
+		//protected $_settings = null;
 		
-		public function GetName()			{ return $this->_name;			}
+		public function GetName()			{ return $this->_name;				}
 		public function GetTitle()			{ return $this->_title;			}
-		public function GetAuthor()			{ return $this->_author;		}
-		public function GetVersion()		{ return $this->_version;		}
+		public function GetAuthor()			{ return $this->_author;			}
+		public function GetVersion()		{ return $this->_version;			}
 		public function GetDescription()	{ return $this->_description;	}
-		public function GetStylesheets()	{ return $this->_stylesheets;	}
-		public function GetJavascripts()	{ return $this->_javascripts;	}
-		public function GetId()				{ return $this->_dbid;			}
-		public function GetPage()			{ return $this->_dbpage;		}
-		public function Exists()			{ return $this->_exists;		}
-		public function HasConfig()			{ return $this->_hasconfig;		}
+		//public function GetStylesheets()	{ return $this->_stylesheets;		}
+		//public function GetJavascripts()	{ return $this->_javascripts;		}
+		public function GetId()				{ return $this->_dbid;				}
+		public function GetPage()			{ return $this->_dbpage;			}
+		public function GetPagename()		{ return $this->_pagename;		}
 		
-		public function GetPath()		{ return reiZ::url_append(FOLDERMODULES, $this->_name);	}
-		public function GetClassFile()	{ return reiZ::url_append($this->GetPath(), 'module.php');	}
-		public function GetClassPath()	{ return reiZ::url_append($this->GetPath(), FOLDERCLASSES);	}
+		public function Installed()			{ return $this->_installed;							}
+		public function Exists()				{ return file_exists($this->GetClassFile());	}
+		public function HasConfig()			{ return file_exists($this->GetConfigFile());	}
+		public function HasIcon()			{ return file_exists($this->GetIcon());			}
+		
+		public function GetPath()			{ return reiZ::url_append(FOLDERMODULES, $this->_name);			}
+		public function GetClassFile()		{ return reiZ::url_append($this->GetPath(), 'module.php');		}
+		public function GetConfigFile()	{ return reiZ::url_append($this->GetPath(), 'config.inc');		}
+		public function GetIcon()			{ return reiZ::url_append($this->GetPath(), 'icon.png');		}
+		public function GetClassPath()		{ return reiZ::url_append($this->GetPath(), FOLDERCLASSES);	}
 		public function GetLayoutPath()	{ return reiZ::url_append($this->GetPath(), FOLDERLAYOUTS);	}
-		public function GetStylePath()	{ return reiZ::url_append($this->GetPath(), FOLDERSTYLES);	}
+		public function GetStylePath()		{ return reiZ::url_append($this->GetPath(), FOLDERSTYLES);		}
 		public function GetScriptPath()	{ return reiZ::url_append($this->GetPath(), FOLDERLAYOUTS);	}
+		
+		public function SetPageName($value)	{ $this->_pagename = $value; }
 		
 		public function __construct($name=EMPTYSTRING, $title=EMPTYSTRING, $author=EMPTYSTRING, $version=EMPTYSTRING, $description=EMPTYSTRING)
 		{
@@ -50,37 +60,53 @@ if (defined('reiZ') or exit(1))
 			$this->_description = $description;
 		}
 		
+		/**
+		 * Tries to load a Module by a given name
+		 */
 		public static function Load($name)
 		{
 			$result = false;
+			$modules = $GLOBALS['MODULES'];
 			
 			// Check if it's already loaded
-			foreach ($GLOBALS['MODULES'] as $module)
-			{
-				if ($module instanceof Module && $module->GetName() == $name) { $result = $module; }
-			}
+			$result = Module::Get($name);
 			
-			// ...or try to load it
 			if (!$result)
 			{
 				$dir = reiZ::url_append(FOLDERMODULES, $name);
 				$file = reiZ::url_append($dir, 'module.php');
-				$config = reiZ::url_append($dir, 'config.inc');
 				
 				if (file_exists($file))
 				{
 					include_once($file);
-					$result = end($GLOBALS['MODULES']);
+					$result = Module::Get($name);
 				}
 				elseif (file_exists($dir))
 				{
-					$result = new Module($name);
-					$result->_exists = false;
+					$result = Module::Register(new Module($name, false), true);
 				}
-				if (file_exists($config)) { $result->_hasconfig = true; }
 			}
 			
 			return $result;
+		}
+		
+		public static function Execute ($module, $method=null, $args=null)
+		{
+			$value = null;
+			
+			if (is_string($module)) { $module = Module::Load($module, true); }
+			if ($module instanceof Module)
+			{
+				//reiZ::vd($method);
+				$module->Initialize();
+				$function = 'GetHtml';
+				//if (is_string($method)) { $function .= '_'.$method; }
+				if ($args === null) { $value = call_user_func(array($module, $function), $method); }
+				else { $value = call_user_func(array($module, $function), $method, $args); }
+			}
+			else { reiZ::vd('Module "'.$module.'" not found'); }
+			
+			return $value;
 		}
 		
 		public function LoadInfo()
@@ -109,8 +135,6 @@ if (defined('reiZ') or exit(1))
 		public static function LoadInstalledNames()
 		{
 			$return = array();
-			
-			$DB = $GLOBALS['DB'];
 			
 			$query = new Query();
 			$query->SetType(DBQT::Select);
@@ -151,7 +175,11 @@ if (defined('reiZ') or exit(1))
 		
 		public function Initialize()
 		{
-			$this->LoadAll();
+			if (!$this->_initialized)
+			{
+				$this->LoadAll();
+				$this->_initialized = true;
+			}
 		}
 		
 		public function Install()
@@ -220,19 +248,54 @@ if (defined('reiZ') or exit(1))
 		public function GetSettings()
 		{
 			// Make and return a list of the settings for the config file.
-			return new Settings();
+			$settings = new Settings($this->GetConfigFile());
+			$settings->Load();
+			return $settings;
 		}
 		
-		public function TranslateBreadcrumb($breadcrumb)
+		/*public function LoadSettings()
+		{
+			// Make and return a list of the settings for the config file.
+			$settings = new Settings();
+			return $settings;
+		}*/
+		
+		/*public function SaveSettings($settings)
+		{
+			$return = false;
+			
+			if ($settings instanceof Settings && $this->HasConfig())
+			{
+				$file = $this->GetConfigFile();
+				$content = file_get_contents($file);
+				
+				if ($content != EMPTYSTRING)
+				{
+					foreach ($settings as $setting)
+					{
+						$search = '/define\(\s*"'.$setting->GetName().'"\s*,.+\);/';
+						$replace = 'define("'.$setting->GetName().'", '.$setting->GetValueString().');';
+						//if ($setting->GetType() == ST::IntegerValue) { reiZ::vdd($setting); }
+						$content = preg_replace($search, $replace, $content);
+					}
+					
+					reiZ::WriteToFile($file, $content, true);
+				}
+			}
+			
+			return $return;
+		}*/
+		
+		/*public function TranslateBreadcrumb($breadcrumb)
 		{
 			// This method is for implenting "translation" of breadcrumbs.
 			// E.G. from "prod-cat-86" to "e-books". This logic can be customized for every module.
 			// If not implemented in the child class, the given breadcrumb will be unaffected.
-		}
+		}*/
 		
 		public function GetTitleFromUrl($url)
 		{
-			return EMPTYSTRING;
+			return false;
 		}
 		
 		public function LoadAll()
@@ -244,38 +307,84 @@ if (defined('reiZ') or exit(1))
 			$this->LoadScripts();
 		}
 		
-		public function LoadConfig()
+		protected function LoadConfig()
 		{
-			if ($this->HasConfig()) { include_once(reiZ::url_append($this->GetPath(), 'config.inc')); }
+			//reiZ::vd($this->GetConfigFile().'='.reiZ::DisplayBoolean($this->HasConfig()));
+			if ($this->HasConfig()) { include_once($this->GetConfigFile()); }
 		}
 		
-		public function LoadClasses()
+		protected function LoadClasses()
 		{
 			foreach (glob(reiZ::url_append($this->GetClassPath(), '*.php')) as $file) { include_once($file); }
 		}
 		
-		public function LoadStyles()
+		protected function LoadStyles()
 		{
-			foreach (glob(reiZ::url_append($this->GetStylePath(), '*.css')) as $file) { array_push($this->_stylesheets, $file); }
+			//foreach (glob(reiZ::url_append($this->GetStylePath(), '*.css')) as $file) { array_push($this->_stylesheets, $file); }
+			foreach (glob(reiZ::url_append($this->GetStylePath(), '*.css')) as $file) { $GLOBALS['HTML']->AddStylesheet($file); }
 		}
 		
-		public function LoadScripts()
+		protected function LoadScripts()
 		{
-			foreach (glob(reiZ::url_append($this->GetScriptPath(), '*.js')) as $file) { array_push($this->_javascripts, $file); }
+			//foreach (glob(reiZ::url_append($this->GetScriptPath(), '*.js')) as $file) { array_push($this->_javascripts, $file); }
+			foreach (glob(reiZ::url_append($this->GetStylePath(), '*.js')) as $file) { $GLOBALS['HTML']->AddJavascript($file); }
 		}
 		
-		public function LoadLayouts()
+		protected function LoadLayouts()
 		{
 			foreach (glob(reiZ::url_append($this->GetLayoutPath(), '*.inc')) as $file) { $this->LoadLayout($file); }
 		}
 		
-		public function LoadLayout($path)
+		protected function LoadLayout($path)
 		{
 			//$defaultlayout = reiZ::url_append($this->GetPath(), $name);
 			$customlayout = reiZ::url_append($GLOBALS['THEME']->GetPath(), $path);
 			if (file_exists($customlayout)) { include_once($customlayout); }
 			else { include_once($path); }
 		}
+		
+		/* Functions for controlling the "Modules" GLOBAL */
+		
+		public static function InitializeModules()
+		{
+			if (is_array($GLOBALS['MODULES']) && empty($GLOBALS['MODULES']))
+			{
+				foreach (Module::LoadInstalledNames() as $name) { $GLOBALS['MODULES'][$name] = null; }
+			}
+		}
+		
+		public static function Register($module, $error=false)
+		{
+			if ($module instanceof Module)
+			{
+				$name = $module->GetName();
+				if (array_key_exists($name, $GLOBALS['MODULES']))
+				{
+					$module->_installed = true;
+					$GLOBALS['MODULES'][$name] = $module;
+				}
+				else
+				{
+					$module->_installed = false;
+					if ($error == true) { $GLOBALS['MODULES']['?'.$name] = $module; }
+					else { $GLOBALS['MODULES']['!'.$name] = $module; }
+				}
+			}
+		}
+		
+		public static function Get($name)
+		{
+			$result = false;
+			if (is_string($name))
+			{
+				if (array_key_exists($name, $GLOBALS['MODULES'])) { $result = $GLOBALS['MODULES'][$name]; }
+				elseif (array_key_exists('!'.$name, $GLOBALS['MODULES'])) { $result = $GLOBALS['MODULES']['!'.$name]; }
+				elseif (array_key_exists('?'.$name, $GLOBALS['MODULES'])) { $result = $GLOBALS['MODULES']['?'.$name]; }
+			}
+			return $result;
+		}
 	}
+	
+	Module::InitializeModules();
 }
 ?>

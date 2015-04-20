@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_GallerySubFolders extends HtmlElement
+class HtmlElement_Gallery_SubFolders extends HtmlElement
 {
 	public function __construct($module, $folders)
 	{
@@ -9,7 +9,7 @@ class HtmlElement_GallerySubFolders extends HtmlElement
 			
 			foreach ($folders as $f)
 			{
-				$this->AddChild(new HtmlElement_GallerySubFolder($module, $f));
+				$this->AddChild(new HtmlElement_Gallery_SubFolder($module, $f));
 			}
 			//$this->AddChild(new HtmlElement('hr'));
 		}

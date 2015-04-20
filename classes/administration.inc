@@ -39,7 +39,7 @@ class Administration
 		$replace = array(EMPTYSTRING, EMPTYSTRING);
 		foreach (glob(FOLDERMODULES.'/*/admin.php') as $page)
 		{
-			$module = Module::Load(str_replace($search, $replace, $page));
+			$module = Module::Load(str_replace($search, $replace, $page), false);
 			if ($module->isInstalled())
 			{
 				array_push($pages, $module->GetName());
@@ -155,7 +155,7 @@ class Administration
 	
 	private function MakeHtml_EditPage($args, $page)
 	{
-		// TODO: Make a nice way of selecting before/after certain other page
+		// TODO: Make a nice way of selecting before/after certain other page (i.e. editing Weight without displaying it)
 		// TODO: Allow the user to add Modules to the page, and their position (leave to another page/form if too difficult)
 		
 		if ($page != null)
@@ -201,7 +201,7 @@ class Administration
 			$form->AddDropDown('masterpage', 'MasterPage:', $options, $selectedid);
 			
 			$form->AddContainer(new AdminBox('Content'), 'box2');
-			$form->AddTextField('content', 'Text:', $page->GetContent(), 20);
+			$form->AddTextField('content', 'Text:', $page->GetContent(false), 20);
 			$form->AddButton('submit', 'Save changes');
 			
 			$this->_content->AddChild($form);
@@ -238,7 +238,7 @@ class Administration
 		
 		if (sizeof($args) > 2 && $args[2] != null)
 		{
-			$module = Module::Load($args[2]);
+			$module = Module::Load($args[2], false);
 			if ($module == null)
 			{
 				$tmp = new Module($args[2]);
@@ -273,20 +273,20 @@ class Administration
 		
 		$admin1 = new AdminBox('Installed modules');
 		$form1 = new HtmlForm('PageSelections');
-		$list1 = new HtmlList(array('Name', 'Author', 'Version', 'Page', EMPTYSTRING));
+		$list1 = new HtmlList(array(EMPTYSTRING, 'Name', 'Author', 'Version', 'Page', EMPTYSTRING));
 		$show1 = false;
 		
 		$admin2 = new AdminBox('Installable Modules');
-		$list2 = new HtmlList(array('Name', 'Author', 'Version', EMPTYSTRING));
+		$list2 = new HtmlList(array(EMPTYSTRING, 'Name', 'Author', 'Version', EMPTYSTRING));
 		$show2 = false;
 		
 		$admin3 = new AdminBox('Invalid Modules');
-		$list3 = new HtmlList(array('Name', EMPTYSTRING));
+		$list3 = new HtmlList(array(EMPTYSTRING, 'Name', EMPTYSTRING));
 		$show3 = false;
 		
 		foreach ($modules as $name)
 		{
-			$module = Module::Load($name);
+			$module = Module::Load($name, false);
 			
 			$options = new HtmlElement();
 			if ($module instanceof Module)
@@ -296,6 +296,9 @@ class Administration
 				
 				if ($hasdir)
 				{
+					$icon = $module->HasIcon() ? SINGLESLASH.$module->GetIcon() : '/common/images/oxygen/16/list-remove.png';
+					$icon = new HtmlImage($icon, '#');
+					
 					if ($installed) // Installed modules
 					{
 						if (reiZ::SetAndNotNull($_POST, $module->GetId()))
@@ -317,30 +320,30 @@ class Administration
 						
 						if ($module->HasConfig()) { $options->AddChild(new HtmlLink_Image('/admin/modules/configure/'.$module->GetName(), '/common/images/oxygen/16/configure.png', 'S')); }
 						$options->AddChild(new HtmlLink_Image('/admin/modules/uninstall/'.$module->GetName(), '/common/images/oxygen/16/list-remove.png', 'D'));
-						$list1->AddRow(array($module->GetName(), $module->GetAuthor(), $module->GetVersion(), $pageselect, $options));
+						$list1->AddRow(array($icon, $module->GetName(), $module->GetAuthor(), $module->GetVersion(), $pageselect, $options));
 						$show1 = true;
 					}
 					else // Installable modules
 					{
 						$options->AddChild(new HtmlLink_Image('/admin/modules/install/'.$module->GetName(), '/common/images/oxygen/16/list-add.png', 'E'));
-						$list2->AddRow(array($module->GetName(), $module->GetAuthor(), $module->GetVersion(), $options));
+						$list2->AddRow(array($icon, $module->GetName(), $module->GetAuthor(), $module->GetVersion(), $options));
 						$show2 = true;
 					}
 				}
 				else // Modules with invalid files
 				{
-					$list3->AddRow(array($module->GetName(), $options));
+					$list3->AddRow(array($icon, $module->GetName(), $options));
 					$show3 = true;
 				}
 			}
 			else // Installed modules with no files
 			{
 				$options->AddChild(new HtmlLink_Image('/admin/modules/uninstall/'.$name, '/common/images/oxygen/16/list-remove.png', 'D'));
-				$list3->AddRow(array($name, $options));
+				$list3->AddRow(array($icon, $name, $options));
 				$show3 = true;
 			}
 		}
-		$list1->AddRow(array(EMPTYSTRING, EMPTYSTRING, EMPTYSTRING, new HtmlButton('submit', 'Save'), EMPTYSTRING));
+		$list1->AddRow(array(EMPTYSTRING, EMPTYSTRING, EMPTYSTRING, EMPTYSTRING, new HtmlButton('submit', 'Save'), EMPTYSTRING));
 		
 		$form1->AddChild($list1);
 		$admin1->AddContent($form1);
@@ -399,27 +402,20 @@ class Administration
 	{
 		if ($module instanceof Module)
 		{
+			$settings = $module->GetSettings();
+			
 			if (reiZ::SetAndNotNull($_POST, 'submit'))
 			{
-				/*$valid = true;
+				$valid = true;
 				
-				if (isset($_POST['masterpage'])) { $page->SetMasterpage(MasterPage::Load($_POST['masterpage'])); }
-				if (isset($_POST['name'])) { $page->SetName($_POST['name']); }
-				if (isset($_POST['title'])) { $page->SetTitle($_POST['title']); }
-				if (isset($_POST['content'])) { $page->SetContent($_POST['content']); }
-				if (isset($_POST['inmenu'])) { $page->SetInMenu(true); } else { $page->SetInMenu(false); }
-				if (isset($_POST['weight'])) { $page->SetWeight($_POST['weight']); }
-				
-				if ($valid)
+				foreach ($settings as $setting)
 				{
-					$saved = $page->Save();
-					
-					if ($args[1] == 'add' && $saved)
-					{
-						reiZ::Redirect('/'.ADMINPAGE.'/pages/');
-						//reiZ::Redirect('/'.ADMINPAGE.'/pages/edit/'.$page->GetId());
-					}
-				}*/
+					$value = false;
+					if (reiZ::SetAndNotNull($_POST, $setting->GetName())) { $value = $_POST[$setting->GetName()]; }
+					$valid = ($valid && $setting->SetValue($value));
+				}
+				
+				if ($valid) { $saved = $settings->Save(); }
 			}
 			
 			$this->_options->AddOption('home', '/'.ADMINPAGE.'/modules/', 'Back');
@@ -428,20 +424,19 @@ class Administration
 			
 			$form->AddContainer(new AdminBox('Config for '.$module->GetTitle()), 'box1');
 			
-			$settings = $module->GetSettings();
 			foreach ($settings as $setting)
 			{
-				if ($setting->GetType() == ST::Bool)
+				if ($setting->GetType() == ST::BooleanValue)
 				{
-					$form->AddCheckBox($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
+					$form->AddCheckBox($setting->GetName(), $setting->GetTitle(), ($setting->GetValue() == true));
 				}
 				// TODO: Change to numerical input eventually
-				/*elseif ($setting->GetType() == ST::Integer)
+				/*elseif ($setting->GetType() == ST::IntegerValue)
 				{
 					$form->AddTextField($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
 				}*/
 				// TODO: Change to multiselect input eventually
-				elseif ($setting->GetType() == ST::Strings)
+				elseif ($setting->GetType() == ST::StringList)
 				{
 					$form->AddTextField($setting->GetName(), $setting->GetTitle(), $setting->GetValue());
 				}

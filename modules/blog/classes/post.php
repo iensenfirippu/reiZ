@@ -23,25 +23,26 @@ if (defined('reiZ') or exit(1))
 		protected $_tags = null;
 		protected $_images = array(); // TODO: make into generic module calls instead of statically linking gallery module
 		
-		public function GetPostID()			{ return $this->_postid; }
-		public function GetCategory()		{ return $this->_category; }
-		public function GetTitle()			{ return $this->_title; }
-		public function GetText()			{ return $this->_text; }
-		public function GetFullText()		{ return $this->_fulltext != EMPTYSTRING ? $this->_fulltext : $this->_text; }
-		public function GetPosted()			{ return $this->_added; }
-		public function GetEdited()			{ return $this->_updated; }
-		public function GetTags()			{ return $this->_tags->GetTags(); }
-		public function GetTagCollection()	{ return $this->_tags; }
-		public function GetImages()			{ return $this->_images; }
+		public function GetPostID()						{ return $this->_postid; }
+		public function GetCategory()					{ return $this->_category; }
+		public function GetTitle()						{ return $this->_title; }
+		public function GetText()						{ return $this->_text; }
+		public function GetFullText($final=true)	{ $value = $this->_fulltext != EMPTYSTRING ? $this->_fulltext : $this->_text;
+																	  return $final == true ? reiZ::ExecuteCommands($value) : $value; }
+		public function GetPosted()						{ return $this->_added; }
+		public function GetEdited()						{ return $this->_updated; }
+		public function GetTags()						{ return $this->_tags->GetTags(); }
+		public function GetTagCollection()			{ return $this->_tags; }
+		public function GetImages()						{ return $this->_images; }
 		
-		public function HasFullText()	{ return ($this->_fulltext != EMPTYSTRING && $this->_fulltext != $this->_text); }
+		public function HasFullText()					{ return ($this->_fulltext != EMPTYSTRING && $this->_fulltext != $this->_text); }
 		
-		private function SetPostID($value)		{ $this->_values[self::$_fields[0]] = $this->_postid = $value; }
-		public function SetCategory($value)		{ $this->_values[self::$_fields[1]] = $value;
-												  $this->_category = BlogCategory::LoadFromID($value); }
-		public function SetTitle($value)		{ $this->_values[self::$_fields[2]] = $this->_title = $value; }
-		public function SetShortText($value)	{ $this->_values[self::$_fields[3]] = $this->_text = $value; }
-		public function SetFullText($value)		{ $this->_values[self::$_fields[4]] = $this->_fulltext = $value; }
+		private function SetPostID($value)			{ $this->_values[self::$_fields[0]] = $this->_postid = $value; }
+		public function SetCategory($value)			{ $this->_values[self::$_fields[1]] = $value;
+																	  $this->_category = BlogCategory::LoadFromID($value); }
+		public function SetTitle($value)				{ $this->_values[self::$_fields[2]] = $this->_title = $value; }
+		public function SetShortText($value)			{ $this->_values[self::$_fields[3]] = $this->_text = $value; }
+		public function SetFullText($value)			{ $this->_values[self::$_fields[4]] = $this->_fulltext = $value; }
 		
 		protected function __construct($values = null)
 		{
@@ -50,10 +51,10 @@ if (defined('reiZ') or exit(1))
 			if (is_array($values))
 			{
 				if (isset($values[self::$_fields[0]]))	{ self::SetPostID		($values[self::$_fields[0]]); }
-				if (isset($values[self::$_fields[1]]))	{ self::SetCategory		($values[self::$_fields[1]]); }
+				if (isset($values[self::$_fields[1]]))	{ self::SetCategory	($values[self::$_fields[1]]); }
 				if (isset($values[self::$_fields[2]]))	{ self::SetTitle		($values[self::$_fields[2]]); }
 				if (isset($values[self::$_fields[3]]))	{ self::SetShortText	($values[self::$_fields[3]]); }
-				if (isset($values[self::$_fields[4]]))	{ self::SetFullText		($values[self::$_fields[4]]); }
+				if (isset($values[self::$_fields[4]]))	{ self::SetFullText	($values[self::$_fields[4]]); }
 				//if (isset($values[self::$_fields[5]]))	{ self::SetPosted		($values[self::$_fields[5]]); }
 				//if (isset($values[self::$_fields[6]]))	{ self::SetEdited		($values[self::$_fields[6]]); }
 			}
@@ -87,18 +88,20 @@ if (defined('reiZ') or exit(1))
 		
 		public function SetText($value)
 		{
-			// TODO: Make generic ellipsize function
-			if (strlen($value) > 255)
+			$this->SetShortText(reiZ::string_ellipsize(reiZ::string_strip_tags($value), 255));
+			$this->SetFullText($value);
+			
+			
+			/*if (strlen($value) > 255)
 			{
-				$tmp = substr($value, 0, 252);
-				$this->SetShortText(substr($tmp, 0, strrpos($tmp, ' ')).'...');
+				$this->SetShortText(reiZ::string_ellipsize($value, 255));
 				$this->SetFullText($value);
 			}
 			else
 			{
 				$this->SetShortText($value);
 				$this->SetFullText($value);
-			}
+			}*/
 		}
 		
 		/*public function AddTag($tag)

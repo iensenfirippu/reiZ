@@ -134,11 +134,13 @@ if (defined('reiZ') or exit(1))
 		 * description
 		 * @param param, description.
 		 */
-		private static function WriteToFile($file, $string, $overwrite=false) // Logs an message to a file
+		public static function WriteToFile($file, $string, $overwrite=false) // Writes a string to a file
 		{
 			if ($overwrite && file_exists($file)) { unlink($file); }
 			$fp = fopen($file,'a');
-			fwrite($fp,$string.NEWLINE);
+			// NEWLINE removed because it caused NEWLINE to be inserted into output
+			//fwrite($fp,$string.NEWLINE);
+			fwrite($fp,$string);
 			fclose($fp);
 		}
 		
@@ -382,9 +384,10 @@ if (defined('reiZ') or exit(1))
 		
 		/**
 		 * description
-		 * @param param, description.
+		 * @param haystack, string to look in
+		 * @param needles, string or string[] to look for
 		 */
-		public static function strstr(/*string*/ $haystack, /*string or string[]*/ $needles)
+		public static function string_in_string($haystack, $needles)
 		{
 			$result = false;
 			
@@ -401,6 +404,19 @@ if (defined('reiZ') or exit(1))
 			
 			return $result;
 		}
+		public static function strstr($a,$b) { return reiZ::string_in_string($a,$b); }
+		
+		/**
+		 * Removes a text from the beginning of another
+		 * @param string, the string to look in.
+		 * @param prefix, the prefix to remove.
+		 */
+		public static function string_remove_prefix($string, $prefix)
+		{
+			if(strpos($string, $prefix) === 0) { $string = substr($string, strlen($prefix)).EMPTYSTRING; }
+			return $string;
+		}
+		public static function strrempre($a,$b) { return reiZ::string_remove_prefix($a,$b); }
 		
 		/**
 		 * description
@@ -497,6 +513,42 @@ if (defined('reiZ') or exit(1))
 		}
 		
 		/**
+		 * Checks if a string contains HTML tags
+		 * @param string, the string to check.
+		 */
+		public static function string_has_tags($string)
+		{
+			return sizeof(preg_match_all('/(<([^>]+)>)/', $string)) > 0 ? true : false;
+		}
+		
+		/**
+		 * Strips all HTML tags from string
+		 * @param string, the string to strip.
+		 */
+		public static function string_strip_tags($string)
+		{
+			return preg_replace('/(<([^>]+)>)/', EMPTYSTRING, $string);
+		}
+		
+		/**
+		 * Shortens and ellipsizes a string
+		 * @param string, the string to ellipsize.
+		 * @param length, the length of the new string (incl. ellipsis).
+		 */
+		public static function string_ellipsize($string, $length)
+		{
+			// TODO: consider making a contant ellipsize string ("...")
+			$value = $string;
+			if (is_string($string) && strlen($string) > $length)
+			{
+				$ellipsis = '...';
+				$tmp = substr($string, 0, $length - sizeof($ellipsis));
+				$value = substr($tmp, 0, strrpos($tmp, SINGLESPACE)).$ellipsis;
+			}
+			return $value;
+		}
+		
+		/**
 		 * description
 		 * @param param, description.
 		 */
@@ -529,6 +581,24 @@ if (defined('reiZ') or exit(1))
 			}
 			
 			return $value;
+		}
+		
+		/**
+		 * description
+		 * @param param, description.
+		 */
+		public static function url_lastfolder($url)
+		{
+			$pieces = explode(SINGLESLASH, $url);
+			$last = sizeof($pieces) -1;
+			$foldername = $pieces[$last];
+			
+			if ($foldername == EMPTYSTRING || reiZ::string_contains($foldername, SINGLEDOT))
+			{
+				$foldername = $pieces[$last -1];
+			}
+			
+			return $foldername;
 		}
 		
 		/*public static function StripMarkupFromTextArea($text)
@@ -600,13 +670,110 @@ if (defined('reiZ') or exit(1))
 			var_dump($var);
 			die(1);
 		}
+		
+		public static function ExecuteCommands($string)
+		{
+			$out = null;
+			$pattern_command = '/[\s\S]?\<!--{([a-zA-Z]*)(?:\|([a-zA-Z0-9\-,]*))*}--!\>[\s\S]?/';
+			//$pattern_argument = '/[\{\|]([a-zA-Z0-9\-,]*)[\|\}]/';
+			$pattern_argument = '/(?:[\{\|])([a-zA-Z0-9\-,]+)/';
+			preg_match_all($pattern_command, $string, $out);
+			$matches = $out[0];
+			
+			//for ($i = 1; $i < sizeof($matches); $i++)
+			foreach ($matches as $search)
+			{
+				$replace = EMPTYSTRING;
+				
+				preg_match_all($pattern_argument, $search, $out);
+				if (sizeof($out) > 1)
+				{
+					$args = $out[1];
+					$module = reiZ::SetAndNotNull($args, 0) ? $args[0] : null;
+					$method = reiZ::SetAndNotNull($args, 1) ? $args[1] : null;
+					$args = reiZ::SetAndNotNull($args, 2) ? array_slice($args, 2) : null;
+					$result = Module::Execute($module, $method, $args);
+					
+					// Get first and last character
+					$prev = $search[0] != '<' ? $search[0] : null;
+					$indexlast = strlen($search) - 1;
+					$next = $search[$indexlast] != '>' ? $search[$indexlast] : null;
+					$keep = 0;
+					
+					if ($result !== null)
+					{
+						$replace = $result.EMPTYSTRING;
+						
+						if ($prev != null) { $keep += 1; }
+						if ($next != null) { $keep += 2; }
+						/*reiZ::vd($keep);
+						reiZ::vd($search);
+						reiZ::vd($replace);*/
+					}
+					else
+					{
+						if ($prev == NEWLINE && $next == NEWLINE) { $keep = 1; /*$search = substr($search, 1);*/ /* 2 Newlines = delete previous from search = don't replace previous char */ }
+						elseif (($prev == NEWLINE || $next == NEWLINE) && ($prev == null || $next == null)) { /* Newline/null = keep both in search = replace both */ }
+						else
+						{
+							/* otherwise: remove both values from search = don't replace either (if not already null) */
+							if ($prev != null) { $keep += 1; }
+							if ($next != null) { $keep += 2; }
+							//if ($prev != null) { $search = substr($search, 1); }
+							//if ($next != null) { $search = substr($search, 0, $indexlast -1); }
+						}
+					}
+					
+					/* otherwise: remove not null values from search = don't replace either */
+					if ($keep == 2 || $keep == 3) { $search = substr($search, 0, $indexlast); }
+					if ($keep == 1 || $keep == 3) { $search = substr($search, 1); }
+					//if ($prev != null) { $search = substr($search, 1); }
+					//if ($next != null) { $search = substr($search, 0, $indexlast -1); }
+				}
+				
+				$string = str_replace($search, $replace, $string);
+				
+				//reiZ::vdd($string);
+			}
+			
+			return $string;
+		}
+		
+		/**
+		 * Returns the amount of ms it takes to run a given function a given amount of times
+		 * @param function, the function to call.
+		 * @param times, the amount of times to call.
+		 * @param obj, object to call the function on.
+		 */
+		public static function Stress($function, $times=100, $obj=null)
+		{
+			$result = true;
+			$start = microtime(true);
+			
+			if ($times > 0)
+			{
+				if ($obj == null && function_exists($function))
+				{
+					for ($i = 0; $i < $times; $i++) { call_user_func($function); }
+				}
+				elseif ($obj != null && method_exists($obj, $function))
+				{
+					for ($i = 0; $i < $times; $i++) { call_user_func(array($obj, $function)); }
+				}
+				else { $result = false; }
+			}
+			else { $result = false; }
+			
+			if ($result) { $result = round((microtime(true) - $start) * 1000); }
+			return $result;
+		}
 	}
 	
 	abstract class TimeFormat
 	{
-		const HumanTime		= false;
+		const HumanTime	= false;
 		const Date			= 'D-M-Y';
-		const DateTime		= 'd-m-y H:i';
+		const DateTime	= 'd-m-y H:i';
 		const Time			= 'H:i';
 	}
 	abstract class TF extends TimeFormat {}
