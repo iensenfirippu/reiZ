@@ -6,7 +6,9 @@ if (defined('reiZ') or exit(1))
 		private $_breadcrumbs = array();
 		private $_module = null;
 		
-		public function __construct($module = null, $initialize = true)
+		public function SetModule($module) { $this->_module = $module; }
+		
+		public function __construct($initialize = true)
 		{
 			$name = 'breadcrumbs';
 			$title = 'Breadcrumbs';
@@ -15,16 +17,12 @@ if (defined('reiZ') or exit(1))
 			$description = 'Generates breadcrumbs from the URL, for easy site navigation.';
 			parent::__construct($name, $title, $author, $version, $description);
 			
-			$this->_module = $module;
 			if ($initialize) { $this->Initialize(); }
 		}
 		
 		public function Initialize()
 		{
 			parent::Initialize();
-			//foreach (glob(reiZ::url_append($this->GetClassPath(), '*.php')) as $file) { include_once($file); }
-			//foreach (glob(reiZ::url_append($this->GetLayoutPath(), '*.inc')) as $file) { include_once($file); }
-			//foreach (glob(reiZ::url_append($this->GetStylePath(), '*.css')) as $file) { array_push($this->_stylesheets, $file); }
 			
 			$page = reiZ::GetSafeArgument(GETPAGE);
 			$args = reiZ::GetSafeArgument(GETARGS);
@@ -59,25 +57,30 @@ if (defined('reiZ') or exit(1))
 				}
 			}
 			
-			foreach ($this->_breadcrumbs as $crumb)
+			if (reiZ::SetAndNotNull($GLOBALS, 'PAGE'))
 			{
-				if ($this->_module instanceof Module)
-				{
-					$title = $this->_module->GetTitleFromUrl($url);
-					if ($title != null) { $crumb->SetName($title); }
-					//var_dump($crumb);
-				}
-				else
-				{
-					//var_dump($this->_module);
-				}
+				$this->_module = $GLOBALS['PAGE']->GetModule();
 			}
 		}
 		
 		public function GetHtml()
 		{
-			if ($this->_html == null)
+			if ($this->_initialized && $this->_html == null)
 			{
+				if ($this->_module instanceof Module)
+				{
+					foreach ($this->_breadcrumbs as $crumb)
+					{
+						$url = reiZ::string_remove_prefix($crumb->GetUrl(), BREADCRUMBROOT);
+						$url = explode(SINGLESLASH, $url, 2);
+						if ($url[0] == $this->_module->GetPagename())
+						{
+							$title = $this->_module->GetTitleFromUrl($url[1]);
+							if ($title != null) { $crumb->SetName($title); }
+						}
+					}
+				}
+				
 				$this->_html = new HtmlElement_Breadcrumbs($this, $this->_breadcrumbs);
 				//$this->GenerateHtml();
 			}
@@ -132,7 +135,7 @@ if (defined('reiZ') or exit(1))
 		
 		private function AddBreadcrumb($name, $url, $flag=0)
 		{
-			debug_print_backtrace();
+			//debug_print_backtrace();
 			array_push($this->_breadcrumbs, new Breadcrumb($url, $name));
 			
 			/*$class = EMPTYSTRING;
@@ -160,16 +163,16 @@ if (defined('reiZ') or exit(1))
 		
 		public function GetSettings()
 		{
-			$settings = new Settings();
-			$settings->Add('BREADCRUMBSEPARATOR',		'Separator',			ST::String,	'&gt;');
-			$settings->Add('BREADCRUMBROOT',			'URL root',				ST::String,	URLROOT.INDEXFILE.URLPAGE);
-			$settings->Add('BREADCRUMBINDEX',			'Index page',			ST::String,	'home');
-			$settings->Add('BREADCRUMBINCLUDECURRENT',	'Include current page',	ST::Bool,	false);
-			
+			$settings = new Settings($this->GetConfigFile());
+			$settings->Add('BREADCRUMBSEPARATOR',			'Separator',				ST::StringValue,	'&gt;');
+			$settings->Add('BREADCRUMBROOT',					'URL root',					ST::StringValue,	URLROOT.INDEXFILE.URLPAGE);
+			$settings->Add('BREADCRUMBINDEX',				'Index page',				ST::StringValue,	'home');
+			$settings->Add('BREADCRUMBINCLUDECURRENT',	'Include current page',	ST::BooleanValue,	false);
+			$settings->Load();
 			return $settings;
 		}
 	}
 	
-	$GLOBALS['MODULES'][] = new BreadcrumbsModule(null, false);
+	Module::Register(new BreadcrumbsModule());
 }
 ?>

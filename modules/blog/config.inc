@@ -6,5 +6,5 @@
 	define("BLOGPRELOADALLCATEGORIES", true);
 	define("BLOGPRELOADALLTAGS", true);
 	define("BLOGCATEGORYONFRONTPAGE", 'english,nihongo');
-	define("BLOGPOSTONFRONTPAGE", 5);
+	define("BLOGPOSTONFRONTPAGE", 2);
 ?>

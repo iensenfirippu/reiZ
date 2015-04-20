@@ -33,16 +33,41 @@ if (defined('reiZ') or exit(1))
 		public function Initialize()
 		{
 			parent::Initialize();
-			//foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERCLASSES.'/*.php') as $classfile) { include_once($classfile); }
-			//$this->_stylesheets = array(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERSTYLES.'/style.css');
 		}
 		
-		public function TranslateBreadcrumb($string)
+		public function GetTitleFromUrl($url)
 		{
-			return false;
+			$result = false;
+			$url = explode(SINGLESLASH, trim($url, SINGLESLASH));
+			
+			if (sizeof($url) == 1 && $url[0] != EMPTYSTRING)
+			{
+				if (is_numeric($url[0]))
+				{
+					$post = BlogPost::LoadFromID($url[0]);
+					$result = $post->GetTitle();
+				}
+			}
+			elseif (sizeof($url) == 2 && $url[1] != EMPTYSTRING)
+			{
+				if (is_numeric($url[1]))
+				{
+					$result = "Page ".$url[1];
+				}
+			}
+			elseif (sizeof($url) == 3 && $url[2] != EMPTYSTRING)
+			{
+				if (is_numeric($url[2]))
+				{
+					$post = BlogPost::LoadFromID($url[2]);
+					$result = $post->GetTitle();
+				}
+			}
+			
+			return $result;
 		}
 		
-		public function GetHtml($section=null)
+		public function GetHtml($section=null, $args=null)
 		{
 			$return;
 			if ($section == null)
@@ -55,9 +80,11 @@ if (defined('reiZ') or exit(1))
 			}
 			else
 			{
-				
 				switch ($section)
 				{
+					case "rightpane":
+						$return = $this->GetHtml_RightPane();
+						break;
 					case "categories":
 						$return = $this->GetHtml_Categories();
 						break;
@@ -68,7 +95,6 @@ if (defined('reiZ') or exit(1))
 						$return = $this->GenerateHtml_Frontpage();
 						break;
 				}
-				
 			}
 			return $return;
 		}
@@ -114,7 +140,7 @@ if (defined('reiZ') or exit(1))
 			{
 				$p = reiZ::GetSafeArgument(GETPAGE);
 				$url = reiZ::GetSafeArgument(GETARGS);
-				$dir = explode('/', $url);
+				$dir = explode(SINGLESLASH, $url);
 				$cat = null;
 				$tag = null;
 				$page = 0;
@@ -154,7 +180,7 @@ if (defined('reiZ') or exit(1))
 					// First letter lowercase = Tag
 					else
 					{
-						foreach($tags as $t) { if ($t->GetName() == $dir[0]) { $tag = $t; } }
+						foreach ($tags as $t) { if ($t->GetName() == $dir[0]) { $tag = $t; } }
 						if ($tag == null) { $tag = BlogTag::LoadFromName($dir[0]); }
 						if ($tag != null) { $this->_url = $tag->GetName().SINGLESLASH; }
 					}
@@ -174,9 +200,9 @@ if (defined('reiZ') or exit(1))
 					$posts = BlogPost::LoadNewest((BLOGPOSTPRPAGE * ($page -1)), BLOGPOSTPRPAGE, $count);
 				}
 				
-				$this->_html = new HtmlElement_BlogPosts($this, $posts, $count, $page);
-				$this->_htmlextra['categories'] = new HtmlElement_BlogCategories($this, $categories);
-				$this->_htmlextra['tags'] = new HtmlElement_BlogTags($this, $tags);
+				$this->_html = new HtmlElement_Blog_Posts($this, $posts, $count, $page);
+				$this->_htmlextra['categories'] = new HtmlElement_Blog_Categories($this, $categories);
+				$this->_htmlextra['tags'] = new HtmlElement_Blog_Tags($this, $tags);
 			}
 			return $this->_html;
 		}
@@ -249,7 +275,7 @@ if (defined('reiZ') or exit(1))
 				array_push($categories, BlogPost::LoadNewestByCategory($category, 0, BLOGPOSTONFRONTPAGE, $count));
 			}
 			
-			return new HtmlElement_BlogFrontpage($this, $categories);
+			return new HtmlElement_Blog_Frontpage($this, $categories);
 		}
 		
 		public function GetSettings()
@@ -260,20 +286,21 @@ if (defined('reiZ') or exit(1))
 			$options2 = array();
 			foreach ($categories as $category) { $options1[] = $options2[] = $category->GetName(); }
 			
-			$settings = new Settings();
-			$settings->Add('BLOGPOSTPRPAGE',			'Posts per page',					ST::Integer,	10				);
-			$settings->Add('BLOGDEFAULTCATEGORY',		'Default category',					ST::String,		'All',			$options1);
-			$settings->Add('BLOGPAGINATIONINTOP',		'Pagination in top',				ST::Bool,		true			);
-			$settings->Add('BLOGPAGINATIONINBOTTOM',	'Pagination in bottom',				ST::Bool,		true			);
-			$settings->Add('BLOGPRELOADALLCATEGORIES',	'Preload All Categories',			ST::Bool,		true			);
-			$settings->Add('BLOGPRELOADALLTAGS',		'Preload All Categories',			ST::Bool,		true			);
-			$settings->Add('BLOGCATEGORYONFRONTPAGE',	'Categories on frontpage',			ST::Strings,	EMPTYSTRING,	$options2);
-			$settings->Add('BLOGPOSTONFRONTPAGE',		'Posts per category on frontpage',	ST::Integer,	5				);
-			
+			$settings = new Settings($this->GetConfigFile());
+			$settings->Add('BLOGPOSTPRPAGE',					'Posts per page',							ST::IntegerValue,		10					);
+			$settings->Add('BLOGDEFAULTCATEGORY',			'Default category',						ST::StringValue,		'All',			$options1);
+			$settings->Add('BLOGPAGINATIONINTOP',			'Pagination in top',						ST::BooleanValue,		true				);
+			$settings->Add('BLOGPAGINATIONINBOTTOM',		'Pagination in bottom',					ST::BooleanValue,		true				);
+			$settings->Add('BLOGPRELOADALLCATEGORIES',	'Preload All Categories',				ST::BooleanValue,		true				);
+			$settings->Add('BLOGPRELOADALLTAGS',			'Preload All Categories',				ST::BooleanValue,		true				);
+			$settings->Add('BLOGCATEGORYONFRONTPAGE',		'Categories on frontpage',				ST::StringList,		EMPTYSTRING,	$options2);
+			$settings->Add('BLOGPOSTONFRONTPAGE',			'Posts per category on frontpage',	ST::IntegerValue,		5					);
+			$settings->Load();
 			return $settings;
 		}
 	}
 
-	$GLOBALS['MODULES'][] = new BlogModule(false);
+	Module::Register(new BlogModule());
+	//$GLOBALS['MODULES'][] = new BlogModule(false);
 }
 ?>

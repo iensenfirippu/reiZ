@@ -8,21 +8,11 @@ if (defined('reiZ') or exit(1))
 {
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/common.php');
 	
-	include_once(FOLDERMODULES.'/menu/module.php');
-	include_once(FOLDERMODULES.'/breadcrumbs/module.php');
-	$menu = new MenuModule();
-	$breadcrumbs = new BreadcrumbsModule();
+	$menu = Module::Load('menu');
+	$breadcrumbs = Module::Load('breadcrumbs');
 	
-	// HEAD
-	/*$HTML->SetPointer('HEAD');
-	$HTML->AddElement(new HtmlElement('meta', 'charset="UTF-8"'));
-	$HTML->AddElement(new HtmlElement('link',
-		'rel="icon" type="image/png" href="'.URLROOT.'/'.FOLDERCOMMON.'/'.FOLDERIMAGES.'/favicon.png"'));
-		//'rel="icon" type="image/png" href="'.URLROOT.'/'.$THEME->GetDirectory().'/'.FOLDERIMAGES.'/favicon.png"'));
-	$HTML->AddStylesheet(FOLDERCOMMON.'/'.FOLDERSTYLES.'/common.css');
-	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/common.css');*/
-	foreach ($menu->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
-	foreach ($breadcrumbs->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
+	//foreach ($menu->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
+	//foreach ($breadcrumbs->GetStylesheets() as $css) { $HTML->AddStylesheet($css); }
 	
 	// BODY
 	$HTML->AddElement(new HtmlElement('div', 'id="wrapper"'), 'BODY', 'wrapper');
@@ -32,7 +22,7 @@ if (defined('reiZ') or exit(1))
 	$HTML->AddElement(new HtmlElement('div', 'id="top"'), 'main', 'top');
 	//$HTML->SetPointer('top');
 	$HTML->AddElement(new HtmlElement('span', 'id="logo"', '&nbsp;'));
-	$HTML->AddElement(new HtmlElement('span', 'id="sitetitle"', 'iensenfirippu.dk'));
+	$HTML->AddElement(new HtmlElement('span', 'id="sitetitle"', WEBSITETITLE));
 	
 	// - left
 	$HTML->AddElement(new HtmlElement('div', 'id="left"'), 'main', 'left');
@@ -54,7 +44,7 @@ if (defined('reiZ') or exit(1))
 	// - bottom
 	$HTML->AddElement(new HtmlElement('div', 'id="bottom"'), 'main', 'bottom');
 	//$HTML->SetPointer('bottom');
-	$HTML->AddElement(new HtmlElement('span', 'class="left"', 'Powered by <a href="https://github.com/iensenfirippu/reiZ">reiZ</a>'));
+	$HTML->AddElement(new HtmlElement('span', 'class="left"', 'Valid and beautiful <a href="http://validator.w3.org/check?uri='.URLROOT.$_SERVER['REQUEST_URI'].'">HTML5</a> provided by <a href="https://github.com/iensenfirippu/reiZ">reiZ</a>'));
 	$HTML->AddElement(new HtmlElement('span', 'class="right"', '<!--{EXECUTIONTIME}--!> <!--{QUERYCOUNT}--!>'));
 }
 ?>

@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogPosts extends HtmlElement
+class HtmlElement_Blog_Posts extends HtmlElement
 {
 	public function __construct($module, $posts, $count, $page)
 	{
@@ -21,7 +21,7 @@ class HtmlElement_BlogPosts extends HtmlElement
 			// Print the fetched posts
 			foreach ($posts as $post)
 			{
-				$this->AddChild(new HtmlElement_BlogPost($module, $post, $full, $page));
+				$this->AddChild(new HtmlElement_Blog_Post($module, $post, $full, $page));
 			}
 			
 			if ($pagination != null && BLOGPAGINATIONINBOTTOM) { $this->AddChild($pagination); }

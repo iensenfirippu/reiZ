@@ -17,27 +17,44 @@ if (defined('reiZ') or exit(1))
 		
 		public function Initialize()
 		{
-			foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERCLASSES.'/*.php') as $classfile) { include_once($classfile); }
-			foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERLAYOUT.'/*.inc') as $classfile) { $this->LoadLayout($classfile); }
-			if (USELIGHTBOX)
+			if (!$this->_initialized)
 			{
-				$this->_stylesheets = array(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERSTYLES.'/style.css', FOLDERCOMMON.'/'.FOLDERSTYLES.'/lightbox.css');
-				$this->_javascripts = array(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/hider.js', FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/jquery-1.10.2.min.js', FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/lightbox-2.6.min.js');
-			}
-			else
-			{
-				$this->_stylesheets = array(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERSTYLES.'/style.css');
-				$this->_javascripts = array(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/hider.js');
+				parent::Initialize();
+				
+				$GLOBALS['HTML']->AddJavascript(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/hider.js');
+				if (GALLERYUSELIGHTBOX)
+				{
+					$GLOBALS['HTML']->AddStyleSheet(FOLDERCOMMON.'/'.FOLDERSTYLES.'/lightbox.css');
+					$GLOBALS['HTML']->AddJavascript(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/jquery-1.10.2.min.js');
+					$GLOBALS['HTML']->AddJavascript(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/lightbox-2.6.min.js');
+				}
 			}
 		}
 		
-		public function GetHtml()
+		public function GetHtml($section=null, $args=null)
 		{
-			if ($this->_html == null)
+			$return = false;
+			if ($section == null)
 			{
-				$this->GenerateHtml();
+				if ($this->_html == null)
+				{
+					$this->GenerateHtml();
+				}
+				$return = $this->_html;
 			}
-			return $this->_html;
+			else
+			{
+				switch ($section)
+				{
+					case "rightpane":
+						$return = $this->GetHtml_RightPane();
+						break;
+					default:
+						$return = $this->GetHtml_Preview($section, $args);
+						break;
+				}
+			}
+			return $return;
 		}
 		
 		public function GetHtml_HiddenInfo()
@@ -54,13 +71,13 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
-		/*public function GetTitleFromUrl($url)
+		public function GetTitleFromUrl($url)
 		{
 			$result = false;
 			$folder = new GalleryFolder($url, false);
 			if ($folder->GetTitle() != EMPTYSTRING) { $result = $folder->GetTitle(); }
 			return $result;
-		}*/
+		}
 		
 		private function GenerateHtml()
 		{
@@ -70,12 +87,55 @@ if (defined('reiZ') or exit(1))
 			if ($folder->Exists())
 			{
 				$this->_htmlextra['hidden'] = new HtmlElement('div', 'class="highlight"');
-				$this->_html = new HtmlElement_GalleryFolder($this, $folder);
+				$this->_html = new HtmlElement_Gallery_Folder($this, $folder);
 			}
 			// Else redirect to Gallery Root
 			else { reiZ::Redirect(URLPAGE.reiZ::GetSafeArgument(GETPAGE)); }
 			// Else redirect to previous gallery (loops until an existing gallery is found, or the max redirect is reached)
 			//else { reiZ::Redirect(URLPAGE.reiZ::GetSafeArgument(GETPAGE).URLARGS.substr($url, 0, strrpos( $url, SINGLESLASH))); }
+		}
+		
+		private function GetHtml_Preview($name, $args)
+		{
+			$value = false;
+			$folder = GalleryFolder::Find($name);
+			
+			if ($folder != null)
+			{
+				if ($args != null)
+				{
+					$images = array();
+					if (reiZ::SetAndNotNull($args, 0))
+					{
+						if (is_numeric($args[0]) && sizeof($folder->GetImages() >= $args[0])) { $images[] = $folder->GetImages()[$args[0] -1]; }
+						elseif (is_string($args[0]))
+						{
+							if (reiZ::string_contains($args[0], SINGLECOMMA))
+							{
+								$indexes = explode(SINGLECOMMA, $args[0]);
+								foreach ($indexes as $index) { $images[] = $folder->GetImages()[$index -1]; }
+							}
+							elseif (reiZ::string_contains($args[0], '-'))
+							{
+								$limits = explode('-', $args[0]);
+								
+								if (is_array($limits) && sizeof($limits == 2) && is_numeric($limits[0]) && is_numeric($limits[1]))
+								{
+									for ($i = $limits[0]; $i <= $limits[1]; $i++) { $images[] = $folder->GetImages()[$i -1]; }
+								}
+							}
+						}
+					}
+					
+					$value = new HtmlElement_Gallery_ImagePreview($this, $images);
+				}
+				else
+				{
+					$value = new HtmlElement_Gallery_FolderPreview($this, $folder);
+				}
+			}
+			
+			return $value;
 		}
 		
 		public function GetHtml_RightPane()
@@ -85,20 +145,21 @@ if (defined('reiZ') or exit(1))
 		
 		public function GetSettings()
 		{
-			$settings = new Settings();
-			$settings->Add('GALLERYDIR',				'File directory',			ST::String,	FOLDERFILES.'/gallery');
-			$settings->Add('GALLERYNOPREVIEW',			'Default image',			ST::String,	FOLDERCOMMON."/images/reiz/nopreview.jpg");
-			$settings->Add('GALLERYTHUMBNAILWIDTH',		'Thumbnail width',			ST::Integer,	100);
-			$settings->Add('GALLERYTHUMBNAILHEIGHT',	'Thumbnail height',			ST::Integer,	75);
-			$settings->Add('GALLERYUSELIGHTBOX',		'Use lightbox',				ST::Bool,	true);
-			$settings->Add('GALLERYDEFAULTTITLE',		'Default Title',			ST::String,	'Gallery');
-			$settings->Add('GALLERYDEFAULTTEXT',		'Default Text',				ST::String,	'&nbsp;');
-			$settings->Add('GALLERYPREVLINKTEXT',		'Text on "Back" button',	ST::String,	'Back to previous folder');
-			
+			$settings = new Settings($this->GetConfigFile());
+			$settings->Add('GALLERYDIR',					'File directory',				ST::StringValue,		FOLDERFILES.'/gallery');
+			$settings->Add('GALLERYNOPREVIEW',			'Default image',				ST::StringValue,		FOLDERCOMMON.'/images/reiz/nopreview.jpg');
+			$settings->Add('GALLERYTHUMBNAILWIDTH',	'Thumbnail width',			ST::IntegerValue,		100);
+			$settings->Add('GALLERYTHUMBNAILHEIGHT',	'Thumbnail height',			ST::IntegerValue,		75);
+			$settings->Add('GALLERYUSELIGHTBOX',		'Use lightbox',				ST::BooleanValue,		true);
+			$settings->Add('GALLERYDEFAULTTITLE',		'Default Title',				ST::StringValue,		'Gallery');
+			$settings->Add('GALLERYDEFAULTTEXT',		'Default Text',				ST::StringValue,		'&nbsp;');
+			$settings->Add('GALLERYPREVLINKTEXT',		'Text on "Back" button',	ST::StringValue,		'Back to previous folder');
+			$settings->Load();
 			return $settings;
 		}
 	}
 	
-	$GLOBALS['MODULES'][] = new GalleryModule(false);
+	Module::Register(new GalleryModule());
+	//$GLOBALS['MODULES'][] = new GalleryModule(false);
 }
 ?>

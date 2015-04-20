@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogCategory extends HtmlElement
+class HtmlElement_Blog_Category extends HtmlElement
 {
 	public function __construct($module, $category)
 	{

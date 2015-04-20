@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_GallerySubFolder extends HtmlElement
+class HtmlElement_Gallery_SubFolder extends HtmlElement
 {
 	public function __construct($module, $folder)
 	{
@@ -36,7 +36,7 @@ class HtmlElement_GallerySubFolder extends HtmlElement
 			$gallerypreview = new HtmlElement('div', 'class="gallerypreview"');
 			foreach ($images as $image)
 			{
-				$gallerypreview->AddChild(new HtmlElement('img', 'class="gallerythumbnail" src="'.URLROOT.INDEXFILE.URLPAGE.$image->GetThumbnail().'"', EMPTYSTRING));				
+				$gallerypreview->AddChild(new HtmlElement('img', 'class="gallerythumbnail" src="'.URLROOT.INDEXFILE.URLPAGE.$image->GetThumbnail().'" alt="'.$image->GetName().'"', EMPTYSTRING));				
 			}
 			
 			parent::__construct('div', $attr);

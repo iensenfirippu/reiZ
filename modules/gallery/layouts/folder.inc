@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_GalleryFolder extends HtmlElement
+class HtmlElement_Gallery_Folder extends HtmlElement
 {
 	public function __construct($module, $folder)
 	{
@@ -27,12 +27,12 @@ class HtmlElement_GalleryFolder extends HtmlElement
 			// Show SubFolders
 			if (sizeof($folder->GetSubfolders()) > 0)
 			{
-				$this->AddChild(new HtmlElement_GallerySubFolders($module, $folder->GetSubfolders()));
+				$this->AddChild(new HtmlElement_Gallery_SubFolders($module, $folder->GetSubfolders()));
 			}
 			
 			if (sizeof($folder->GetImages()) > 0)
 			{
-				$this->AddChild(new HtmlElement_GalleryImages($module, $folder->GetImages()));
+				$this->AddChild(new HtmlElement_Gallery_Images($module, $folder->GetImages()));
 			}
 		}
 		else { parent::__construct(); }

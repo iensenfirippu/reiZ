@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogPost extends HtmlElement
+class HtmlElement_Blog_Post extends HtmlElement
 {
 	public function __construct($module, $post, $full, $page=null)
 	{
@@ -20,15 +20,17 @@ class HtmlElement_BlogPost extends HtmlElement
 			$postcontent = new HtmlElement('div', 'class="center"');
 			if ($full)
 			{
-				$postcontent->AddChild(new HtmlElement('span', 'class="text"', $post->GetFullText()));
+				$tmp = new HtmlElement('div', 'class="text"', $post->GetFullText());
+				//reiZ::vdd($tmp.EMPTYSTRING);
+				$postcontent->AddChild($tmp);
 			}
 			else
 			{
-				$postcontent->AddChild(new HtmlElement('span', 'class="text"', $post->GetText()));
+				$postcontent->AddChild(new HtmlElement('div', 'class="text"', $post->GetText()));
 				if ($post->HasFullText())
 				{
 					$postcontent->AddChild(
-						new HtmlElement('span', 'class="readmore"', EMPTYSTRING,
+						new HtmlElement('div', 'class="readmore"', EMPTYSTRING,
 							new HtmlElement('a', 'href="'.$baseurl.$post->GetPostID().'/"', '...')
 						)
 					);
@@ -37,7 +39,10 @@ class HtmlElement_BlogPost extends HtmlElement
 			
 			// Make bottom of post
 			$postbottom = new HtmlElement('div', 'class="bottom"');
-			$postbottom->AddChild(new HtmlElement_BlogPostTags($module, $post->GetTags()));
+			if (sizeof($post->GetTags()))
+			{
+				$postbottom->AddChild(new HtmlElement_Blog_PostTags($module, $post->GetTags()));
+			}
 			if ($post->GetEdited() > 0)
 			{
 				$postbottom->AddChild(

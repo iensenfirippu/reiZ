@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_BlogCategories extends HtmlElement
+class HtmlElement_Blog_Categories extends HtmlElement
 {
 	public function __construct($module, $categories)
 	{
@@ -8,7 +8,7 @@ class HtmlElement_BlogCategories extends HtmlElement
 			parent::__construct('ul', 'class="blogcategories"');
 			foreach ($categories as $category)
 			{
-				$this->AddChild(new HtmlElement_BlogCategory($module, $category));
+				$this->AddChild(new HtmlElement_Blog_Category($module, $category));
 			}
 		}
 		else { parent::__construct(); }

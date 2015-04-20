@@ -1,12 +1,12 @@
 <?php
-class HtmlElement_GalleryImage extends HtmlElement
+class HtmlElement_Gallery_Image extends HtmlElement
 {
 	public function __construct($module, $image)
 	{
 		if (is_a($image, "GalleryImage"))
 		{
 			$attr = 'class="galleryimage';
-			$lightbox = USELIGHTBOX ? ' data-lightbox="gallery" title="'.$image->GetName().'"' : EMPTYSTRING;
+			$lightbox = GALLERYUSELIGHTBOX ? ' data-lightbox="gallery" title="'.$image->GetName().'"' : EMPTYSTRING;
 			
 			if ($image->HasInfo())
 			{

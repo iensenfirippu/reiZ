@@ -1,5 +1,5 @@
 <?php
-class HtmlElement_GalleryImages extends HtmlElement
+class HtmlElement_Gallery_Images extends HtmlElement
 {
 	public function __construct($module, $images)
 	{
@@ -9,7 +9,7 @@ class HtmlElement_GalleryImages extends HtmlElement
 			
 			foreach ($images as $i)
 			{
-				$this->AddChild(new HtmlElement_GalleryImage($module, $i));
+				$this->AddChild(new HtmlElement_Gallery_Image($module, $i));
 			}
 		}
 		else { parent::__construct(); }

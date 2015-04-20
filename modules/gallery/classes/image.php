@@ -17,7 +17,7 @@ if (defined('reiZ') or exit(1))
 		
 		public function GetHideId()		{ return $this->_hideid;	}
 		public function GetName()		{ return $this->_name;		}
-		public function GetUrl()		{ return $this->_url;		}
+		public function GetUrl()			{ return $this->_url;		}
 		public function GetLink()		{ return $this->_link;		}
 		public function GetThumbnail()	{ return $this->_thumbnail;	}
 		public function GetTitle()		{ return $this->_title;		}
@@ -28,7 +28,7 @@ if (defined('reiZ') or exit(1))
 		public function __construct($url)
 		{
 			$pathinfo = pathinfo($url);
-			$mimetype = getimagesize(GALLERYDIR.'/'.$url)["mime"];
+			$mimetype = getimagesize(GALLERYDIR.SINGLESLASH.$url)["mime"];
 			
 			$this->_name = $pathinfo['basename'];
 			$this->_url = $url;
@@ -40,8 +40,8 @@ if (defined('reiZ') or exit(1))
 			{
 				$infofile = file($infofile);
 				$this->_hideid = reiZ::MakeHideId();
-				$this->_title = trim(preg_replace('/\s\s+/', ' ', $infofile[0]));
-				$this->_text = trim(preg_replace('/\s\s+/', ' ', $infofile[1]));
+				$this->_title = trim(preg_replace('/\s\s+/', SINGLESPACE, $infofile[0]));
+				$this->_text = trim(preg_replace('/\s\s+/', SINGLESPACE, $infofile[1]));
 			}
 			else
 			{
@@ -52,39 +52,45 @@ if (defined('reiZ') or exit(1))
 		
 		private function old_MakeThumbnail($pathinfo)
 		{
-			if (strtolower($pathinfo['extension']) == 'jpg' )
+			if (extension_loaded('gd'))
 			{
-				$img = imagecreatefromjpeg(GALLERYDIR.'/'.$this->_url);
-				$width = imagesx($img);
-				$height = imagesy($img);
-				$new_width = GALLERYTHUMBNAILWIDTH;
-				$new_height = floor($height * (GALLERYTHUMBNAILWIDTH / $width));
-				$tmp_img = imagecreatetruecolor($new_width, $new_height);
-				imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-				imagejpeg($tmp_img, GALLERYDIR.'/'.$pathinfo['dirname'].'/thumbs/'.$pathinfo['filename'].'.'.$pathinfo['extension'], 85);
+				if (strtolower($pathinfo['extension']) == 'jpg' )
+				{
+					$img = imagecreatefromjpeg(GALLERYDIR.'/'.$this->_url);
+					$width = imagesx($img);
+					$height = imagesy($img);
+					$new_width = GALLERYTHUMBNAILWIDTH;
+					$new_height = floor($height * (GALLERYTHUMBNAILWIDTH / $width));
+					$tmp_img = imagecreatetruecolor($new_width, $new_height);
+					imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+					imagejpeg($tmp_img, GALLERYDIR.'/'.$pathinfo['dirname'].'/thumbs/'.$pathinfo['filename'].'.'.$pathinfo['extension'], 85);
+				}
 			}
 		}
 		
 		private function MakeThumbnail($mimetype)
 		{
-			$img = null;
-			$fillbackground = false;
-			if		($mimetype == 'image/jpeg')	{ $img = imagecreatefromjpeg(GALLERYDIR.'/'.$this->_url); }
-			elseif	($mimetype == 'image/png')	{ $img = imagecreatefrompng(GALLERYDIR.'/'.$this->_url); $fillbackground = true; }
-			elseif	($mimetype == 'image/gif')	{ $img = imagecreatefromgif(GALLERYDIR.'/'.$this->_url); $fillbackground = true; }
-			else								{ $img = imagecreatefromjpeg(GALLERYNOPREVIEW); }
-			
-			if ($img != null)
+			if (extension_loaded('gd'))
 			{
-				$dims = $this->GetDimensions($img);
-				$tmp_img = imagecreatetruecolor($dims['newwidth'], $dims['newheight']);
-				if ($fillbackground)
+				$img = null;
+				$fillbackground = false;
+				if		($mimetype == 'image/jpeg')	{ $img = imagecreatefromjpeg(GALLERYDIR.'/'.$this->_url); }
+				elseif	($mimetype == 'image/png')	{ $img = imagecreatefrompng(GALLERYDIR.'/'.$this->_url); $fillbackground = true; }
+				elseif	($mimetype == 'image/gif')	{ $img = imagecreatefromgif(GALLERYDIR.'/'.$this->_url); $fillbackground = true; }
+				else								{ $img = imagecreatefromjpeg(GALLERYNOPREVIEW); }
+				
+				if ($img != null)
 				{
-					$white = imagecolorallocate($tmp_img,  255, 255, 255);
-					imagefilledrectangle($tmp_img, 0, 0, $dims['width'], $dims['height'], $white);
+					$dims = $this->GetDimensions($img);
+					$tmp_img = imagecreatetruecolor($dims['newwidth'], $dims['newheight']);
+					if ($fillbackground)
+					{
+						$white = imagecolorallocate($tmp_img,  255, 255, 255);
+						imagefilledrectangle($tmp_img, 0, 0, $dims['width'], $dims['height'], $white);
+					}
+					imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $dims['newwidth'], $dims['newheight'], $dims['width'], $dims['height']);
+					imagejpeg($tmp_img, $this->_thumbnail, 85);
 				}
-				imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $dims['newwidth'], $dims['newheight'], $dims['width'], $dims['height']);
-				imagejpeg($tmp_img, $this->_thumbnail, 85);
 			}
 		}
 		

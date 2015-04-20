@@ -212,7 +212,7 @@ class CustomAdministrationPage
 		$form->AddTextField('tags', 'Tags: ', $post->GetTagCollection());
 		
 		$form->AddContainer(new AdminBox('What&apos;s on your mind?'), 'box2');
-		$form->AddTextField('content', 'Content: ', $post->GetFullText(), 5);
+		$form->AddTextField('content', 'Content: ', $post->GetFullText(false), 10);
 		$form->AddButton('submit', 'Post it!');
 		
 		$html->AddChild($form);

@@ -17,19 +17,35 @@ if (defined('reiZ') or exit(1))
 		
 		public function Initialize()
 		{
-			foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERCLASSES.'/*.php') as $classfile) { include_once($classfile); }
-			foreach (glob(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERLAYOUT.'/*.inc') as $classfile) { include_once($classfile); }
-			$this->_stylesheets = array(FOLDERMODULES.'/'.$this->_name.'/'.FOLDERSTYLES.'/style.css');
-			$this->_javascripts = array(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/hider.js');
+			if (!$this->_initialized)
+			{
+				parent::Initialize();
+				$GLOBALS['HTML']->AddJavascript(FOLDERCOMMON.'/'.FOLDERSCRIPTS.'/hider.js');
+			}
 		}
 		
-		public function GetHtml()
+		public function GetHtml($section=null, $args=null)
 		{
-			if ($this->_html == null)
+			$return;
+			if ($section == null)
 			{
-				$this->GenerateHtml();
+				if ($this->_html == null)
+				{
+					$this->GenerateHtml();
+				}
+				$return = $this->_html;
 			}
-			return $this->_html;
+			else
+			{
+				switch ($section)
+				{
+					case "rightpane":
+						$return = $this->GetHtml_RightPane();
+						break;
+				}
+				
+			}
+			return $return;
 		}
 		
 		public function GetHtml_HiddenInfo()
@@ -46,9 +62,12 @@ if (defined('reiZ') or exit(1))
 			return $return;
 		}
 		
-		public function TranslateBreadcrumb($string)
+		public function GetTitleFromUrl($url)
 		{
-			return false;
+			$result = false;
+			$folder = new FilesFolder($url, false);
+			if ($folder->GetTitle() != EMPTYSTRING) { $result = $folder->GetTitle(); }
+			return $result;
 		}
 		
 		private function GenerateHtml()
@@ -171,16 +190,17 @@ if (defined('reiZ') or exit(1))
 		
 		public function GetSettings()
 		{
-			$settings = new Settings();
-			$settings->Add('FILESDIR',			'File directory',			ST::String,	FOLDERFILES.'/public');
-			$settings->Add('FILESDEFAULTTITLE',	'Default Title',			ST::String,	'Files');
-			$settings->Add('FILESDEFAULTTEXT',	'Default Text',				ST::String,	'&nbsp;');
-			$settings->Add('FILESPREVLINKTEXT',	'Text on "Back" button',	ST::String,	'Back to previous folder');
-			
+			$settings = new Settings($this->GetConfigFile());
+			$settings->Add('FILESDIR',				'File directory',				ST::StringValue,	FOLDERFILES.'/public');
+			$settings->Add('FILESDEFAULTTITLE',	'Default Title',				ST::StringValue,	'Files');
+			$settings->Add('FILESDEFAULTTEXT',	'Default Text',				ST::StringValue,	'&nbsp;');
+			$settings->Add('FILESPREVLINKTEXT',	'Text on "Back" button',	ST::StringValue,	'Back to previous folder');
+			$settings->Load();
 			return $settings;
 		}
 	}
 	
-	$GLOBALS['MODULES'][] = new FilesModule(false);
+	Module::Register(new FilesModule());
+	//$GLOBALS['MODULES'][] = new FilesModule(false);
 }
 ?>
