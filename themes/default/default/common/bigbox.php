@@ -19,5 +19,8 @@ if (defined('reiZ') or exit(1))
 	$HTML->AddElement(new HtmlElement('span', 'id="bigbox-logo"', '&nbsp;'), 'bigbox', 'logo');
 	$HTML->AddElement(new HtmlElement('span', 'id="bigbox-title"', WEBSITETITLE), 'bigbox', 'title');
 	$HTML->AddElement(new HtmlElement('div', 'id="bigbox-content"'), 'bigbox', 'content');
+	$HTML->AddElement(new HtmlElement(), 'content', 'contenttop');
+	$HTML->AddElement(new HtmlElement(), 'content', 'contentmain');
+	$HTML->AddElement(new HtmlElement(), 'content', 'contentbottom');
 }
 ?>

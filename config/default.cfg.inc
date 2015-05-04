@@ -7,12 +7,17 @@ wasn't set in the user config file.
 
 if (defined('reiZ') or exit(1))
 {
-	if (!defined("DEBUG"))				define("DEBUG",				true);
-	if (!defined("DISPLAYERRORS"))		define("DISPLAYERRORS",		true);
-	if (!defined("CLEANURL"))			define("CLEANURL",			true);
-	if (!defined("ONELINEOUTPUT"))		define("ONELINEOUTPUT",		true);
+	/* THEME OPTIONS */
+	/* TODO: Move to theme config eventually */
+	if (!defined("ALLOWMOUSE"))		define("ALLOWMOUSE",			true);
+	if (!defined("RESPONSIVE"))		define("RESPONSIVE",			false);
 	
-	if (!defined("URLROOT"))			define("URLROOT",			"http://localhost");
+	if (!defined("DEBUG"))				define("DEBUG",				true);
+	if (!defined("DISPLAYERRORS"))	define("DISPLAYERRORS",		true);
+	if (!defined("CLEANURL"))			define("CLEANURL",			true);
+	if (!defined("ONELINEOUTPUT"))	define("ONELINEOUTPUT",		true);
+	
+	if (!defined("URLROOT"))			define("URLROOT",				"http://localhost");
 	if (!defined("WEBSITETITLE"))		define("WEBSITETITLE",		"A new reiZ website");
 	if (!defined("INDEXPAGE"))			define("INDEXPAGE",			"home");
 	if (!defined("LOGINPAGE"))			define("LOGINPAGE",			"login");
@@ -21,7 +26,7 @@ if (defined('reiZ') or exit(1))
 	
 	if (!defined("DEFAULTTHEME"))		define("DEFAULTTHEME",		"default");
 	if (!defined("DEFAULTSITE"))		define("DEFAULTSITE",		"default");
-	if (!defined("DEFAULTMASTER"))		define("DEFAULTMASTER",		"default");
+	if (!defined("DEFAULTMASTER"))	define("DEFAULTMASTER",		"default");
 	if (!defined("DEFAULTMASTERID"))	define("DEFAULTMASTERID",	1);
 	if (!defined("DEFAULTPAGE"))		define("DEFAULTPAGE",		"default");
 	
@@ -31,12 +36,12 @@ if (defined('reiZ') or exit(1))
 	if (!defined("DBVENDOR")) 			define("DBVENDOR",			"mysqli");
 	if (!defined("DBPREFIX")) 			define("DBPREFIX",			"reiZ_");
 	if (!defined("DBSERVER")) 			define("DBSERVER",			"localhost");
-	if (!defined("DBDATABASE"))			define("DBDATABASE",		"reiZ");
-	if (!defined("DBUSERNAME"))			define("DBUSERNAME",		"root");
-	if (!defined("DBPASSWORD"))			define("DBPASSWORD",		"");
-	if (!defined("DBENCODING"))			define("DBENCODING",		"utf8");
+	if (!defined("DBDATABASE"))		define("DBDATABASE",			"reiZ");
+	if (!defined("DBUSERNAME"))		define("DBUSERNAME",			"root");
+	if (!defined("DBPASSWORD"))		define("DBPASSWORD",			"");
+	if (!defined("DBENCODING"))		define("DBENCODING",			"utf8");
 
 	if (!defined("MAINTENANCEMODE"))	define("MAINTENANCEMODE",	false);
-	if (!defined("MAINTENANCEIP"))		define("MAINTENANCEIP",		"127.0.0.1");
+	if (!defined("MAINTENANCEIP"))	define("MAINTENANCEIP",		"127.0.0.1");
 }
 ?>

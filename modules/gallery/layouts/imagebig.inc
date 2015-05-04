@@ -26,12 +26,19 @@ class HtmlElement_Gallery_BigImage extends HtmlElement
 			
 			parent::__construct('div', $attr, EMPTYSTRING);
 			
-			$this->AddChild(
-				new HtmlElement('a', 'href="'.URLROOT.'/'.$image->GetLink().'"'.$lightbox.EMPTYSTRING, EMPTYSTRING,
+			/*$this->AddChild(
+				new HtmlElement('a', 'href="'.URLROOT.'/'.$image->GetLink().'"'.$lightbox, EMPTYSTRING,
 					array(
 						new HtmlElement('img', 'src="'.URLROOT.'/'.$image->GetLink().'" alt="'.$image->GetName().'"'),
 						new HtmlElement('span', 'class="name"', $image->GetTitle())
 					)
+				)
+			);*/
+			
+			parent::__construct('a', 'href="'.URLROOT.'/'.$image->GetLink().'"'.$attr.$lightbox, EMPTYSTRING,
+				array(
+					new HtmlElement('img', 'src="'.URLROOT.'/'.$image->GetThumbnail().'" alt="'.$image->GetName().'"'),
+					new HtmlElement('span', 'class="name"', $image->GetTitle())
 				)
 			);
 		}

@@ -40,11 +40,47 @@ if (defined('reiZ') or exit(1))
 		
 		//public function SetContent($HtmlElement)	{ $this->_content = $HtmlElement; }
 		
-		public function AddStylesheet($filename)	{ array_push($this->_stylesheets, new HtmlElement('link', 'rel="stylesheet" type="text/css" href="'.URLROOT.'/'.$filename.'"')); }
-		public function AddJavascript($filename)	{ array_push($this->_javascripts, new HtmlElement('script', 'src="'.URLROOT.'/'.$filename.'"')); }
-		//public function AddToHead($HtmlElement)		{ $this->_head->AddChild($HtmlElement); }
-		//public function AddToBody($HtmlElement)		{ $this->_body->AddChild($HtmlElement); }
-		//public function AddContent($HtmlElement)	{ $this->_content->AddChild($HtmlElement); }
+		/*public function AddStylesheet($filename)				{ array_push($this->_stylesheets, new HtmlElement('link', 'rel="stylesheet" type="text/css" href="'.URLROOT.'/'.$filename.'"')); }
+		public function AddJavascript($filename)					{ array_push($this->_javascripts, new HtmlElement('script', 'src="'.URLROOT.'/'.$filename.'"')); }*/
+		//public function AddStylesheet($filename, $args=null)	{ if (!reiZ::SetAndNotNull($this->_stylesheets, $filename)) { $this->_stylesheets[$filename] = new HtmlElement('link', 'rel="stylesheet" type="text/css" href="'.URLROOT.'/'.$filename.'"'); } }
+		//public function AddJavascript($filename, $args=null)	{ if (!reiZ::SetAndNotNull($this->_javascripts, $filename)) { $this->_javascripts[$filename] = new HtmlElement('script', 'src="'.URLROOT.'/'.$filename.'"'); } }
+		public function AddStylesheet($filename, $args=null)	{ $this->_stylesheets[$filename] = new HtmlElement('link', 'rel="stylesheet" type="text/css" href="'.URLROOT.'/'.$filename.'"'.$args); }
+		public function AddJavascript($filename, $args=null)	{ $this->_javascripts[$filename] = new HtmlElement('script', 'src="'.URLROOT.'/'.$filename.'"'.$args); }
+		
+	/*	private function AddTo($collection, $name, $args=null)
+		{
+			$type = EMPTYSTRING;
+			if ($args != null)
+			{
+				if (is_string($args))
+				{
+					if (!reiZ::string_beginswith($args, SINGLESPACE)) { $args = SINGLESPACE.$args; }
+				}
+				else { $args = null; }
+			}
+			
+			if ($collection == $this->_javascripts)
+			{
+				echo 'DING!';
+				$type = 'script';
+				$args = 'src="'.URLROOT.'/'.$name.'"'.$args;
+			}
+			elseif ($collection == $this->_stylesheets)
+			{
+				echo 'DONG!';
+				$type = 'link';
+				$args = 'rel="stylesheet" type="text/css" href="'.URLROOT.'/'.$filename.'"'.$args;
+			}
+			
+			if (!reiZ::SetAndNotNull($collection, $name))
+			{
+				$collection[$name] = new HtmlElement($type, $args);
+			}
+		}*/
+		
+		//public function AddToHead($HtmlElement)					{ $this->_head->AddChild($HtmlElement); }
+		//public function AddToBody($HtmlElement)					{ $this->_body->AddChild($HtmlElement); }
+		//public function AddContent($HtmlElement)				{ $this->_content->AddChild($HtmlElement); }
 		public function SetPointer($name)			{ $this->_pointer = $this->_references[$name]; }
 		
 		public function AddElement($HtmlElement, $inelement=null, $registeras=null, $index=null)
@@ -120,6 +156,10 @@ if (defined('reiZ') or exit(1))
 		{
 			$html = EMPTYSTRING;
 			$headprocessed = false;
+			
+			// To make sure that stylesheets are always loaded in the same order (important for some rules), sort the stylesheet collection
+			// TODO: This wont always be the preferable solution so a "weight" or "importance" system might need to be implemented
+			sort($this->_stylesheets);
 			
 			foreach ($this->_stylesheets as $stylesheet) { $this->_references['HEAD']->AddChild($stylesheet); }
 			foreach ($this->_javascripts as $javascript) { $this->_references['HEAD']->AddChild($javascript); }

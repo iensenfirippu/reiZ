@@ -5,10 +5,10 @@ class HtmlElement_Gallery_SubFolder extends HtmlElement
 	{
 		if (is_a($folder, "GalleryFolder"))
 		{
-			$attr = 'class="gallerylink"';
+			$attr = ' class="gallerylink"';
 			if ($folder->HasInfo())
 			{
-				$attr .= ' onmouseover="showdiv(\''.$folder->GetHideId().'\')"';
+				$attr .= ' onmouseover="showdiv(\''.$folder->GetHideId().'\')" onfocus="showdiv(\''.$folder->GetHideId().'\')"';
 				$module->GetHtml_HiddenInfo()->AddChild(
 					new HtmlElement('div', 'id="'.$folder->GetHideId().'" class="hidden"', EMPTYSTRING,
 						array(
@@ -39,13 +39,20 @@ class HtmlElement_Gallery_SubFolder extends HtmlElement
 				$gallerypreview->AddChild(new HtmlElement('img', 'class="gallerythumbnail" src="'.URLROOT.INDEXFILE.URLPAGE.$image->GetThumbnail().'" alt="'.$image->GetName().'"', EMPTYSTRING));				
 			}
 			
-			parent::__construct('div', $attr);
+			/*parent::__construct('div', $attr);
 			$this->AddChild(
 				new HtmlElement('a', 'href="'.URLROOT.INDEXFILE.URLPAGE.$module->GetName().URLARGS.$folder->GetLink().'"', EMPTYSTRING,
 					array(
 						new HtmlElement('div', 'class="gallerylinktitle"', $folder->GetTitle()),
 						$gallerypreview
 					)
+				)
+			);*/
+			
+			parent::__construct('a', 'href="'.URLROOT.INDEXFILE.URLPAGE.$module->GetName().URLARGS.$folder->GetLink().'"'.$attr, EMPTYSTRING,
+				array(
+					new HtmlElement('div', 'class="gallerylinktitle" style="text-decoration: none;"', $folder->GetTitle()),
+					$gallerypreview
 				)
 			);
 		}

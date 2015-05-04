@@ -5,7 +5,7 @@ class HtmlElement_Blog_PostTags extends HtmlElement
 	{
 		if (is_array($tags))
 		{
-			parent::__construct();//'ul', 'class="posttags"', EMPTYSTRING);
+			parent::__construct('div', 'class="blogposttags"', EMPTYSTRING);
 			foreach ($tags as $tag)
 			{
 				$this->AddChild(new HtmlElement_Blog_PostTag($module, $tag));

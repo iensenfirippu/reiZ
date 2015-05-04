@@ -15,7 +15,7 @@ if (defined('reiZ') or exit(1))
 		new HtmlElement('a', 'class="toplink-right" href="#top"', 'To top')), 'right', 'right-fixed');
 	
 	$HTML->SetPointer('content');
-	$HTML->AddElement(new HtmlElement('div', EMPTYSTRING, $PAGE->GetContent()), 'content');
+	$HTML->AddElement(new HtmlElement('div', EMPTYSTRING, $PAGE->GetContent()), 'contentmain');
 	
 	$HTML->AddElement($PAGE->GetModule()->GetHtml('rightpane'), 'right-fixed');
 }
