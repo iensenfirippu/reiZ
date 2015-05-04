@@ -79,7 +79,12 @@
 	text-decoration: none;
 }
 
-.blogpost .bottom a {
+.blogposttags {
+	margin: 0;
+	padding: 0;
+}
+
+.blogposttags a {
 	display: block;
 	z-index: 2;
 	float: left;
@@ -93,7 +98,7 @@
 	font-weight: bold;
 }
 
-.blogpost .bottom a:hover {
+.blogposttags a:hover {
 	color: #666666;
 	box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.5);
 }
@@ -104,7 +109,6 @@
 
 .blogcategories, .blogtags {
 	display: block;
-	width: 144px;
 	margin: 0px;
 	padding: 0px;
 	

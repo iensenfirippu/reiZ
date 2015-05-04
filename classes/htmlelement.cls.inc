@@ -8,9 +8,9 @@
 if (defined('reiZ') or exit(1))
 {
 	// Tags to be protected from single tag closing (<tag />)
-	define("NONCLOSINGELEMENTS", "!doctype");			// Tags that must not be closed in any way
-	define("NONVOIDELEMENTS", "script|a|div|textarea");	// Tags that must not be closed by "/>"
-	define("PRESERVECONTENTS", "textarea");				// Tags which contents must not be altered (i.e. indented)
+	define("NONCLOSINGELEMENTS", "!doctype");								// Tags that must not be closed in any way
+	define("NONVOIDELEMENTS", "ul|script|a|div|textarea|article");	// Tags that must not be closed by "/>"
+	define("PRESERVECONTENTS", "textarea");								// Tags which contents must not be altered (i.e. indented)
 	
 	if (ONELINEOUTPUT) {
 		define("OUTPUTNEWLINE",	EMPTYSTRING);
@@ -33,14 +33,17 @@ if (defined('reiZ') or exit(1))
 		protected $_containers = array();
 		protected $_pointer = null;
 		
-		public function GetIndent()			{ return $this->_indent; }
+		public function GetIndent()		{ return $this->_indent; }
 		public function GetOneline()		{ return ($this->_oneline == true); }
 		public function GetTag()			{ return $this->_tag; }
-		public function GetAttributes()		{ return $this->_attributes; }
+		public function GetAttributes()	{ return $this->_attributes; }
 		public function GetContent()		{ return $this->_content; }
 		public function GetChildren()		{ return $this->_children; }
 		public function HasChildren()		{ return sizeof($this->_children) > 0; }
 		
+		public function SetTag($value)			{ if (is_string($value)) { $this->_tag = $value; } }
+		public function SetAttributes($value)	{ if (is_string($value)) { $this->_attributes = $value; } }
+		public function SetContent($value)		{ if (is_string($value)) { reiZ::EnforceProperLineEndings($this->_content = $value); } }
 		public function SetOneline()		{ $this->_oneline = 1; }
 		
 		public function __construct($tag=EMPTYSTRING, $attributes=EMPTYSTRING, $content=EMPTYSTRING, $child=null)
@@ -85,9 +88,6 @@ if (defined('reiZ') or exit(1))
 			
 			return trim($result);
 		}
-		
-		//public function SetIndent($int)	{ $this->_indent = $int; UpdateChildren(); }
-		public function SetContent($content) { $this->_content = reiZ::EnforceProperLineEndings($content); }
 		
 		/* Added container stuff */
 		

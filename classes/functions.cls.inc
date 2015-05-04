@@ -743,9 +743,10 @@ if (defined('reiZ') or exit(1))
 		 * Returns the amount of ms it takes to run a given function a given amount of times
 		 * @param function, the function to call.
 		 * @param times, the amount of times to call.
+		 * @param args, the arguments to feed into the function.
 		 * @param obj, object to call the function on.
 		 */
-		public static function Stress($function, $times=100, $obj=null)
+		public static function Stress($function, $times=100, $args=null, $obj=null)
 		{
 			$result = true;
 			$start = microtime(true);
@@ -754,18 +755,36 @@ if (defined('reiZ') or exit(1))
 			{
 				if ($obj == null && function_exists($function))
 				{
-					for ($i = 0; $i < $times; $i++) { call_user_func($function); }
+					if ($args == null)
+					{
+						for ($i = 0; $i < $times; $i++) { call_user_func($function); }
+					}
+					/*elseif (is_array($args))
+					{
+						for ($i = 0; $i < $times; $i++) { call_user_func($function, $args); }
+					}*/
+					else
+					{
+						for ($i = 0; $i < $times; $i++) { call_user_func($function, $args); }
+					}
 				}
 				elseif ($obj != null && method_exists($obj, $function))
 				{
-					for ($i = 0; $i < $times; $i++) { call_user_func(array($obj, $function)); }
+					if ($args == null)
+					{
+						for ($i = 0; $i < $times; $i++) { call_user_func(array($obj, $function)); }
+					}
+					else
+					{
+						for ($i = 0; $i < $times; $i++) { call_user_func(array($obj, $function, $args)); }
+					}
 				}
 				else { $result = false; }
 			}
 			else { $result = false; }
 			
 			if ($result) { $result = round((microtime(true) - $start) * 1000); }
-			return $result;
+			return $result."ms";
 		}
 	}
 	

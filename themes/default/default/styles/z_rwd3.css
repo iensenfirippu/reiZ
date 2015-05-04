@@ -1,0 +1,21 @@
+/* viewports between 1100 and 1300 */
+
+/* from common.css */
+#troll-text				{ width: 600px; }
+
+#wrapper					{ width: 1050px; }
+#top						{ width: 1044px; }
+#bottom					{ width: 1004px; }
+
+#left-fixed				{ width: 144px; }
+#logo						{ width: 100px; }
+ul.menu a				{ width: 100px; }
+ul.menu a.selected	{ width: 120px; }
+
+/* from default.css */
+#content { width: 730px; }
+
+#right-fixed { width: 144px; }
+
+/* from wide.css */
+#widecontent { width: 877px; }

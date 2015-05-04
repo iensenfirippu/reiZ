@@ -1,3 +1,9 @@
+a {
+	position: relative;
+	text-decoration: none;
+	color: #3EB0FF;
+}
+
 html, body, div {
 	margin: 0;
 	padding: 0;
@@ -30,6 +36,55 @@ hr {
 	background-color: #cccccc;
 }
 
+/* for red logo highlight style */
+a:focus {
+	z-index: 1000 !important;
+	outline: none;
+	text-decoration: none;
+}
+
+/* reiZ HIGHLIGHT	*/		a:focus { color: #ffffff !important; border-color: #3EB0FF; background-color: #3EB0FF; box-shadow: 0 0 10px 10px #3EB0FF !important; }
+/* if.dk HIGHLIGHT 		a:focus { color: #ffffff !important; border-color: #F33A3A; background-color: #F33A3A; box-shadow: 0 0 10px 10px #F33A3A !important; } */
+/* BLUE HIGHLIGHT			a:focus { color: #ffffff !important; border-color: #4488FF; background-color: #4488FF; box-shadow: 0 0 10px 10px #4488FF !important; } */
+/* RED HIGHLIGHT			a:focus { color: #ffffff !important; border-color: #FF6464; background-color: #FF6464; box-shadow: 0 0 10px 10px #FF6464 !important; } */
+/* GREEN HIGHLIGHT 		a:focus { color: #ffffff !important; border-color: #00C800; background-color: #00C800; box-shadow: 0 0 10px 10px #00C800 !important; } */
+
+#troll-overlay {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	top: 0;
+	background-color: rgba(0, 0, 0, 0);
+	z-index: 1002;
+}
+
+#troll-text {
+	position: relative;
+	
+	width: 400px;
+	height: 200px;
+	margin-top: 100px;
+	margin-right: auto;
+	margin-left: auto;
+	padding: 25px;
+	background: #FF0000;
+	background-image: url('/common/images/reiz/troll_face.png');
+	background-repeat: no-repeat;
+	background-position: 100px 100px;
+	border: 2px solid #FFFFFF;
+	border-radius: 25px;
+	box-shadow: 0 0 500px 500px rgba(0,0,0,.75);
+	
+	text-align: center;
+	z-index: -1;
+}
+
+#troll-text span {
+	display: block;
+	margin-bottom: 10px;
+}
+
 #wrapper {
 	margin-left: auto;
 	margin-right: auto;
@@ -38,8 +93,6 @@ hr {
 
 #main {
 	position: relative;
-	
-	/*background-color: yellow;*/
 }
 
 #top {
@@ -112,6 +165,31 @@ hr {
 	width: 100px;
 	
 	background-image: url('/common/images/reiz/logo_100.png');
+}
+
+.hiddenlink a {
+	padding: 5px 10PX;
+	position: absolute;
+	top: -50px;
+	left: 0px;
+	font-size: 14px;
+	font-weight: bold;
+	border-bottom-right-radius: 10px;
+	/* Fade out, not needed
+	-webkit-transition: top 1s ease-out;
+    transition: top 1s ease-out;
+	border: 3px solid #ffffff;
+	border-top: none;
+	border-left: none;*/
+   z-index: 100;
+}
+
+.hiddenlink a:focus {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	-webkit-transition: top .1s ease-in;
+   transition: top .1s ease-in;
 }
 
 .toplink-left { left: 15px; }

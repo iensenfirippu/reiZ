@@ -1,13 +1,15 @@
 <?php
 /*#######################################################
-# reiZ php OOP CMS (initially created for iensenfrippu.dk)
+# reiZ php OOP CMS (initially created for iensenfirippu.dk)
 # Copyright 2015 Philip Jensen <me@iensenfrippu.dk>
 #######################################################*/
 
+// We use output buffering to ensure that no output is sent to the user until the entire requets has been completed.
+// (since the only echo statement in the entire code is in the very end, the only output that this should catch, is errors and warnings)
 ob_start();
 
-define("STARTTIME", microtime(true));
-define("reiZ", true);
+define("STARTTIME", microtime(true)); // for calculating the processing time
+define("reiZ", true); // this value is checked by all class files, to ensure that they are not being run individually 
 session_start();
 include_once("classes/defines.inc");
 
@@ -16,13 +18,14 @@ $HTML = null;
 $THEME = null;
 $PAGE = null;
 //$MODULE = null;
+//$PROCESSQUEUE = new ProcessQueue();
 $MODULES = array();
 $ARGS = null;
 $HIDDENINDEX = 0;
 
-foreach (glob(FOLDERCLASSES."/*.typ.inc") as $classfile) { include_once($classfile); }
-foreach (glob(FOLDERCLASSES."/*.cls.inc") as $classfile) { include_once($classfile); }
-	
+// include all class files
+include_once("classes/include.inc");
+
 if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 {
 	// TODO: Change to maintenance mode specific theme
@@ -34,7 +37,6 @@ else
 {
 	$input_p = reiZ::GetSafeArgument(GETPAGE);
 	$ARGS = explode('/', reiZ::GetSafeArgument(GETARGS));
-	//moved to database.cls.inc: if (class_exists('Database') && class_exists('Query')) { $DB = new Database(); }
 	
 	// if database not connected
 	if ($DB == null || !$DB->IsConnected())

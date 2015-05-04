@@ -9,7 +9,8 @@ if (defined('reiZ') or exit(1))
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/default.php');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/wide.css');
 	
+	$HTML->GetReference('content')->SetAttributes('id="widecontent"');
 	$HTML->SetPointer('content');
-	$HTML->AddElement(new HtmlElement('div', '', $PAGE->GetContent()));
+	$HTML->AddElement(new HtmlElement('div', EMPTYSTRING, $PAGE->GetContent()), 'contentmain');
 }
 ?>

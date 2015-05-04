@@ -14,17 +14,19 @@ class HtmlElement_Blog_Posts extends HtmlElement
 				{
 					$pagination = new Pagination($module->GetFullUrl(), $count, BLOGPOSTPRPAGE, $page);
 				}
-				if (BLOGPAGINATIONINTOP) { $this->AddChild($pagination); }
+				if (BLOGPAGINATIONINTOP) { $GLOBALS['HTML']->AddElement($pagination, 'contenttop'); }
 			}
+			
+			//reiZ::vd($GLOBALS['HTML']);
 			
 			$full = (sizeof($posts) == 1);
 			// Print the fetched posts
 			foreach ($posts as $post)
 			{
-				$this->AddChild(new HtmlElement_Blog_Post($module, $post, $full, $page));
+				$this->AddToContainer(new HtmlElement_Blog_Post($module, $post, $full, $page));
 			}
 			
-			if ($pagination != null && BLOGPAGINATIONINBOTTOM) { $this->AddChild($pagination); }
+			if ($pagination != null && BLOGPAGINATIONINBOTTOM) { $GLOBALS['HTML']->AddElement($pagination, 'contentbottom'); }
 		}
 		else { parent::__construct(); }
 	}
