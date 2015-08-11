@@ -8,9 +8,10 @@
 if (defined('reiZ') or exit(1))
 {
 	// Tags to be protected from single tag closing (<tag />)
-	define("NONCLOSINGELEMENTS", "!doctype");								// Tags that must not be closed in any way
-	define("NONVOIDELEMENTS", "ul|script|a|div|textarea|article");	// Tags that must not be closed by "/>"
-	define("PRESERVECONTENTS", "textarea");								// Tags which contents must not be altered (i.e. indented)
+	define("NONCLOSINGELEMENTS", "!doctype");																									// Tags that must not be closed in any way
+	define("NONVOIDELEMENTS", "|ul|script|a|tr|td|div|textarea|article|");																// Tags that must NOT be closed by "/>"
+	define("VOIDELEMENTS", "|area|base|br|col|command|embed|hr|img|input|keygen|link|meta|param|source|track|wbr|");		// Tags that MUST be closed by "/>"
+	define("PRESERVECONTENTS", "textarea");																									// Tags which contents must not be altered (i.e. indented)
 	
 	if (ONELINEOUTPUT) {
 		define("OUTPUTNEWLINE",	EMPTYSTRING);
@@ -156,11 +157,18 @@ if (defined('reiZ') or exit(1))
 		
 		public function __tostring()
 		{
+			$newline = false;
+			return $this->ToString($newline);
+		}
+		
+		public function ToString(&$newline)
+		{
 			$return = EMPTYSTRING;
 			if ($this->_tag != EMPTYSTRING)
 			{
-				if ($this->_oneline <= 1) { $return = str_repeat(OUTPUTINDENT, $this->_indent); }
-				$return .= "<".$this->_tag;
+				if ($newline) { $return .= OUTPUTNEWLINE; } else { $newline = true; }
+				if ($this->_oneline <= 1) { $return .= str_repeat(OUTPUTINDENT, $this->_indent); }
+				$return .= '<'.$this->_tag;
 				if ($this->_attributes != EMPTYSTRING) { $return .= " ".$this->_attributes; }
 				if ($this->_endtag != EMPTYSTRING) { $return .= $this->_endtag.">"; }
 				else
@@ -178,45 +186,54 @@ if (defined('reiZ') or exit(1))
 									preg_replace($search, $replace, $this->_content).
 									OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";*/
 								
-								$return .= ">";
+								$return .= '>';
 								foreach (explode(NEWLINE, $this->_content) as $line)
 								{
 									if ($line == EMPTYSTRING || $line[strlen($line) -1] != '>') { $line .= '<br />'; }
 									$return .= OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent + 1).$line;
 								}
-								$return .= OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
+								$return .= OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent).'</'.$this->_tag.'>';
 							}
-							else { $return .= ">".$this->_content."</".$this->_tag.">"; }
+							else { $return .= '>'.$this->_content.'</'.$this->_tag.'>'; }
 						}
-						elseif (strstr(NONCLOSINGELEMENTS, $this->_tag)) { $return .= ">"; }
-						elseif (strstr(NONVOIDELEMENTS, $this->_tag) || $this->_oneline) { $return .= "></".$this->_tag.">"; }
-						else { $return .= " />"; }
+						elseif (strstr(NONCLOSINGELEMENTS, '|'.$this->_tag.'|')) { $return .= '>'; }
+						elseif (strstr(VOIDELEMENTS, '|'.$this->_tag.'|')) { $return .= ' />'; }
+						elseif (strstr(NONVOIDELEMENTS, '|'.$this->_tag.'|') || $this->_oneline) { $return .= '></'.$this->_tag.'>'; }
+						else { $return .= ' />'; }
 					}
 					else
 					{
 						if ($this->_oneline)
 						{
-							$return .= ">";
+							$return .= '>';
 							foreach ($this->_children as $c) { $return .= $c; }
-							$return .= "</".$this->_tag.">";
+							$return .= '</'.$this->_tag.'>';
 						}
 						else
 						{
-							$return .= ">".OUTPUTNEWLINE;
-							if ($this->_content != EMPTYSTRING) { $return .= str_repeat(OUTPUTINDENT, $this->_indent + 1).str_replace("\n", "<br />".OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent), $this->_content).OUTPUTNEWLINE; }
-							foreach ($this->_children as $c) { $return .= $c.OUTPUTNEWLINE; }
-							$return .= str_repeat(OUTPUTINDENT, $this->_indent)."</".$this->_tag.">";
+							$return .= '>'.OUTPUTNEWLINE;
+							if ($this->_content != EMPTYSTRING) { $return .= str_repeat(OUTPUTINDENT, $this->_indent + 1).str_replace("\n", '<br />'.OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent), $this->_content).OUTPUTNEWLINE; }
+							if (sizeof($this->_children) > 0)
+							{
+								$newline = false;
+								foreach ($this->_children as $c) { $return .= $c->ToString($newline); }
+							}
+							$return .= OUTPUTNEWLINE.str_repeat(OUTPUTINDENT, $this->_indent).'</'.$this->_tag.'>';
 						}
 					}
 				}
 			}
 			else
 			{
-				$sizeofchildren = sizeof($this->_children);
-				for ($i = 0; $i < $sizeofchildren; $i++)
+				$sizeofchildren = sizeof($this->_children);	
+				if ($sizeofchildren > 0)
 				{
-					$return .= $this->_children[$i];
-					if ($i != $sizeofchildren -1) { $return .= OUTPUTNEWLINE; }
+					$this->UpdateChildren();
+					
+					// INFO: commenting this line seems to have fixed a double-linebreak issue, but may now cause a no-linebreak in some cases... stay tuned...
+					//if ($newline) { $return .= OUTPUTNEWLINE; }
+					
+					for ($i = 0; $i < $sizeofchildren; $i++) { $return .= $this->_children[$i]->ToString($newline); }
 				}
 			}
 			return $return;

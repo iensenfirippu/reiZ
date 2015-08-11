@@ -1,21 +1,24 @@
 /* viewports between between 950 and 1100 */
 
-/* from common.css */
-#troll-text				{ width: 400px; }
-
-#wrapper					{ width: 925px; }
-#top						{ width: 919px; }
-#bottom					{ width: 879px; }
-
-#left-fixed				{ width: 144px; }
-#logo						{ width: 100px; }
-ul.menu a				{ width: 100px; }
-ul.menu a.selected	{ width: 120px; }
-
-/* from default.css */
-#content { width: 605px; }
-
-#right-fixed { width: 144px; }
-
-/* from wide.css */
-#widecontent { width: 752px; }
+@media only screen and (max-width: 1099px)
+{
+	/* from common.css */
+	#troll-text				{ width: 400px; }
+	
+	#wrapper					{ width: 925px; }
+	#top						{ width: 919px; }
+	#bottom					{ width: 879px; }
+	
+	#left-fixed				{ width: 144px; }
+	#logo						{ width: 100px; }
+	ul.menu a				{ width: 100px; }
+	ul.menu a.selected	{ width: 120px; }
+	
+	/* from default.css */
+	#content { width: 605px; }
+	
+	#right-fixed { width: 144px; }
+	
+	/* from wide.css */
+	#widecontent { width: 752px; }
+}

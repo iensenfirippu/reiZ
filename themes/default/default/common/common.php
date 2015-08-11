@@ -15,6 +15,5 @@ if (defined('reiZ') or exit(1))
 		//'rel="icon" type="image/png" href="'.URLROOT.'/'.$THEME->GetDirectory().'/'.FOLDERIMAGES.'/favicon.png"'));
 	$HTML->AddStylesheet(reiZ::url_append(FOLDERCOMMON, array(FOLDERSTYLES, '/common.css')));
 	$HTML->AddStylesheet(reiZ::url_append($THEME->GetDirectory(), array(FOLDERSTYLES, 'common.css')));
-	$HTML->AddStylesheet(reiZ::url_append($THEME->GetDirectory(), array(FOLDERSTYLES, 'bigbox.css')));
 }
 ?>

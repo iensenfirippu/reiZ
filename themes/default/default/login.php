@@ -13,7 +13,9 @@ if (defined('reiZ') or exit(1))
 	include_once($THEME->GetDirectory().'/'.FOLDERCOMMON.'/bigbox.php');
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
 	
-	$HTML->GetReference('title')->SetContent('Login');
+	/* TODO: fix title overriding
+	$title = $HTML->GetReference('title');
+	if ($title instanceof HtmlElement) { $title->SetContent('Login'); }*/
 	
 	$HTML->SetPointer('content');
 	$loginform = new HtmlForm('login');

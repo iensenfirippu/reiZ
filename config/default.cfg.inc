@@ -1,16 +1,27 @@
 <?php
-/* ################ reiZ CMS #####################
-############## Default Config file ###############
-Sets a default value for all the options that
-wasn't set in the user config file.
-############# DON'T EDIT THIS FILE! ########### */
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	0.1
+// Date:				2015/08/11
+//
+// TODO: Move "Theme options" to theme config eventually
+//------------------------------------------------------------
 
+/* ############# DON'T EDIT THIS FILE! ########### */
+
+// Make sure to check if the script is being run inside "reiZ"
 if (defined('reiZ') or exit(1))
 {
+	// Sets the default values for all the options that wasn't set in the user config file.
+	
 	/* THEME OPTIONS */
-	/* TODO: Move to theme config eventually */
-	if (!defined("ALLOWMOUSE"))		define("ALLOWMOUSE",			true);
-	if (!defined("RESPONSIVE"))		define("RESPONSIVE",			false);
+	if (!defined("KEYBOARDSHORTCUTS"))	define("KEYBOARDSHORTCUTS",	true);
+	if (!defined("ALLOWMOUSE"))			define("ALLOWMOUSE",				true);
+	if (!defined("RESPONSIVE"))			define("RESPONSIVE",				true);
 	
 	if (!defined("DEBUG"))				define("DEBUG",				true);
 	if (!defined("DISPLAYERRORS"))	define("DISPLAYERRORS",		true);

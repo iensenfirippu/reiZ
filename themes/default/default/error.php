@@ -11,6 +11,7 @@ if (defined('reiZ') or exit(1))
 	$HTML->AddStylesheet($THEME->GetDirectory().'/'.FOLDERSTYLES.'/default.css');
 	
 	$HTML->SetPointer('content');
-	// Add something?
+	$HTML->AddElement(new HtmlHeader(1, $PAGE->GetTitle()));
+	$HTML->AddElement(new HtmlText($PAGE->GetContent()));
 }
 ?>

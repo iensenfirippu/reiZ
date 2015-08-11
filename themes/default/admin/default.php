@@ -1,9 +1,15 @@
 <?php
-/*
- * Default theme test
- * Copyright 2013 Iensen Firippu <philip@marugawalite>
- */
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		first deafult theme of administration of reiZ CMS
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	0.1
+// Date:				2015/08/11
+//------------------------------------------------------------
 
+// Make sure to check if the script is being run inside "reiZ"
 if (defined('reiZ') && class_exists('Administration') or exit(1))
 {
 	$HTML = new HtmlDocument('Iensenfirippu.dk');

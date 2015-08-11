@@ -75,8 +75,6 @@
 }
 
 .blogpost .readmore a {
-	color: #000000;
-	text-decoration: none;
 }
 
 .blogposttags {
@@ -121,6 +119,8 @@
 }
 
 .blogcategories li {
+	display: inline-block;
+	width: 100px;
 	margin-bottom: 5px;
 }
 
@@ -157,42 +157,10 @@
 	box-shadow: 2px 2px 0px 0px rgba(0,0,0,0.5);
 }
 
-.pagination {
-}
-
 .paginationtop {
 }
 
 .paginationbottom {
-}
-
-.pagination {
-	margin: 0px;
-	padding: 5px 0px 5px 0px;
-	
-	font-size: 10px;
-}
-
-.pagination .current {
-	font-size: 12px;
-	font-weight: bold;
-}
-
-.pagination li {
-	display: inline-block;
-	width: 20px;
-}
-
-.pagination a {
-	display: block;
-	
-	color: #888888;
-	text-decoration: none;
-}
-
-.pagination a:hover {
-	color: #000000;
-	text-decoration: underline;
 }
 
 /* Frontpage */

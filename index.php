@@ -1,11 +1,17 @@
 <?php
-/*#######################################################
-# reiZ php OOP CMS (initially created for iensenfirippu.dk)
-# Copyright 2015 Philip Jensen <me@iensenfrippu.dk>
-#######################################################*/
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		index behaviour and main entry point for reiZ CMS 
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	0.1
+// Date:				2015/08/11
+//------------------------------------------------------------
 
 // We use output buffering to ensure that no output is sent to the user until the entire requets has been completed.
 // (since the only echo statement in the entire code is in the very end, the only output that this should catch, is errors and warnings)
+// TODO: Catch process and present errors accordingly
 ob_start();
 
 define("STARTTIME", microtime(true)); // for calculating the processing time
@@ -112,6 +118,7 @@ ob_clean();
 
 if (DEBUG && $output != EMPTYSTRING) { echo "\n<br>\n<br>\n<br>\nERROR OCCURED, CHECK SOURCE LOGFILE.<br>\n"; }
 
+//echo str_replace('"wrapper"', '"wrapper-test"', $HTML);
 echo $HTML;
 
 // TODO: implement pre- and post- processing sceduled events (to move EXECUTIONTIME and QUERYCOUNT into module functionality, and allow the gallery to generate thumbnails after the request)

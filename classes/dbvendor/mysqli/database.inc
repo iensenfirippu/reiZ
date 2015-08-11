@@ -1,12 +1,22 @@
 <?php
-/* ################ reiZ CMS #####################
-########### MySqli Database Connection ###########
-Database class for connecting to a MySql Database
-#################### v: 1.0 ################### */
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		MySqli Database Connection
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	0.1
+// Date:				2015/08/10
+//
 // TODO: Implement prepared statements, to protect against SQL injections
+//------------------------------------------------------------
 
+// Make sure to check if the script is being run inside "reiZ"
 if (defined('reiZ') or exit(1))
 {
+	/**
+	 * Database class for connecting to a MySql Database
+	 **/
 	class Database
 	{
 		private $_querycount = 0;

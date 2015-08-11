@@ -111,7 +111,7 @@ class CustomAdministrationPage
 		$posts = Blogpost::LoadAll(null, 0, 50, 'added', DBOD::Desc);
 		
 		$box = new AdminBox('List');
-		$list = new HtmlList(array('Title', 'Posted', 'Edited', EMPTYSTRING));
+		$list = new HtmlList(array('Title', 'Posted', 'Edited', '_'));
 		foreach ($posts as $post)
 		{
 			$links = new HtmlElement();
@@ -123,6 +123,10 @@ class CustomAdministrationPage
 			$list->AddRow(array($post->GetTitle(), reiZ::TimestampToHumanTime($post->GetPosted(), TF::DateTime),
 				reiZ::TimestampToHumanTime($post->GetEdited(), TF::DateTime), $links));
 		}
+		
+		// TODO: Temporary solution
+		$list->Finalize();
+		
 		$box->AddContent($list);
 		
 		$html->AddChild($box);

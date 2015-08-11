@@ -1,21 +1,24 @@
 /* viewports 1600 and up */
 
-/* from common.css */
-#troll-text				{ width:  800px; }
-
-#wrapper					{ width: 1550px; }
-#top						{ width: 1544px; }
-#bottom					{ width: 1504px; }
-
-#left-fixed				{ width:  144px; }
-#logo						{ width:  100px; }
-ul.menu a				{ width:  100px; }
-ul.menu a.selected	{ width:  120px; }
-
-/* from default.css */
-#content { width: 1230px; }
-
-#right-fixed { width: 144px; }
-
-/* from wide.css */
-#widecontent { width: 1377px; }
+/*@media only screen and (min-width: 1600px)
+{
+	/* from common.css */
+	#troll-text				{ width:  400px; }
+	
+	#wrapper					{ width: 1550px; }
+	#top						{ width: 1544px; }
+	#bottom					{ width: 1504px; }
+	
+	#left-fixed				{ width:  144px; }
+	#logo						{ width:  100px; }
+	ul.menu a				{ width:  100px; }
+	ul.menu a.selected	{ width:  120px; }
+	
+	/* from default.css */
+	#content { width: 1230px; }
+	
+	#right-fixed { width: 144px; }
+	
+	/* from wide.css */
+	#widecontent { width: 1377px; }
+}*/
