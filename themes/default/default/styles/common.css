@@ -1,12 +1,8 @@
-a {
-	position: relative;
-	text-decoration: none;
-	color: #3EB0FF;
-}
-
-html, body, div {
-	margin: 0;
+html, body, body * {
+/*html, body, div {*/
 	padding: 0;
+	margin: 0;
+	box-sizing: content-box;
 }
 
 div {
@@ -15,19 +11,27 @@ div {
 body {
 	background-color: #444444;
 	font-family: sans, sans-serif, arial;
-	font-size: 12px;
+	font-size: 75%;
+}
+
+h1, h2, h3, h4, h5 {
+	/*display: inline-block;
+	padding: 0;
+	margin: 0;
+	width: auto;*/
+	border: none;
 }
 
 h1 {
-	font-size: 16px;
+	font-size: 1.3em;
 }
 
 h2 {
-	font-size: 14px;
+	font-size: 1.2em;
 }
 
 h3 {
-	font-size: 12px;
+	font-size: 1.1em;
 }
 
 hr {
@@ -36,18 +40,24 @@ hr {
 	background-color: #cccccc;
 }
 
+a {
+	position: relative;
+	text-decoration: none;
+	color: #3EB0FF;
+	font-size: 1em;
+	outline: none;
+}
+
 /* for red logo highlight style */
 a:focus {
 	z-index: 1000 !important;
-	outline: none;
-	text-decoration: none;
 }
 
-/* reiZ HIGHLIGHT	*/		a:focus { color: #ffffff !important; border-color: #3EB0FF; background-color: #3EB0FF; box-shadow: 0 0 10px 10px #3EB0FF !important; }
-/* if.dk HIGHLIGHT 		a:focus { color: #ffffff !important; border-color: #F33A3A; background-color: #F33A3A; box-shadow: 0 0 10px 10px #F33A3A !important; } */
-/* BLUE HIGHLIGHT			a:focus { color: #ffffff !important; border-color: #4488FF; background-color: #4488FF; box-shadow: 0 0 10px 10px #4488FF !important; } */
-/* RED HIGHLIGHT			a:focus { color: #ffffff !important; border-color: #FF6464; background-color: #FF6464; box-shadow: 0 0 10px 10px #FF6464 !important; } */
-/* GREEN HIGHLIGHT 		a:focus { color: #ffffff !important; border-color: #00C800; background-color: #00C800; box-shadow: 0 0 10px 10px #00C800 !important; } */
+/* reiZ HIGHLIGHT	*/		a:focus, .hiddenlink a { color: #ffffff !important; border-color: #3EB0FF; background-color: #3EB0FF; box-shadow: 0 0 10px 10px #3EB0FF !important; }
+/* if.dk HIGHLIGHT 		a:focus, .hiddenlink a { color: #ffffff !important; border-color: #F33A3A; background-color: #F33A3A; box-shadow: 0 0 10px 10px #F33A3A !important; } */
+/* BLUE HIGHLIGHT			a:focus, .hiddenlink a { color: #ffffff !important; border-color: #4488FF; background-color: #4488FF; box-shadow: 0 0 10px 10px #4488FF !important; } */
+/* RED HIGHLIGHT			a:focus, .hiddenlink a { color: #ffffff !important; border-color: #FF6464; background-color: #FF6464; box-shadow: 0 0 10px 10px #FF6464 !important; } */
+/* GREEN HIGHLIGHT 		a:focus, .hiddenlink a { color: #ffffff !important; border-color: #00C800; background-color: #00C800; box-shadow: 0 0 10px 10px #00C800 !important; } */
 
 #troll-overlay {
 	position: fixed;
@@ -59,28 +69,37 @@ a:focus {
 	z-index: 1002;
 }
 
-#troll-text {
+#troll-wrapper {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	top: 0;
+}
+
+#troll-box {
 	position: relative;
 	
-	width: 400px;
-	height: 200px;
+	width: 50%;
+	max-width: 400px;
+	min-height: 200px;
 	margin-top: 100px;
 	margin-right: auto;
 	margin-left: auto;
-	padding: 25px;
+	padding: 25px 25px 100px 25px;
 	background: #FF0000;
 	background-image: url('/common/images/reiz/troll_face.png');
 	background-repeat: no-repeat;
-	background-position: 100px 100px;
+	background-position: 50% 150px;
 	border: 2px solid #FFFFFF;
 	border-radius: 25px;
 	box-shadow: 0 0 500px 500px rgba(0,0,0,.75);
 	
 	text-align: center;
-	z-index: -1;
+	z-index: 1001;
 }
 
-#troll-text span {
+#troll-box span {
 	display: block;
 	margin-bottom: 10px;
 }
@@ -145,7 +164,7 @@ a:focus {
 	height: 20px;
 	padding: 5px 20px 25px 20px;
 
-	font-size: 10px;
+	font-size: 0.8em;
 	background-color: #888888;
 	border: 3px solid #ffffff;
 	border-bottom: none;
@@ -172,15 +191,11 @@ a:focus {
 	position: absolute;
 	top: -50px;
 	left: 0px;
-	font-size: 14px;
+	font-size: 1.2em;
 	font-weight: bold;
 	border-bottom-right-radius: 10px;
-	/* Fade out, not needed
-	-webkit-transition: top 1s ease-out;
-    transition: top 1s ease-out;
-	border: 3px solid #ffffff;
-	border-top: none;
-	border-left: none;*/
+	-webkit-transition: top .5s ease-out;
+    transition: top .5s ease-out;
    z-index: 100;
 }
 
@@ -199,7 +214,7 @@ a:focus {
 	top: 5px;
 	
 	color: #ffffff;
-	font-size: 10px;
+	font-size: 0.9em;
 	font-weight: bold;
 	text-decoration: none;
 	text-transform: uppercase;
@@ -227,7 +242,7 @@ ul.menu a {
 	padding: 3px;
 	
 	color: #ffffff;
-	font-size: 12px;
+	/*font-size: 1em;*/
 	font-weight: bold;
 	text-decoration: none;
 	text-transform: Capitalize;
@@ -250,14 +265,39 @@ ul.menu a:hover {
 	background-color: #cccccc;
 }
 
-#content h1 {
-	font-size: 16px;
-	margin-bottom: 0px;
-}
-
 #content p {
 	display: block;
 	margin: 10px;
+}
+
+/* Pagination */
+
+.pagination {
+	margin: 0px;
+	padding: 5px 0px 5px 0px;
+	
+	font-size: 10px;
+}
+
+.pagination .current {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.pagination li {
+	display: inline-block;
+	width: 20px;
+}
+
+.pagination a {
+	display: block;
+	
+	/*color: #888888;*/
+	text-decoration: none;
+}
+
+.pagination a:hover {
+	/*color: #000000;*/
 }
 
 /* Lightbox styling */
@@ -303,3 +343,30 @@ ul.menu a:hover {
 	height: 32px !important;
 	background: url('/common/images/oxygen/32/dialog-cancel.png') top right no-repeat !important;
 }
+
+/* Module Specific: Breadcrumbs */
+
+.breadcrumbs span.separator {
+	color: #888888;
+}
+
+/* Cube Fun animation */
+
+@keyframes play { 100% { background-position: 100%; } }
+@keyframes play57 { 100% { background-position: -5600px; } }
+@keyframes play35 { 100% { background-position: -3500px; } }
+
+.anim100 {
+	display: inline-block;
+	
+	height: 100px;
+	width: 100px;
+}
+
+#cube-pll1			{	background-image: url('/common/images/cube/alg/pll/1/static.png'); }
+#cube-pll1:hover	{	background-image: url('/common/images/cube/alg/pll/1/anim.png');
+							animation: play57 2s steps(56) both; }
+
+#cube-spin			{	background-image: url('/common/images/cube/spin/static.png'); }
+#cube-spin:hover	{	background-image: url('/common/images/cube/spin/anim.png');
+							animation: play35 2s steps(35) infinite; }

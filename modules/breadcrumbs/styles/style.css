@@ -1,26 +1,22 @@
 .breadcrumbs {
 	display: block;
 	height: 12px;
-	font-size: 10px;
+	margin-bottom: 10px;
+	font-size: 0.8em;
+	text-align: left;
 	text-transform: capitalize;
 }
 
 .breadcrumbs ul, .breadcrumbs li, .breadcrumbs a, .breadcrumbs span.separator {
-	display: inline; 
+	display: inline;
 }
 
 .breadcrumbs ul {
 	list-style: none;
 }
 
-.breadcrumbs li, .breadcrumbs span.separator {
-	float: left;
-}
-
 .breadcrumbs a, .breadcrumbs span.separator {
 	margin-right: 5px;
-
-	color: #888888;
 }
 
 .breadcrumbs a {
@@ -28,9 +24,4 @@
 }
 
 .breadcrumbs a:hover {
-	color: #555555;
 }
-
-.breadcrumbs span.separator {
-}
-

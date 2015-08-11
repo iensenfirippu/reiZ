@@ -3,7 +3,7 @@
 // Project:		reiZ CMS
 // License:		GPL v2
 //
-// Contents:		HTML link definition
+// Contents:		HTML text definition
 // Created by:		Philip Jensen (me@iensenfirippu.dk)
 // Class version:	0.1
 // Date:				2015/08/11
@@ -13,16 +13,16 @@
 if (defined('reiZ') or exit(1))
 {
 	/**
-	 * Contains the definition of a link (a/anchor) in HTML
+	 * Contains the definition of a text in HTML
 	 **/
-	class HtmlLink extends HtmlElement
+	class HtmlText extends HtmlElement
 	{
-		public function __construct($url=EMPTYSTRING, $name=EMPTYSTRING, $args=null)
+		public function __construct($text=EMPTYSTRING, $args=null, $inline=false)
 		{
 			if ($args == null || !is_array($args)) { $args = array(); }
-			$args['href'] = $url;
 			
-			parent::__construct('a', HtmlElement::ArgsToString($args), $name);
+			$tag = $inline ? 'span' : 'div';
+			parent::__construct($tag, HtmlElement::ArgsToString($args), $text);
 		}
 	}
 }

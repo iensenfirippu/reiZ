@@ -316,10 +316,13 @@ table {
 .table_last_cell {
 	margin: 0;
 	padding: 4px 4px 0 4px;
-    width:1%;
-    white-space:nowrap;
 	border-right: 1px solid #aaaaaa;
 	text-align: right;
+}
+
+.table_compressed_cell {
+   width: 1%;
+   white-space: nowrap;
 }
 
 /* table.header */
@@ -406,6 +409,10 @@ select, input, textarea {
 	/*margin-left: 30%;
 	border-color: #bbbbbb;*/
 	background-color: #dddddd;
+}
+
+.disabled {
+	filter: opacity(0.25) contrast(0.25);
 }
 
 .hidden {

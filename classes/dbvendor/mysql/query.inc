@@ -1,17 +1,26 @@
 <?php
-/************************************************************* /
-/ Query class for containing a Sql query                       /
-/ Created by Philip Rune Jensen (me@iensenfirippu.dk)          /
-/ Version: 1.0.5        Date: 2014/11/24                       /
-/ Latest additions: reorganized class / removed redundant code /
-/					Added DBQT and DBOP Enums                  /
-/                   Added DBPREFIX support                     /
-/                   GroupBy support                            /
-/                   InnerJoin support                          /
-/ *************************************************************/
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		mySQL query definition
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	1.0.5
+// Date:				2014/11/24
+//
+// Latest additions:	reorganized class / removed redundant code
+//							Added DBQT and DBOP Enums
+//							Added DBPREFIX support
+//							GroupBy support
+//							InnerJoin support
+//------------------------------------------------------------
 
+// Make sure to check if the script is being run inside "reiZ"
 if (defined('reiZ') or exit(1))
 {
+	/**
+	 * Query class for containing a Sql query
+	 **/
 	class Query
 	{
 		private $query;

@@ -165,10 +165,12 @@ if (defined('reiZ') or exit(1))
 			foreach ($this->_javascripts as $javascript) { $this->_references['HEAD']->AddChild($javascript); }
 			$this->_stylesheets = array();
 			$this->_javascripts = array();
-				
+			
+			$newline = false;
 			foreach ($this->_elements as $HtmlElement)
 			{
-				$html .= $HtmlElement.OUTPUTNEWLINE;
+				if ($newline) { $html .= OUTPUTNEWLINE; } else { $newline = true; }
+				$html .= $HtmlElement;
 			}
 			
 			return $html;

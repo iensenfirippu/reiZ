@@ -31,7 +31,7 @@ class HtmlElement_Blog_Post extends HtmlElement
 				{
 					$postcontent->AddChild(
 						new HtmlElement('div', 'class="readmore"', EMPTYSTRING,
-							new HtmlElement('a', 'href="'.$baseurl.$post->GetPostID().'/"', '...')
+							new HtmlElement('a', 'href="'.$baseurl.$post->GetPostID().'/"', BLOGREADMORE)
 						)
 					);
 				}

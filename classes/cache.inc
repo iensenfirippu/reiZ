@@ -1,16 +1,25 @@
 <?php
-/*
- * Cache class, for containing cache code
- * Copyright 2015 Iensen Firippu <philip@marugawalite>
- */
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		definition for caching of HTML output 
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	0.1
+// Date:				2015/08/11
+//------------------------------------------------------------
 
+// Make sure to check if the script is being run inside "reiZ"
 if (defined('reiZ') or exit(1))
 {
+	/**
+	 * Contains the definition for caching HTML output
+	 **/
 	class Cache
 	{
 		/**
 		 * Converts requested page URL into a cache filename
-		 **/
+		 **
 		private static function Filename($page)
 		{
 			return reiZ::url_append(FOLDERCACHE, str_replace(SINGLESLASH, SINGLEHYPHEN, $page).'html');

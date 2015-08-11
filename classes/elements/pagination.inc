@@ -1,84 +1,105 @@
 <?php
+//------------------------------------------------------------
+// Project:		reiZ CMS
+// License:		GPL v2
+//
+// Contents:		HTML pagination definition
+// Created by:		Philip Jensen (me@iensenfirippu.dk)
+// Class version:	0.1
+// Date:				2015/08/11
+//------------------------------------------------------------
 
-class Pagination extends HtmlElement
+// Make sure to check if the script is being run inside "reiZ"
+if (defined('reiZ') or exit(1))
 {
-	public function __construct($baseurl, $amount, $perpage, $page)
+	/**
+	 * Contains the definition of paginition in HTML
+	 **/
+	class Pagination extends HtmlElement
 	{
-		if ($amount > $perpage || PAGINATIONSHOWEMPTY)
+		/**
+		 * @param baseurl, the base part of the URL that all links in the paginition shares
+		 * @param amount, the amount of items to divide into pages
+		 * @param perpage, the amount of items per page
+		 * @param page, the currently selected page
+		 **/
+		public function __construct($baseurl, $amount, $perpage, $page)
 		{
-			parent::__construct('ul', 'class="pagination"');
-			$firstpage = 1;
-			$lastpage = ceil($amount / $perpage);
-			$lowerlimit = ($page - PAGINATIONLINKS);
-			$upperlimit = ($page + PAGINATIONLINKS);
-			
-			// First, previous
-			if ($page > $firstpage)
+			if ($amount > $perpage || PAGINATIONSHOWEMPTY)
 			{
-				$this->AddChild(
-					new HtmlElement('li', '', '',
-						new HtmlElement('a', 'href="'.$baseurl.$firstpage.'/"', PAGINATIONFIRST)
-					)
-				);
-				$this->AddChild(
-					new HtmlElement('li', '', '',
-						new HtmlElement('a', 'href="'.$baseurl.($page - 1).'/"', PAGINATIONPREV)
-					)
-				);
-			}
-			else
-			{
-				$this->AddChild(new HtmlElement('li', '', '&nbsp;'));
-				$this->AddChild(new HtmlElement('li', '', '&nbsp;'));
-			}
-			
-			// Available page numbers
-			for ($i = $lowerlimit; $i <= $upperlimit; $i++)
-			{
+				parent::__construct('ul', 'class="pagination"');
+				$firstpage = 1;
+				$lastpage = ceil($amount / $perpage);
+				$lowerlimit = ($page - PAGINATIONLINKS);
+				$upperlimit = ($page + PAGINATIONLINKS);
+				$nolink = new HtmlElement('li', EMPTYSTRING, '&nbsp;');
 				
-				if ($i == $page) { $this->AddChild(new HtmlElement('li', 'class="current"', $page)); }
-				elseif ($i >= $firstpage && $i <= $lastpage)
+				// First, previous
+				if ($page > $firstpage)
 				{
 					$this->AddChild(
-						new HtmlElement('li', '', '',
-							new HtmlElement('a', 'href="'.$baseurl.$i.'/"', $i)
+						new HtmlElement('li', EMPTYSTRING, EMPTYSTRING,
+							new HtmlElement('a', 'href="'.$baseurl.$firstpage.'/"', PAGINATIONFIRST)
+						)
+					);
+					$this->AddChild(
+						new HtmlElement('li', EMPTYSTRING, EMPTYSTRING,
+							new HtmlElement('a', 'href="'.$baseurl.($page - 1).'/"', PAGINATIONPREV)
 						)
 					);
 				}
-				else { $this->AddChild(new HtmlElement('li', '', '&nbsp;')); }
-			}
-			
-			// Next Page, Last Page
-			if ($page < $lastpage)
-			{
-				$this->AddChild(
-					new HtmlElement('li', '', '',
-						new HtmlElement('a', 'href="'.$baseurl.($page + 1).'/"', PAGINATIONNEXT)
-					)
-				);
-				$this->AddChild(
-					new HtmlElement('li', '', '',
-						new HtmlElement('a', 'href="'.$baseurl.$lastpage.'/"', PAGINATIONLAST)
-					)
-				);
+				else
+				{
+					$this->AddChild($nolink);
+					$this->AddChild($nolink);
+				}
+				
+				// Available page numbers
+				for ($i = $lowerlimit; $i <= $upperlimit; $i++)
+				{
+					
+					if ($i == $page) { $this->AddChild(new HtmlElement('li', 'class="current"', $page)); }
+					elseif ($i >= $firstpage && $i <= $lastpage)
+					{
+						$this->AddChild(
+							new HtmlElement('li', EMPTYSTRING, EMPTYSTRING,
+								new HtmlElement('a', 'href="'.$baseurl.$i.'/"', $i)
+							)
+						);
+					}
+					else { $this->AddChild($nolink); }
+				}
+				
+				// Next Page, Last Page
+				if ($page < $lastpage)
+				{
+					$this->AddChild(
+						new HtmlElement('li', EMPTYSTRING, EMPTYSTRING,
+							new HtmlElement('a', 'href="'.$baseurl.($page + 1).'/"', PAGINATIONNEXT)
+						)
+					);
+					$this->AddChild(
+						new HtmlElement('li', EMPTYSTRING, EMPTYSTRING,
+							new HtmlElement('a', 'href="'.$baseurl.$lastpage.'/"', PAGINATIONLAST)
+						)
+					);
+				}
+				else
+				{
+					$this->AddChild($nolink);
+					$this->AddChild($nolink);
+				}
 			}
 			else
 			{
-				$this->AddChild(new HtmlElement('li', '', '&nbsp;'));
-				$this->AddChild(new HtmlElement('li', '', '&nbsp;'));
+				parent::__construct();
 			}
 		}
-		else
+		
+		public function __tostring()
 		{
-			parent::__construct();
+			return parent::__tostring();
 		}
 	}
-	
-	public function __tostring()
-	{
-		return parent::__tostring();
-	}
-	
-	//public function GetHtml() { return $this; }
 }
 ?>

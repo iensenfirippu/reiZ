@@ -5,6 +5,7 @@
 	define("BLOGPAGINATIONINBOTTOM", true);
 	define("BLOGPRELOADALLCATEGORIES", true);
 	define("BLOGPRELOADALLTAGS", true);
+	define("BLOGREADMORE", 'Read more...');
 	define("BLOGCATEGORYONFRONTPAGE", 'english,nihongo');
 	define("BLOGPOSTONFRONTPAGE", 2);
 ?>
