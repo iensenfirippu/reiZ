@@ -88,8 +88,8 @@ if (defined('reiZ') or exit(1))
 						$white = imagecolorallocate($tmp_img,  255, 255, 255);
 						imagefilledrectangle($tmp_img, 0, 0, $dims['width'], $dims['height'], $white);
 					}
-					imagecopyresized($tmp_img, $img, 0, 0, 0, 0, $dims['newwidth'], $dims['newheight'], $dims['width'], $dims['height']);
-					imagejpeg($tmp_img, $this->_thumbnail, 85);
+					imagecopyresampled($tmp_img, $img, 0, 0, 0, 0, $dims['newwidth'], $dims['newheight'], $dims['width'], $dims['height']);
+					imagejpeg($tmp_img, $this->_thumbnail, 90);
 				}
 			}
 		}

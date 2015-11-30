@@ -85,6 +85,7 @@ if (defined('reiZ') or exit(1))
 		{
 			if (!$this->IsConnected())
 			{
+				var_dump(array(DBSERVER, DBUSERNAME, DBPASSWORD, DBDATABASE));
 				$this->_link = mysql_connect(DBSERVER, DBUSERNAME, DBPASSWORD, DBDATABASE);
 				if (!$this->_link->connect_errno)
 				{
