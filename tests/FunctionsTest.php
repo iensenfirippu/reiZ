@@ -1,5 +1,5 @@
 <?php
-//include_once('src/classes/functions.cls.inc');
+include_once('src/classes/functions.cls.inc2');
 
 class FunctionsTest extends PHPUnit_Framework_TestCase
 {
