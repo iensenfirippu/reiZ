@@ -1,4 +1,6 @@
-<phpunit>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         syntaxCheck="false">
   <testsuites>
     <testsuite name="All">
       <directory>tests</directory>
