@@ -11,6 +11,9 @@ class FunctionsTest extends PHPUnit_Framework_TestCase
 	Here is another line, but it starts with a TAB!
 \"This <line> has special characters in it\"™";
 		
+		echo $text;
+		echo $html;
+		
 		$this->assertEquals(reiZ::ConvertTextToHtml($text), $html);
     }
     
