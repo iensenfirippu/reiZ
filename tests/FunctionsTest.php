@@ -14,7 +14,7 @@ class FunctionsTest extends PHPUnit_Framework_TestCase
     
     public function testConvertTextToHtml()
     {
-		$text = 'This is a line of text.\n\tHere is another line, but it starts with a TAB!\n&quote;This &lt;line&gt; has html characters in it&quote;';
+		$text = 'This is a line of text.\n\tHere is another line, but it starts with a TAB!\n&quot;This &lt;line&gt; has html characters in it&quot;';
 		
 		$html = "This is a line of text.
 	Here is another line, but it starts with a TAB!
@@ -28,7 +28,7 @@ class FunctionsTest extends PHPUnit_Framework_TestCase
     
     public function testConvertHtmlToText()
     {
-		$text = 'This is a line of text.\n\tHere is another line, but it starts with a TAB!\n&quote;This &lt;line&gt; has html characters in it&quote;';
+		$text = 'This is a line of text.\n\tHere is another line, but it starts with a TAB!\n&quot;This &lt;line&gt; has html characters in it&quot;';
 		
 		$html = "This is a line of text.
 	Here is another line, but it starts with a TAB!
