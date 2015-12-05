@@ -1,6 +1,8 @@
 <?php
 define("reiZ", true);
+include_once('src/config/default.cfg.inc');
 include_once('src/classes/defines.inc');
+include_once('src/classes/constants.inc');
 include_once('src/classes/functions.cls.inc');
 
 class FunctionsTest extends PHPUnit_Framework_TestCase
