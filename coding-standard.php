@@ -1,12 +1,12 @@
 <?php
 //------------------------------------------------------------
-// Project:		project-name
-// License:		GPL v2
+// Project:       project-name
+// License:       GPL v2
 //
-// Contents:		class-name
-// Created by:		author (email)
-// Class version:	1.0
-// Date:				2015/11/24
+// Contents:      class-name
+// Created by:    author (email)
+// Class version: 1.0
+// Date:          2015/11/24
 //
 // (opt) Examples:
 // class-examples
@@ -23,9 +23,9 @@ if (defined('reiZ') or exit(1))
 {
 	/**
 	 * class-description
-	 * @extends parent-class.
+	 * @extends parentClass.
 	 */
-	class className extends anotherClass
+	class className extends parentClass
 	{
 		// define class specific constants
 		const UNIVERSAL_CONSTANT = 42;

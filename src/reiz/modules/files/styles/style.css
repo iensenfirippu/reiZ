@@ -1,0 +1,78 @@
+.filesfile span {
+	height: 32px;
+	width: 300px;
+}
+
+.fileicon {
+	display: inline-block;
+	width: 32px;
+	height: 32px;
+}
+
+.typeunknown {
+	background-image: url("/common/images/oxygen/32/unknown.png");
+}
+
+.files {
+}
+
+.files span {
+	/*display: block;
+	margin-bottom: 10px;*/
+}
+
+.files hr {
+	height: 0px;
+	clear: both;
+}
+
+.files a {
+	/*position: absolute;
+	left: 0px;
+	display: block;
+	outline: 0;
+	width: 260px;
+	padding: 6px 0px 8px 37px;
+	text-decoration: none;
+	text-align: left;
+	padding: 6px 0px 8px 37px;*/
+}
+
+.fileslinkgroup {
+	/*position: relative; 
+	display: block;
+	width: 100%;
+	height: auto;
+	clear: both;*/
+}
+
+.fileslink, .fileslinkup, .filesfile {
+	height: 40px;
+	width: 300px;
+	/*position: relative; 
+	display: block;
+	float: left;
+	background-image: url("/common/images/oxygen/32/folder.png");
+	background-repeat: no-repeat;*/
+}
+
+.fileslinkup {
+	/*background-image: url("/common/images/oxygen/32/go-previous.png");
+	clear: both;*/
+}
+
+.filesunknown {
+	/*background-image: url("/common/images/oxygen/32/unknown.png");*/
+}
+
+.fileimage {
+	/*background-image: url("/common/images/oxygen/32/image-x-generic.png");*/
+}
+
+.filearchive {
+	/*background-image: url("/common/images/oxygen/32/application-x-tar.png");*/
+}
+
+.fileexecutable {
+	/*background-image: url("/common/images/oxygen/32/application-x-m4.png");*/
+}

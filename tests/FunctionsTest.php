@@ -36,5 +36,16 @@ class FunctionsTest extends PHPUnit_Framework_TestCase
 		
 		$this->assertEquals($text, reiZ::ConvertHtmlToText($html));
     }
+	
+
+//$thisstring = "This string starts with \"This\", and ends with \"True story!\". True story!";
+//echo "This string starts with \"This\"?";
+//vd(String_StartsWith($thisstring, "This"));
+//echo "This string starts with \"That\"?";
+//vd(String_StartsWith($thisstring, "That"));
+//echo "This string ends with \"True story!\"?";
+//vd(String_EndsWith($thisstring, "True story!"));
+//echo "This string ends with \"Just kidding!\"?";
+//vdd(String_EndsWith($thisstring, "Just kidding!"));
 }
 ?>

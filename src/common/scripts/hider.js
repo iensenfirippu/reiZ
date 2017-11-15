@@ -9,7 +9,7 @@ function showdiv(divid)
 	document.getElementById(divid).className = "unhidden";
 	window.lastid = divid;
 }
- 
+
 function hidediv(divid)
 {
    document.getElementById(divid).className = "hidden";

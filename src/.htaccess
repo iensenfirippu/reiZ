@@ -4,12 +4,20 @@
 #php_value max_execution_time 500 
 
 RewriteEngine On
- RewriteBase /
- RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteRule .* index.php/$0 [PT]
+
+#RewriteBase /
+#RewriteCond %{REQUEST_FILENAME} !-f
 #RewriteCond %{REQUEST_URI} !gallery/
- RewriteCond %{REQUEST_URI} !(.*)/$
- RewriteRule ^(.*)$ /$1/ [L,R=301]
+#RewriteCond %{REQUEST_URI} !(.*)/$
+#RewriteRule ^(.*)$ /$1/ [L,R=301]
  
- RewriteRule ^/$ index.php
- RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
- RewriteRule ^([a-zA-Z]+)/(.+)/$ index.php?page=$1&args=$2
+RewriteRule ^/$ index.php
+RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
+RewriteRule ^([a-zA-Z]+)/(.+)/$ index.php?page=$1&args=$2
+ 
+#RewriteRule ^/$ index.php
+#RewriteRule ^([a-zA-Z]+)/$ index.php?page=$1
+#RewriteRule ^([a-zA-Z]+)/(([a-zA-Z]+)/([^/]+))+/$ index.php?page=$1&amp;$3=$4

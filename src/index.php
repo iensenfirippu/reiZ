@@ -11,13 +11,13 @@
 
 // We use output buffering to ensure that no output is sent to the user until the entire requets has been completed.
 // (since the only echo statement in the entire code is in the very end, the only output that this should catch, is errors and warnings)
-// TODO: Catch process and present errors accordingly
-ob_start();
+// TODO: Catch, process and present errors accordingly
+//ob_start();
 
 define("STARTTIME", microtime(true)); // for calculating the processing time
 define("reiZ", true); // this value is checked by all class files, to ensure that they are not being run individually 
 session_start();
-include_once("classes/defines.inc");
+include_once("reiz/defines.inc");
 
 $DB = null;
 $HTML = null;
@@ -30,7 +30,7 @@ $ARGS = null;
 $HIDDENINDEX = 0;
 
 // include all class files
-include_once("classes/include.inc");
+include_once("reiz/include.inc");
 
 if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 {
@@ -41,15 +41,15 @@ if (MAINTENANCEMODE && $_SERVER['REMOTE_ADDR'] != MAINTENANCEIP)
 }
 else
 {
-	$input_p = reiZ::GetSafeArgument(GETPAGE);
-	$ARGS = explode('/', reiZ::GetSafeArgument(GETARGS));
+	$input_p = GetSafeArgument(GETPAGE);
+	$ARGS = explode('/', GetSafeArgument(GETARGS));
 	
 	// if database not connected
-	if ($DB == null || !$DB->IsConnected())
+	if ($DB == null)// || !Database::IsConnected())
 	{
 		if ($input_p == INSTALLPAGE && $_SERVER['REMOTE_ADDR'] == MAINTENANCEIP && file_exists(FOLDERINSTALL))
 		{
-			reiZ::Redirect('/'.FOLDERINSTALL.'/'.FOLDERINSTALL.'.php');
+			Redirect(url_append(FOLDERINSTALL, FOLDERINSTALL.'.php'));
 		}
 		else
 		{
@@ -62,40 +62,51 @@ else
 		$HTML = new HtmlDocument(WEBSITETITLE);
 		
 		// redirect to website index if no page specified
-		if ($input_p == EMPTYSTRING) { reiZ::Redirect('/'.INDEXPAGE.'/'); }
+		if ($input_p == EMPTYSTRING) { Redirect(INDEXPAGE); }
 		// if admin page requested:
 		elseif ($input_p == ADMINPAGE)
 		{
-			if (isset($_SESSION["verysecureuserid"]) && $_SESSION["verysecureuserid"] > 0)
+			// Only show administration if the site is using HTTPS
+			// OR the configuration allows for connecting without HTTPS
+			// OR if the server is requesting itself (to allow lynx or elinks browsing via SSH)
+			if (USEHTTPS || ADMINREQUIRESHTTPS == false || ClientIsServer())
 			{
-				include_once(FOLDERCLASSES.'/administration.inc');
-				$THEME = new Theme(DEFAULTTHEME, 'admin');
-				$PAGE = new Administration();
-				include_once($THEME->GetDirectory().'/default.php');
+				if (isset($_SESSION["verysecureuserid"]) && $_SESSION["verysecureuserid"] > 0)
+				{
+					include_once(url_append(array('reiz', 'admin'), 'administration.inc'));
+					$THEME = new Theme(DEFAULTTHEME, 'admin');
+					$PAGE = new Administration();
+					include_once(url_append($THEME->GetDirectory(), 'default.php'));
+				}
+				else { Redirect(url_append(LOGINPAGE, ADMINPAGE)); }
 			}
-			else
-			{
-				reiZ::Redirect('/'.LOGINPAGE.'/'.ADMINPAGE.'/');
-			}
+			else { RedirectToHome(); }
 		}
 		// if login page requested:
 		elseif ($input_p == ADMINPAGE || $input_p == LOGINPAGE)
 		{	
-			if (isset($_SESSION["verysecureuserid"])) { reiZ::BackToDisneyland(true); }
-			else
+			// Only show login page if the site is using HTTPS
+			// OR the configuration allows for connecting without HTTPS
+			// OR if the server is requesting itself (to allow lynx or elinks browsing via SSH)
+			if (USEHTTPS || ADMINREQUIRESHTTPS == false || ClientIsServer())
 			{
-				// TODO: Allow login to be on any page
-				$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
-				$PAGE = Page::LoadByName($input_p);
-				include_once($THEME->GetDirectory().'/login.php');
+				if (isset($_SESSION["verysecureuserid"])) { RedirectToHome(true); }
+				else
+				{
+					// TODO: Allow login to be on any page
+					$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
+					$PAGE = Page::LoadByName($input_p);
+					include_once(url_append($THEME->GetDirectory(), 'login.php'));
+				}
 			}
+			else { RedirectToHome(); }
 		}
 		// if a specific page was requested:
 		else
 		{
 			$THEME = new Theme(DEFAULTTHEME, DEFAULTSITE);
 			$PAGE = Page::LoadByName($input_p);
-			include_once($THEME->GetDirectory().'/'.$PAGE->GetFilenameMaster());
+			include_once(url_append($THEME->GetDirectory(), $PAGE->GetFilenameMaster()));
 		}
 		
 		if (DEBUG)
@@ -104,19 +115,19 @@ else
 			$endtime = round((microtime(true) - STARTTIME) * 1000);
 			// TODO: Change into module functionality?
 			$HTML = str_replace('<!--{EXECUTIONTIME}--!>', 'page generated in: '.$endtime.'ms.', $HTML);
-			$HTML = str_replace('<!--{QUERYCOUNT}--!>', 'sent '.$DB->GetQueryCount().' queries to the database.', $HTML);
+			$HTML = str_replace('<!--{QUERYCOUNT}--!>', 'sent '.Database::GetQueryCount().' queries to the database.', $HTML);
 		}
 		
-		$DB->Disconnect();
+		Database::Disconnect();
 	}
 }
 
-$output = ob_get_flush();
-ob_clean();
+//$output = ob_get_flush();
+//ob_clean();
 
 // TODO: Revise final DEBUG str_replace above so that $HTML remains an HTMLDocument object, and the OB string can be properly inserted
 
-if (DEBUG && $output != EMPTYSTRING) { echo "\n<br>\n<br>\n<br>\nERROR OCCURED, CHECK SOURCE LOGFILE.<br>\n"; }
+//if (DEBUG && $output != EMPTYSTRING) { echo "\n<br>\n<br>\n<br>\nERROR OCCURED, CHECK SOURCE LOGFILE.<br>\n"; }
 
 //echo str_replace('"wrapper"', '"wrapper-test"', $HTML);
 echo $HTML;
@@ -124,5 +135,10 @@ echo $HTML;
 // TODO: implement pre- and post- processing sceduled events (to move EXECUTIONTIME and QUERYCOUNT into module functionality, and allow the gallery to generate thumbnails after the request)
 //if (function_exists('fastcgi_finish_request')) { fastcgi_finish_request(); /* do whatever post-processing requests you want */ }
 
-if (DEBUG) { reiZ::LOGSOURCE($output.$HTML); }
+//if (DEBUG) { Log_Source($output.$HTML); }
+
+//define("reiZ", true);
+//include_once("reiz/classes/request.inc");
+//$r = new Request();
+//var_dump($r->GetParameters());
 ?>
